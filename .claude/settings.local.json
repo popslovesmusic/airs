@@ -1,0 +1,28 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(python migrate.py:*)",
+      "Bash(python migrate_fixed.py:*)",
+      "Bash(python create_schemas.py:*)",
+      "Bash(python:*)",
+      "Bash(sim/bin/dase_cli.exe)",
+      "Bash(git init:*)",
+      "Bash(git add:*)",
+      "Bash(git config:*)",
+      "Bash(git clean:*)",
+      "Bash(test:*)",
+      "Bash(git reset:*)",
+      "Bash(Simulation/bin/dase_cli.exe)",
+      "Bash(git commit:*)",
+      "Bash(\"D:\\airs\\Simulation\\bin\\dase_cli.exe\")",
+      "Bash(cmake --version:*)",
+      "Bash(cmake:*)",
+      "Bash(\"D:\\airs\\Simulation\\src\\cpp\\sid_ssp\\sid_rewrite.hpp\")",
+      "Bash(dumpbin:*)",
+      "Bash(where dumpbin:*)",
+      "Bash(find:*)"
+    ],
+    "deny": [],
+    "ask": []
+  }
+}

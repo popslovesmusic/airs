@@ -1,0 +1,55 @@
+{
+  "ssot_content_id": "SSOT_CONTENT_V1",
+  "authority_type": "DATABASE_CENTERED_SSOT",
+  "component_list": [
+    {
+      "type": "DATABASE",
+      "source_path": "ssot_parallel.db",
+      "staged_path": "ssot_parallel.db",
+      "authoritative": true,
+      "coupled_to_authority": false,
+      "file_count": 1,
+      "total_size_bytes": 1566883840
+    },
+    {
+      "type": "SEARCH_INDEX_DB",
+      "source_path": "ssot_index.db",
+      "staged_path": "ssot_index.db",
+      "authoritative": false,
+      "coupled_to_authority": true,
+      "file_count": 1,
+      "total_size_bytes": 36864
+    },
+    {
+      "type": "SEARCH_INDEX_FILES",
+      "source_path": "ssot_index",
+      "staged_path": "ssot_index",
+      "authoritative": false,
+      "coupled_to_authority": true,
+      "file_count": 30,
+      "total_size_bytes": 334107692
+    },
+    {
+      "type": "RELATIONAL_GRAPH",
+      "source_path": "rmap_graph.gpickle",
+      "staged_path": "rmap_graph.gpickle",
+      "authoritative": false,
+      "coupled_to_authority": true,
+      "file_count": 1,
+      "total_size_bytes": 457510055
+    },
+    {
+      "type": "SSOT_ROOT_DEFINITION",
+      "source_path": "SSOT_ROOT.json5",
+      "staged_path": "SSOT_ROOT.json5",
+      "authoritative": false,
+      "coupled_to_authority": false,
+      "file_count": 1,
+      "total_size_bytes": 441
+    }
+  ],
+  "file_count": 34,
+  "total_size_bytes": 2358538892,
+  "created_at": "2026-01-15T11:35:44Z",
+  "immutability": true
+}

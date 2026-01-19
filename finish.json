@@ -1,0 +1,208 @@
+{
+  "task_id": "SIM_FIX_GW_TESTS_SID_INVARIANTS_002",
+  "date_local": "2026-01-19",
+  "scope_root": "Simulation/",
+  "intent": "MANDATORY completion of GW engine TODOs; restore test confidence; enforce SID invariants with runtime checks (no fencing allowed).",
+  "priority_order": [
+    "GW_FINISH",
+    "TESTS_REGAIN_CONFIDENCE",
+    "SID_RUNTIME_INVARIANTS"
+  ],
+  "constraints": {
+    "gw_fencing_disallowed": true,
+    "no_behavior_change_outside_scope": true,
+    "no_perf_regression_on_hotpaths": true,
+    "release_build_must_enforce_invariants": true,
+    "exceptions_policy": "throw std::logic_error or std::runtime_error for invariant violations; never abort() in release"
+  },
+  "work_items": [
+    {
+      "id": "GW_FINISH",
+      "priority": "P0",
+      "goal": "Complete all GW engine TODOs so the engine is mathematically valid, testable, and production-usable.",
+      "targets_hint": [
+        "fractional_solver.cpp",
+        "symmetry_field.cpp",
+        "gw_engine entrypoints / registration"
+      ],
+      "required_completions": [
+        {
+          "todo": "fractional_kernel_validation",
+          "description": "Implement and validate the exact fractional kernel K_α(t)=t^(1-2α)/Γ(2-2α) comparison.",
+          "requirements": [
+            "Numerical evaluation against the closed-form expression",
+            "Tolerance bounds documented",
+            "Clear reference to equation source in comments"
+          ]
+        },
+        {
+          "todo": "symmetry_field_gradients",
+          "description": "Implement full grid-loop gradient computation for symmetry field.",
+          "requirements": [
+            "All grid points processed",
+            "Boundary conditions explicitly handled",
+            "Deterministic behavior under identical inputs"
+          ]
+        }
+      ],
+      "validation_actions": [
+        {
+          "type": "unit_tests",
+          "requirements": [
+            "At least one deterministic test for fractional solver correctness",
+            "At least one deterministic test for symmetry field gradients",
+            "Tests must pass in Debug and Release"
+          ]
+        },
+        {
+          "type": "numerical_sanity_checks",
+          "requirements": [
+            "No NaNs or infinities under nominal parameter ranges",
+            "Stable behavior across representative time horizons"
+          ]
+        }
+      ],
+      "metrics_to_collect": [
+        {
+          "name": "gw_tests_pass_debug",
+          "type": "boolean"
+        },
+        {
+          "name": "gw_tests_pass_release",
+          "type": "boolean"
+        },
+        {
+          "name": "gw_numeric_error_max",
+          "type": "number",
+          "success_criteria": "documented tolerance met"
+        }
+      ],
+      "failure_modes": [
+        {
+          "mode": "GW implementation diverges from reference equation",
+          "impact": "invalid physics",
+          "mitigation": "re-derive discretization; adjust kernel evaluation; document assumptions"
+        },
+        {
+          "mode": "Performance regression exceeds limits",
+          "impact": "simulation slowdown",
+          "mitigation": "move validation off hot paths; cache reusable terms"
+        }
+      ]
+    },
+    {
+      "id": "TESTS_REGAIN_CONFIDENCE",
+      "priority": "P0",
+      "goal": "Restore SID test suite so current APIs are validated and regressions are detectable.",
+      "actions": [
+        {
+          "type": "canonical_test_fix",
+          "targets_hint": [
+            "test_sid_core.cpp"
+          ],
+          "requirements": [
+            "Update constructors and calls to match current SID APIs",
+            "Preserve original test intent"
+          ]
+        },
+        {
+          "type": "minimal_regression_pack",
+          "requirements": [
+            "Parser → diagram build test",
+            "Rewrite + cycle-detection test",
+            "Negative invariant-violation test"
+          ]
+        }
+      ],
+      "metrics_to_collect": [
+        {
+          "name": "sid_tests_compile",
+          "type": "boolean"
+        },
+        {
+          "name": "sid_tests_pass_debug",
+          "type": "boolean"
+        },
+        {
+          "name": "sid_tests_pass_release",
+          "type": "boolean"
+        }
+      ]
+    },
+    {
+      "id": "SID_RUNTIME_INVARIANTS",
+      "priority": "P0",
+      "goal": "Ensure SID invariants are enforced in Release builds via runtime checks.",
+      "targets_hint": [
+        "sid_ternary_engine.hpp",
+        "sid_semantic_processor.hpp",
+        "sid_mixer.hpp",
+        "sid C-API entrypoints"
+      ],
+      "invariants": [
+        {
+          "name": "role_locking",
+          "rule": "SSP I/N/U roles must match construction role.",
+          "on_violation": "throw logic_error"
+        },
+        {
+          "name": "mask_validity",
+          "rule": "Masks must be valid whenever applied or committed.",
+          "on_violation": "throw logic_error"
+        },
+        {
+          "name": "i_n_u_conservation",
+          "rule": "Total semantic quantity must be conserved across commit_step unless explicitly configured otherwise.",
+          "on_violation": "throw runtime_error with before/after totals"
+        },
+        {
+          "name": "mixer_boundedness",
+          "rule": "Mixer scale factors must remain within defined bounds.",
+          "on_violation": "throw runtime_error with scale and cap"
+        }
+      ],
+      "actions": [
+        {
+          "type": "assert_audit",
+          "description": "Identify asserts guarding critical invariants."
+        },
+        {
+          "type": "runtime_check_conversion",
+          "description": "Replace critical asserts with runtime checks that execute in Release."
+        },
+        {
+          "type": "negative_tests",
+          "description": "Add tests that intentionally violate each invariant and verify runtime failure."
+        }
+      ],
+      "metrics_to_collect": [
+        {
+          "name": "invariants_enforced_release",
+          "type": "boolean"
+        },
+        {
+          "name": "sid_perf_delta_percent",
+          "type": "number",
+          "success_criteria": "<=2.0"
+        }
+      ]
+    }
+  ],
+  "completion_checklist": [
+    "All GW TODOs implemented and validated",
+    "GW engine usable without warnings or experimental flags",
+    "SID tests compile and pass in Debug and Release",
+    "SID invariants enforced via runtime checks",
+    "No unacceptable performance regression"
+  ],
+  "stop_conditions": [
+    {
+      "condition": "GW TODOs cannot be completed without undefined physics",
+      "action": "STOP_AND_REPORT_WITH_DERIVATION_GAPS"
+    },
+    {
+      "condition": "Invariant enforcement requires architectural rewrite",
+      "action": "STOP_AND_REPORT_WITH_OPTIONS"
+    }
+  ]
+}

@@ -1,0 +1,46 @@
+{
+  "ssot": {
+    "version": "1.0.0",
+    "data": {
+      "database_path": "data/ssot_parallel.db",
+      "graph_path": "data/rmap_graph.gpickle",
+      "index_path": "data/ssot_index",
+      "index_db_path": "data/ssot_index.db"
+    },
+    "api": {
+      "host": "localhost",
+      "port": 8080,
+      "max_results": 500,
+      "default_sensitivity": 1,
+      "default_mode": "full_text"
+    },
+    "search_backends": {
+      "fts5": {
+        "enabled": true,
+        "priority": 1,
+        "description": "SQLite FTS5 with BM25 ranking"
+      },
+      "whoosh": {
+        "enabled": true,
+        "priority": 2,
+        "description": "Whoosh Python search engine"
+      },
+      "cpp_avx2": {
+        "enabled": true,
+        "priority": 3,
+        "description": "C++ AVX2 optimized indexer/searcher"
+      }
+    },
+    "audit": {
+      "enabled": true,
+      "log_path": "audit/query_audit.jsonl",
+      "format": "jsonl"
+    },
+    "security": {
+      "path_jailing": true,
+      "doc_id_validation": true,
+      "max_doc_size_mb": 50,
+      "max_workspace_size_mb": 500
+    }
+  }
+}

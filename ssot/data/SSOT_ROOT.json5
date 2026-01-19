@@ -1,0 +1,21 @@
+{
+  ssot: {
+    version: "0.0.0",
+    state: "bootstrap",              // design | bootstrap | operational
+    created_at: "2026-01-12",
+  },
+
+  governance: {
+    engine: {
+      present: true,
+      kind: "rust_full",
+      version: "0.2.0",
+      "entrypoint": "bin/ssot.exe"
+    }
+  },
+
+  interpretation_rules: {
+    specs_are_advisory_when_engine_absent: true,
+    enforcement_requires_engine_probe: true
+  }
+}

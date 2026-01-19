@@ -1,0 +1,88 @@
+# Build artifacts (compiled binaries - rebuild from source)
+build/
+*.obj
+*.o
+*.exe
+*.dll
+*.so
+*.dylib
+*.pyd
+*.lib
+*.exp
+sim/bin/*.exe
+sim/bin/*.dll
+ssot/bin/*.exe
+
+# Cache
+cache/
+*.cache
+__pycache__/
+*.pyc
+*.pyo
+
+# Logs
+logs/
+*.log
+
+# Workspace temp and output
+workspace/temp/
+workspace/output/
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+.DS_Store
+Thumbs.db
+
+# Large data files (backed up on Google Drive - do not commit)
+ssot/data/ssot_parallel.db
+ssot/data/rmap_graph.gpickle
+ssot/data/ssot_index/
+ssot/data/*.db
+ssot/data/*.gpickle
+*.db
+*.gpickle
+
+# User-specific configuration
+environment.json
+config/local.json
+
+# Backup directories
+_backup_*/
+
+# Python
+*.egg-info/
+dist/
+.pytest_cache/
+.coverage
+htmlcov/
+
+# Simulation outputs
+sim/cache/
+sim/build/
+*.csv
+*.xlsx
+*.png
+analysis_*/
+output_*.json
+
+# Temporary files
+*.tmp
+*.temp
+temp/
+tmp/
+
+# Old directories (to be removed after validation)
+New folder/
+
+# Simulation build artifacts (track source!)
+Simulation/build/
+Simulation/**/*.obj
+Simulation/**/*.o
+
+# Migration and temporary scripts
+migrate.py
+migrate_fixed.py
+migration_log.txt

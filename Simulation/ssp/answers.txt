@@ -1,0 +1,122 @@
+Short answer first, then the implications.
+
+---
+
+## 1. Are SSPs and Mixer always created from the same configuration path that guarantees identical `field_len`?
+
+**They must be — but only if the architecture invariant is enforced.**
+
+Conceptually:
+
+* **SSPs** define *how a field is represented* (dimensionality, basis, indexing).
+* **Mixer** defines *how multiple SSP fields are combined* (weights, masks, couplings).
+
+If they are instantiated from **separate config paths**, identical `field_len` becomes an *assumption*, not a guarantee.
+
+### Required invariant (architectural)
+
+```json5
+{
+  "invariant": "SSP.field_len == Mixer.field_len",
+  "enforcement": "single_authoritative_config",
+  "failure_mode": "silent misalignment or spectral leakage"
+}
+```
+
+### Best practice
+
+* `field_len` must be **declared once**, upstream.
+* SSPs and Mixer should *consume*, not *define*, it.
+* Any local override is a **hard error**, not a warning.
+
+If your current code *relies on convention* instead of a shared config object / constructor contract, then no — it is **not guaranteed**, and that is a latent bug.
+
+---
+
+## 2. Should `alpha` and masks be unitless fractions, or is mass-scaled formulation intentional?
+
+This depends on **what layer they belong to**.
+
+### Rule of thumb
+
+> **Mixing coefficients are unitless. Physics enters elsewhere.**
+
+### Case breakdown
+
+#### ✅ Unitless (recommended for Mixer / SSP coupling)
+
+* `alpha`, masks ∈ [0,1]
+* Represent **relative contribution**, **gating**, or **attention**
+* Independent of physical interpretation
+
+```json5
+{
+  "alpha": { "type": "float", "units": "dimensionless", "domain": [0,1] },
+  "mask":  { "type": "float[]", "units": "dimensionless" }
+}
+```
+
+This keeps:
+
+* Linear algebra clean
+* Normalization stable
+* Mixer reusable across domains
+
+#### ⚠️ Mass-scaled (only valid if explicit)
+
+Mass-scaled alphas are valid **only if**:
+
+* The Mixer is *not* a generic combiner
+* You are encoding **physical coupling strength** directly
+* Units are tracked and conserved
+
+```json5
+{
+  "alpha": {
+    "type": "float",
+    "units": "kg | energy-equivalent",
+    "role": "physical coupling coefficient"
+  }
+}
+```
+
+This must be:
+
+* Explicit in naming (`alpha_mass`, `g_coupling`)
+* Isolated from normalization logic
+* Never mixed with unitless masks
+
+---
+
+## Bottom line
+
+### Configuration path
+
+* **Yes**, SSPs and Mixer should always be created from the **same authoritative config** for `field_len`
+* If not enforced, you are relying on fragile symmetry
+
+### Alpha & masks
+
+* **Default:** unitless fractions
+* **Mass-scaled:** only intentional if the Mixer itself is a physical operator, not a signal combiner
+
+---
+
+### Minimal governance check (recommended)
+
+```json5
+{
+  "checks": [
+    "SSP.field_len === Mixer.field_len",
+    "alpha.units === 'dimensionless'",
+    "mask.units === 'dimensionless'"
+  ],
+  "on_failure": "abort_initialization"
+}
+```
+
+If you want, next we can:
+
+* Audit your current instantiation paths for hidden divergence
+* Split “physical coupling” from “mixing” cleanly
+* Formalize this as a Governor invariant or constructor contract

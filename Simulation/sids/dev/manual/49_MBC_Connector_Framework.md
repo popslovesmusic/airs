@@ -1,0 +1,91 @@
+# 49_MBC_Connector_Framework.md
+
+## MBC Connector Framework: Orchestrating Semantic Flow
+
+This document outlines the overarching framework for MBC Connector Systems, drawing upon conceptual brainstorming and formal mapping principles. Connectors are the dynamic agents that facilitate the propagation, transformation, and interaction of semantic payloads across the various tiers and components of the Monistic Box Calculus (MBC). They are fundamental to orchestrating semantic flow, enforcing constraints, and enabling complex operations within the entire system.
+
+The design of these connectors is rigorously defined by a set of formal JSON5 schemas, which are detailed in `manual/30_MBC_Toolhost_Definitions.md` under Section "8. Connector Schemas." These schemas (`schema_connector_axiom_box.json5`, `schema_connector_metadata.json5`, `schema_connector_interaction_table.json5`, `schema_connector_module_pack.json5`, `schema_connector_pack.json5`, and `schema_connector_rewrite_system.json5`) provide the blueprint for constructing any specific connector family.
+
+---
+
+### 1. Conceptual Categories of Connectors
+
+The MBC Connector Systems are conceptually categorized by their primary function:
+
+#### 1.1 Structural Connectors
+Connectors that physically or logically bind Boxes or Modules.
+*   **Box-to-Box Connectors:** Used for assembling higher-level structures from lower ones (e.g., Direct Coupling, Boundary Alignment, Hierarchy, Schema Compatibility).
+*   **Hierarchy Connectors:** Create parent-child delegation chains (Tier-n → Tier-n+1).
+
+#### 1.2 Semantic Connectors
+Carry meaning, commitments, semantics, or constraints across modules.
+*   **Semantic-Projection Connectors (Φ):** Project internal content of one box into the semantic space of another, ensuring meaning-preserving embedding.
+*   **Causal-Evaluation Connectors (Π):** Transfer truth-value, inference state, or causal-lineage for rule execution and reasoning.
+*   **Symmetry / Asymmetry Connectors:** Maintain symmetry invariants and propagate deviations (`δ`).
+
+#### 1.3 Dynamic / Operational Connectors
+Responsible for motion, flow, execution, and active behavior.
+*   **Rewrite Connectors:** Connect rewrite systems, allowing one to invoke another.
+*   **Execution Flow Connectors:** Direct semantic flow, defining the "order of operations."
+*   **Oscillation / Waveform Connectors (ψ):** Link mode interactions, combining or splitting modes (interference, resonance, cancellation).
+*   **Adjacency Connectors (μ):** Represent local weighted edges between states, defining local neighborhood interactions.
+
+#### 1.4 Logic / Routing Connectors
+Essential for operating the system as a computational architecture.
+*   **Logic Gate Connectors:** Act like electronic gates for semantics (e.g., AND, OR, XOR, NOT for constraints).
+*   **Router Connectors:** Act as "network switches" for MBC, directing flow based on Tier, Operator, Deformation (`λ`), or Waveform (`ψ`).
+
+#### 1.5 Constraint / Invariant Connectors
+Used to enforce the "laws" of the system.
+*   **Normalization Connectors (Ω):** Enforce global constraints, ensuring transformations reduce to canonical forms.
+*   **Polarity Connectors (Θ):** Manage logical polarity, directionality, and semantic charge.
+*   **Summation Connectors (Σ):** Collapse multiple feeds into a single semantic contraction.
+*   **Time-Evolution Connectors (χ):** Connect past, present, and future states, enforcing continuity and temporal consistency.
+
+#### 1.6 Interoperability Connectors
+Connect internal MBC structures with external data, systems, or agents.
+*   **External Data Connectors:** For JSON, JSON5, Markdown, Raw Text, Audio/Video signals.
+*   **Agent Connectors:** Bind MBC to other LLM agents, translating between MBC schema and model interfaces.
+*   **API / Service Connectors:** For HTTP, File-System, Vector DB, Memory.
+
+#### 1.7 Meta-Connectors
+The highest-order connectors that unify the architecture.
+*   **Schema Evolution Connector:** Allows schema updates without breaking components.
+*   **Tier Federation Connector (ρ):** Connects independent tiers into a coherent federated semantic universe.
+*   **Universal Operator Pack Connector (Ξ):** Ensures every operator pack is consumable by higher tiers.
+*   **Deviation-Propagation Connector (δ → All):** The single principle that links all tiers: deviation flows across them.
+
+---
+
+### 2. The 12 Canonical Connector Families
+
+The MBC framework formalizes twelve canonical connector types, directly aligning them with the twelve operator Tier-families. This provides a complete conceptual matching between Tiers, Operators, and their associated Connectors, ensuring a cohesive and integrated architecture.
+
+Each connector family is structured according to the general connector schemas documented in `manual/30_MBC_Toolhost_Definitions.md`. The `delta` family serves as a fully specified example, and the remaining 11 families can be mechanically generated by cloning the `delta` structure and populating them with family-specific details.
+
+| Family | Symbol | Payload Type | Example Core Connectors (IDs) | High-level Role |
+| :---- | :---- | :---- | :---- | :---- |
+| δ | δ | deviation | `delta.deviation-injection`, `delta.deviation-propagation`, `delta.deviation-concentration`, `delta.deviation-dissipation` | Create/transport/manage deviation |
+| Φ | Φ | semantic | `phi.semantic-embedding`, `phi.semantic-lifting`, `phi.semantic-alignment`, `phi.semantic-projection-filter` | Map raw structures into semantic space |
+| Π | Π | truth | `pi.truth-evaluation`, `pi.causal-routing`, `pi.consistency-check`, `pi.counterfactual-branch` | Evaluate, route, and check causal/logic content |
+| μ | μ | adjacency | `mu.local-adjacency-link`, `mu.weight-update`, `mu.neighborhood-closure`, `mu.adjacency-pruning` | Define and update micro-structure graph |
+| λ | λ | curvature | `lambda.curvature-encode`, `lambda.geodesic-routing`, `lambda.deformation-source`, `lambda.shear-to-curvature` | Encode deformation/curvature of semantic geometry |
+| ψ | ψ | wave | `psi.mode-superposition`, `psi.wave-routing`, `psi.resonance-coupling`, `psi.decoherence-damping` | Oscillation, resonance, spectral interactions |
+| Σ | Σ | summation | `sigma.local-contraction`, `sigma.global-aggregation`, `sigma.statistical-summarization`, `sigma.reduced-representation` | Summation / contraction / compression |
+| Θ | Θ | polarity | `theta.polarity-routing`, `theta.negation-lift`, `theta.dual-channel-link`, `theta.charge-balance` | Logic polarity, duality, sign/charge |
+| χ | χ | time | `chi.forward-evolution`, `chi.history-link`, `chi.snapshot-connector`, `chi.timeline-branch-merge` | Semantic time, history, branching |
+| Ω | Ω | constraint | `omega.normalization-enforce`, `omega.global-consistency-check`, `omega.no-contradiction-gate`, `omega.invariant-monitor` | Global constraints / normalization |
+| ρ | ρ | layer | `rho.layer-bridge`, `rho.federation-join`, `rho.meta-layer-router`, `rho.layer-isolation-gate` | Layer federation / meta-structure |
+| Ξ | Ξ | schema | `xi.schema-binding`, `xi.schema-upgrade-bridge`, `xi.universal-interface`, `xi.cross-version-compat` | Universal schema / top-meta unification |
+
+---
+
+### 3. Strategy for Future Connector Generation
+
+The explicit mapping provided above, combined with the formal connector schemas (documented in `manual/30_MBC_Toolhost_Definitions.md`), provides a clear strategy for the systematic generation of all remaining connector families. This process involves:
+
+1.  **Cloning the structure:** Utilizing the `delta_connector_pack.json5` and `delta_connector_axiom_box.json5` as templates.
+2.  **Replacing family-specific identifiers:** Updating `family_id`, `family_name`, and `family_symbol` for each new family.
+3.  **Populating connectors and axioms:** Filling in the specific connector IDs and axiom definitions as guided by the "Example Core Connectors (IDs)" and high-level roles provided in the canonical families table.
+
+This approach ensures consistency and adherence to the defined framework, transforming the task of connector definition into a "library-filling exercise" rather than a design problem.

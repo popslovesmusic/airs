@@ -1,0 +1,111 @@
+{
+  "dofs": [
+    {
+      "id": "Vertical",
+      "description": "Hierarchical dependence (synchronic)",
+      "orthogonal_group": "primary"
+    },
+    {
+      "id": "Horizontal",
+      "description": "Temporal succession (diachronic)",
+      "orthogonal_group": "primary"
+    }
+  ],
+  "compartments": [
+    {
+      "id": "c0",
+      "index": 0,
+      "description": "Initial compartment"
+    },
+    {
+      "id": "c1",
+      "index": 1,
+      "description": "Post-collapse compartment"
+    }
+  ],
+  "csis": [
+    {
+      "id": "csi_main",
+      "allowed_dofs": ["Vertical", "Horizontal"],
+      "allowed_pairs": [
+        ["Vertical", "Horizontal"],
+        ["Horizontal", "Vertical"],
+        ["Vertical", "Vertical"],
+        ["Horizontal", "Horizontal"]
+      ]
+    }
+  ],
+  "diagrams": [
+    {
+      "id": "d_initial",
+      "compartment_id": "c0",
+      "nodes": [
+        {
+          "id": "n1",
+          "op": "P",
+          "dof_refs": ["Vertical"]
+        },
+        {
+          "id": "n2",
+          "op": "C",
+          "inputs": ["n1"]
+        }
+      ],
+      "edges": [
+        {
+          "id": "e1",
+          "from": "n1",
+          "to": "n2",
+          "label": "arg"
+        }
+      ]
+    }
+  ],
+  "states": [
+    {
+      "id": "state_0",
+      "diagram_id": "d_initial",
+      "csi_id": "csi_main",
+      "compartment_id": "c0",
+      "inu_labels": {},
+      "loop_history": []
+    }
+  ],
+  "constraints": [
+    {
+      "id": "cst_1",
+      "type": "hard",
+      "scope": "global",
+      "predicate": "no_cross_csi_interaction",
+      "description": "All interactions must respect CSI boundaries"
+    },
+    {
+      "id": "cst_2",
+      "type": "hard",
+      "scope": "local",
+      "predicate": "collapse_irreversible",
+      "description": "All Collapse operators must be marked irreversible"
+    },
+    {
+      "id": "cst_3",
+      "type": "soft",
+      "scope": "local",
+      "predicate": "no_cycles",
+      "description": "Diagrams should be acyclic"
+    }
+  ],
+  "rewrite_rules": [
+    {
+      "id": "rw_introduce_collapse",
+      "pattern_expr": "C(P(x))",
+      "replacement_expr": "C(O(P(x)))",
+      "preconditions": ["admissible", "no_hard_conflict"],
+      "description": "Introduce Collapse after Coupling"
+    }
+  ],
+  "metadata": {
+    "version": "1.0",
+    "created": "2026-01-17",
+    "description": "Example SID package demonstrating canonical execution trace"
+  }
+}

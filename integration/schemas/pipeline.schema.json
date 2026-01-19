@@ -1,0 +1,64 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://airs.local/schemas/integration/pipeline.json",
+  "title": "Integration Pipeline",
+  "description": "Schema for cross-component workflow pipelines",
+  "type": "object",
+  "required": [
+    "pipeline_id",
+    "steps"
+  ],
+  "properties": {
+    "pipeline_id": {
+      "type": "string",
+      "description": "Unique pipeline identifier"
+    },
+    "description": {
+      "type": "string",
+      "description": "Pipeline description"
+    },
+    "steps": {
+      "type": "array",
+      "items": {
+        "$ref": "#/definitions/pipeline_step"
+      },
+      "minItems": 1
+    }
+  },
+  "definitions": {
+    "pipeline_step": {
+      "type": "object",
+      "required": [
+        "step_id",
+        "component",
+        "action"
+      ],
+      "properties": {
+        "step_id": {
+          "type": "string",
+          "description": "Step identifier"
+        },
+        "component": {
+          "type": "string",
+          "enum": [
+            "ssot",
+            "simulation"
+          ],
+          "description": "Component to execute"
+        },
+        "action": {
+          "type": "string",
+          "description": "Action to perform"
+        },
+        "input": {
+          "type": "object",
+          "description": "Input data or reference to previous step"
+        },
+        "output_path": {
+          "type": "string",
+          "description": "Where to save output"
+        }
+      }
+    }
+  }
+}

@@ -1,0 +1,141 @@
+{
+  "dofs": [
+    { "id": "vertical", "group": "orthogonal" },
+    { "id": "horizontal", "group": "orthogonal" }
+  ],
+  "csis": [
+    {
+      "id": "csi_now",
+      "allowed_dofs": ["vertical", "horizontal"],
+      "allowed_pairs": [["vertical", "horizontal"]],
+      "description": "Active CSI includes both DOFs and their intersection."
+    }
+  ],
+  "compartments": [
+    { "id": "c0", "index": 0 },
+    { "id": "c1", "index": 1 }
+  ],
+  "diagrams": [
+    {
+      "id": "d0",
+      "compartment_id": "c0",
+      "nodes": [
+        {
+          "id": "n1",
+          "op": "P",
+          "dof_refs": ["vertical"],
+          "meta": { "label": "Freedom" }
+        },
+        {
+          "id": "n2",
+          "op": "C",
+          "inputs": ["n1", "n3"],
+          "meta": { "label": "Potential Gradient" }
+        },
+        {
+          "id": "n3",
+          "op": "P",
+          "dof_refs": ["horizontal"],
+          "meta": { "label": "Potential" }
+        }
+      ],
+      "edges": [
+        { "id": "e1", "from": "n1", "to": "n2", "label": "C" }
+      ]
+    },
+    {
+      "id": "d1",
+      "compartment_id": "c1",
+      "nodes": [
+        {
+          "id": "n3",
+          "op": "P",
+          "dof_refs": ["vertical"],
+          "meta": { "label": "Freedom" }
+        },
+        {
+          "id": "n4",
+          "op": "O",
+          "inputs": ["n3"],
+          "irreversible": true,
+          "meta": { "label": "Choice" }
+        },
+        {
+          "id": "n5",
+          "op": "T",
+          "inputs": ["n4"],
+          "meta": { "label": "Gradient" }
+        }
+      ],
+      "edges": [
+        { "id": "e2", "from": "n3", "to": "n4", "label": "O" },
+        { "id": "e3", "from": "n4", "to": "n5", "label": "T" }
+      ]
+    }
+  ],
+  "constraints": [
+    {
+      "id": "c_hard_1",
+      "type": "hard",
+      "scope": "global",
+      "predicate": "no_cross_csi_interaction",
+      "on_violation": "halt"
+    }
+  ],
+  "rewrite_rules": [
+    {
+      "id": "rw_authorize_collapse",
+      "pattern_expr": "C(P(x), y)",
+      "replacement_expr": "C(P(x), O(y))",
+      "pattern": "P(x) --C--> y",
+      "replacement": "P(x) --C--> O(y)",
+      "preconditions": [
+        "admissible",
+        "no_hard_conflict"
+      ]
+    }
+  ],
+  "crf_procedures": [
+    {
+      "id": "crf_default",
+      "steps": [
+        "check_csi_boundary",
+        "check_constraints",
+        "authorize_rewrite"
+      ]
+    }
+  ],
+  "metrics": [
+    {
+      "id": "m_admissible_volume",
+      "compute": "compute_admissible_volume",
+      "dependencies": ["d0", "d1"]
+    }
+  ],
+  "states": [
+    {
+      "id": "s0",
+      "diagram_id": "d0",
+      "csi_id": "csi_now",
+      "compartment_id": "c0",
+      "inu_labels": {
+        "n1": "I",
+        "n2": "U",
+        "e1": "I"
+      }
+    },
+    {
+      "id": "s1",
+      "diagram_id": "d1",
+      "csi_id": "csi_now",
+      "compartment_id": "c1",
+      "inu_labels": {
+        "n3": "I",
+        "n4": "I",
+        "n5": "U",
+        "e2": "I",
+        "e3": "I"
+      }
+    }
+  ]
+}

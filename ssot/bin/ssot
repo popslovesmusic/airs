@@ -1,0 +1,9 @@
+#!/usr/bin/env bash
+case "$1" in
+  status)
+    echo "Department: $SSOT_DEPARTMENT"
+    ;;
+  *)
+    echo "SSOT CLI (stub)"
+    ;;
+esac

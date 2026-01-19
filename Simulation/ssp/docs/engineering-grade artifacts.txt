@@ -1,0 +1,240 @@
+Below are **engineering-grade artifacts**, not philosophy.
+They are written so a software engineer can tape them to the wall and not break SID by accident.
+
+No metaphors. No prose drift.
+
+---
+
+# 1. SID **DON’TS LIST**
+
+**Things an engineer must never try**
+
+These are **hard violations**, not style preferences.
+
+---
+
+## A. Architectural Don’ts (Non-Negotiable)
+
+1. **Do not allow any SSP to read another SSP’s field**
+
+   * No debug peeks
+   * No logging shortcuts
+   * No “temporary inspection”
+   * If you need comparison, the **Mixer** does it
+
+2. **Do not let the Mixer write directly to I or N**
+
+   * Ever
+   * Not even “for initialization”
+   * Not even “to fix conservation”
+
+3. **Do not allow I or N to mutate after creation**
+
+   * No decay
+   * No overwrite
+   * No “rebalancing”
+   * If content must change, it happens via **Transport**, not mutation
+
+4. **Do not bypass SSP(U) for collapse**
+
+   * Collapse must execute *inside* SSP(U)
+   * Mixer issues directives only
+   * Engines never collapse themselves
+
+5. **Do not let engines communicate**
+
+   * No shared buffers
+   * No cross-engine callbacks
+   * No shared globals
+
+---
+
+## B. Semantic Don’ts (These break meaning)
+
+6. **Do not numerically blend semantic fields**
+
+   * No averaging I/N/U
+   * No weighted sums across processors
+   * No “soft merge”
+
+7. **Do not treat masks as probabilities**
+
+   * Masks are *eligibility*, not likelihood
+   * Sampling semantics will destroy conservation
+
+8. **Do not re-inflate U**
+
+   * No code path may increase U
+   * No “reconsideration”
+   * No “undo collapse”
+
+9. **Do not flip polarity**
+
+   * I → N is forbidden
+   * N → I is forbidden
+   * Only U → {I,N} exists
+
+10. **Do not emit Transport while collapse is ongoing**
+
+    * Transport is a **phase transition**
+    * Not a streaming event
+
+---
+
+## C. Governance / Layering Don’ts
+
+11. **Do not embed policy in engines**
+
+    * Engines have physics, not semantics
+    * No admissibility logic in engines
+
+12. **Do not let DASE or AIRS bypass SID**
+
+    * They may schedule
+    * They may observe
+    * They may never mutate semantic state
+
+13. **Do not make collapse reversible “for experimentation”**
+
+    * That creates a different system
+    * If you want reversibility, design a new layer
+
+---
+
+# 2. SID **VALIDATION CHECKLIST**
+
+**Tests that must pass before the system is considered correct**
+
+These are binary pass/fail.
+If any fail → system is invalid.
+
+---
+
+## A. Structural Tests
+
+☐ SSP roles are immutable after creation
+☐ Exactly 3 SSPs exist (I, N, U)
+☐ Each SSP hosts exactly one engine
+☐ No engine has access to another engine’s memory
+☐ Mixer has no write access to SSP(I/N) fields
+
+---
+
+## B. Conservation Tests
+
+☐ For all timesteps `t`:
+
+```
+|I(t) + N(t) + U(t) − C| ≤ ε
+```
+
+☐ `U(t+1) ≤ U(t)` for all t
+☐ `I(t+1) ≥ I(t)` for all t
+☐ `N(t+1) ≥ N(t)` for all t
+
+☐ Conservation holds across collapse
+☐ Conservation holds across Transport
+
+---
+
+## C. Collapse Semantics Tests
+
+☐ Collapse only mutates SSP(U)
+☐ Collapse reduces U strictly when mask > 0
+☐ Collapsed mass is never returned to U
+☐ `M_I + M_N ≤ 1` holds element-wise
+☐ Zero mask produces zero change
+
+---
+
+## D. Mixer Logic Tests
+
+☐ Mixer never averages fields
+☐ Mixer decisions are predicate-based
+☐ loop_gain converges under stable dynamics
+☐ conservation_error trends to 0 under stable dynamics
+
+---
+
+## E. Transport Tests
+
+☐ Transport emits only after K stable steps
+☐ Transport never mutates SSP fields
+☐ Transport is idempotent per phase
+☐ Transport does not re-open U
+
+---
+
+## F. Negative Tests (Must Fail)
+
+☐ Attempted I → U mutation is rejected
+☐ Attempted N → U mutation is rejected
+☐ Attempted cross-SSP read causes fault
+☐ Attempted engine-engine coupling causes fault
+
+---
+
+# 3. SID **FAILURE-MODE MATRIX**
+
+This is what *goes wrong*, how to detect it, and how to respond.
+
+---
+
+## A. Semantic Failures
+
+| Failure             | Symptom               | Detection               | Correct Response          |
+| ------------------- | --------------------- | ----------------------- | ------------------------- |
+| Premature collapse  | U drains too fast     | spike in collapse_ratio | reduce α or tighten masks |
+| Collapse starvation | U never drains        | flat collapse_ratio     | loosen admissibility      |
+| Semantic thrashing  | I oscillates          | high loop_gain          | add hysteresis            |
+| Mask saturation     | U collapses uniformly | mask_saturation → 1     | cap mask density          |
+
+---
+
+## B. Conservation Failures
+
+| Failure       | Symptom           | Detection              | Response         |
+| ------------- | ----------------- | ---------------------- | ---------------- |
+| Mass leak     | I+N+U < C         | conservation_error > ε | halt + log       |
+| Mass creation | I+N+U > C         | conservation_error > ε | halt + log       |
+| Numeric drift | slow error growth | monotonic error        | renormalize once |
+
+---
+
+## C. Architectural Failures
+
+| Failure                 | Symptom               | Detection             | Response |
+| ----------------------- | --------------------- | --------------------- | -------- |
+| Cross-visibility        | correlated SSP fields | debug instrumentation | abort    |
+| Engine writes wrong SSP | unexpected mutation   | write audit           | abort    |
+| Mixer mutation          | I/N changed           | hash mismatch         | abort    |
+
+---
+
+## D. Transport Failures
+
+| Failure           | Symptom           | Detection      | Response         |
+| ----------------- | ----------------- | -------------- | ---------------- |
+| Early transport   | unresolved U      | U > threshold  | suppress         |
+| Transport flicker | repeated T events | rapid toggling | add hysteresis   |
+| Deadlock          | U≈0 but unstable  | loop_gain high | force diagnostic |
+
+---
+
+## E. Policy Failures (Expected, Not Fatal)
+
+| Failure          | Symptom             | Meaning                        |
+| ---------------- | ------------------- | ------------------------------ |
+| High N growth    | many exclusions     | system is learning constraints |
+| Slow convergence | long stabilization  | ambiguity is real              |
+| Persistent U     | undecidable content | acceptable outcome             |
+
+These are **not bugs**.
+
+---
+
+## One-Line Summary (Engineer-Facing)
+
+> **If you preserve isolation, enforce irreversibility, and never violate conservation, SID will behave correctly even if everything else is naïve.**
+
+

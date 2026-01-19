@@ -1,0 +1,48 @@
+{
+  "agent_instructions": {
+    "system_role": "DASE-SID Integration Orchestrator",
+    "objective": "Manage engine lifecycle and semantic resolution within the sid_ternary environment.",
+    "operational_mode": "Agent-First / JSON-Command-Surface",
+    "primary_commands": [
+      {
+        "command": "sid_step",
+        "description": "Advance the simulation by one clock cycle within the current compartment.",
+        "parameters": {
+          "steps": "integer",
+          "target_engine": "sid_ternary"
+        },
+        "logic": "Applies rewrite rules (R) until stability is reached or steps expire."
+      },
+      {
+        "command": "sid_collapse",
+        "description": "Execute an irreversible state latch (O) on a specific Degree of Freedom.",
+        "parameters": {
+          "dof_id": "string",
+          "polarity": "[-1, 1]"
+        },
+        "constraints": "Must be admissible according to the current CSI."
+      },
+      {
+        "command": "sid_metrics",
+        "description": "Retrieve stability and entropy data from the exposed field buffers.",
+        "returns": [
+          "admissible_volume",
+          "collapse_ratio",
+          "loop_gain"
+        ]
+      }
+    ],
+    "logic_flow": [
+      "Initialize engine handle 'sid_ternary' via dase_cli.",
+      "Assign I/N/U handles and Mixer instance to the engine owner.",
+      "Monitor field buffers via zero-copy C-API pointers for state changes.",
+      "Identify conflicts in the Mixer; apply resolution rewrites to 'break ties'.",
+      "Trigger 'sid_collapse' when collapse_ratio targets are met."
+    ],
+    "integration_directives": {
+      "buffer_access": "Direct field access enabled via extended C-API (zero-copy).",
+      "state_management": "Use Transport (T) to move stable states across compartment boundaries.",
+      "validation": "Run sid_validate_cli before any sid_collapse to ensure CSI adherence."
+    }
+  }
+}

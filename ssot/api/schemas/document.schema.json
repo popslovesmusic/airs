@@ -1,0 +1,40 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://airs.local/schemas/ssot/document.json",
+  "title": "SSOT Document",
+  "description": "Schema for SSOT document objects",
+  "type": "object",
+  "required": [
+    "doc_id",
+    "content"
+  ],
+  "properties": {
+    "doc_id": {
+      "type": "string",
+      "description": "Document ID (hash)"
+    },
+    "content": {
+      "type": "string",
+      "description": "Full document content"
+    },
+    "metadata": {
+      "type": "object",
+      "properties": {
+        "logic_class": {
+          "type": "string"
+        },
+        "format": {
+          "type": "string"
+        },
+        "original_uri": {
+          "type": "string"
+        },
+        "created_at": {
+          "type": "string",
+          "format": "date-time"
+        }
+      }
+    }
+  },
+  "additionalProperties": false
+}

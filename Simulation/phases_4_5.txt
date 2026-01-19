@@ -1,0 +1,253 @@
+ Phases 4 and 5 - Integration and Testing
+
+  Based on the project plan and DASE architecture, here's what Phases 4 and
+  5 entail:
+
+  ---
+  Phase 4: DASE CLI Integration (3-5 days)
+
+  Goal
+
+  Integrate the SID-SSP C++ library into the DASE CLI as a new engine type
+  called sid_ternary, making it accessible via JSON commands.
+
+  Tasks
+
+  1. Create C API Layer (~1-2 days)
+
+  File: src/cpp/sid_ssp/sid_capi.hpp (~200-300 lines)
+
+  Export C-compatible functions for DASE CLI:
+  extern "C" {
+      // Engine lifecycle
+      void* sid_create_engine(uint64_t num_nodes, double R_c);
+      void sid_destroy_engine(void* engine);
+
+      // Operations
+      void sid_step(void* engine, double alpha);
+      void sid_collapse(void* engine, double alpha);
+      void sid_apply_rewrite(void* engine, const char* pattern,
+                             const char* replacement, const char* rule_id);
+
+      // Metrics
+      double sid_get_I_mass(void* engine);
+      double sid_get_N_mass(void* engine);
+      double sid_get_U_mass(void* engine);
+      bool sid_is_conserved(void* engine, double tolerance);
+  }
+
+  Pattern: Follow src/cpp/igsoa_capi.h structure
+
+  2. Update DASE Engine Manager (~1 day)
+
+  File: dase_cli/src/engine_manager.cpp
+
+  Add sid_ternary engine creation:
+  if (engine_type == "sid_ternary") {
+      uint64_t num_nodes = params.value("num_nodes", 1024);
+      double R_c = params.value("R_c", 1.0);
+
+      void* handle = sid_create_engine(num_nodes, R_c);
+      engines_[engine_id] = EngineHandle{
+          .type = EngineType::SID_TERNARY,
+          .handle = handle
+      };
+  }
+
+  3. Update Command Router (~1 day)
+
+  File: dase_cli/src/command_router.cpp
+
+  Add SID-specific commands:
+  // New commands:
+  - sid_step: {"command": "sid_step", "params": {"alpha": 0.5}}
+  - sid_collapse: {"command": "sid_collapse", "params": {"alpha": 0.3}}
+  - sid_rewrite: {"command": "sid_rewrite", "params": {
+      "pattern": "P($x)",
+      "replacement": "O($x)",
+      "rule_id": "collapse_rule"
+    }}
+  - sid_metrics: {"command": "sid_metrics"}
+
+  Returns:
+  {
+    "I_mass": 25.3,
+    "N_mass": 12.7,
+    "U_mass": 62.0,
+    "is_conserved": true,
+    "instantaneous_gain": 0.42
+  }
+
+  4. CMake Integration (~0.5 days)
+
+  Link sid_ssp library to dase_cli:
+  target_link_libraries(dase_cli PRIVATE
+      dase_core
+      igsoa_utils
+      sid_ssp  # Add this
+  )
+
+  Verification
+
+  # Build
+  cmake --build build --target dase_cli
+
+  # Test
+  echo '{"command":"create_engine","params":{"engine_type":"sid_ternary","nu
+  m_nodes":1024,"R_c":1.0}}' | ./dase_cli
+  echo '{"command":"sid_step","params":{"alpha":0.5}}' | ./dase_cli
+  echo '{"command":"sid_metrics"}' | ./dase_cli
+
+  Deliverables
+
+  - ✅ sid_capi.hpp - C API exports
+  - ✅ Updated engine_manager.cpp
+  - ✅ Updated command_router.cpp
+  - ✅ CMake integration
+  - ✅ Single binary deployment (dase_cli.exe)
+
+  ---
+  Phase 5: Comprehensive Testing & Validation (3-5 days)
+
+  Goal
+
+  Ensure production readiness through comprehensive testing, performance
+  validation, and regression testing.
+
+  Tasks
+
+  1. Unit Test Expansion (~1-2 days)
+
+  Add Rewrite Tests (tests/test_sid_rewrite.cpp):
+  // Pattern matching edge cases
+  TEST(rewrite_nested_patterns)
+  TEST(rewrite_variable_binding)
+  TEST(rewrite_multiple_matches)
+
+  // Bug regression tests
+  TEST(rewrite_off_by_one_regression)  // Validates fix from line 347
+  TEST(rewrite_id_generator_regression)  // Validates fix from line 251
+
+  Add Integration Tests (tests/test_sid_integration.cpp):
+  // Full workflow tests
+  TEST(integration_parse_match_rewrite)
+  TEST(integration_conservation_maintained)
+  TEST(integration_diagram_validation)
+
+  Target: 90%+ code coverage
+
+  2. Side-by-Side Validation (~1 day)
+
+  Compare C++ implementation against Python:
+  // test_sid_validation.cpp
+  TEST(validation_python_equivalence) {
+      // Load Python test cases from sids/test_*.py
+      // Run same operations in C++
+      // Assert outputs match within tolerance
+  }
+
+  Test Cases:
+  - Parse identical expressions → same AST
+  - Match same patterns → same bindings
+  - Apply same rewrites → equivalent diagrams
+  - Mixer conservation → same mass distribution
+
+  3. Performance Benchmarks (~1 day)
+
+  File: tests/benchmark_sid.cpp
+
+  Measure:
+  // Graph operations
+  - Cycle detection (1K, 10K, 100K nodes)
+  - Pattern matching (simple, complex patterns)
+  - Rewrite application (single, iterative)
+
+  // Parser
+  - Expression parsing (simple, deeply nested)
+
+  // SSP
+  - Mixer step performance (1K, 10K fields)
+  - Mass conservation correction
+
+  Success Metrics:
+  - ✅ 10× faster than Python (minimum)
+  - ✅ Scales to 10K+ nodes without stack overflow
+  - ✅ Memory usage ≤ Python
+
+  4. Regression Test Suite (~1 day)
+
+  File: tests/test_sid_regression.cpp
+
+  Test all 16 bugs from SSP_SIDS_CODE_REVIEW_BUGS.md:
+  TEST(regression_bug_01_unbounded_growth)  // SSP HIGH
+  TEST(regression_bug_02_mask_validation)   // SSP MEDIUM
+  TEST(regression_bug_03_cycle_recursion)   // SIDS CRITICAL
+  TEST(regression_bug_04_off_by_one)        // SIDS CRITICAL - line 347
+  TEST(regression_bug_05_id_generator)      // SIDS HIGH - line 251
+  // ... all 16 bugs
+
+  Ensures fixes stay fixed.
+
+  5. Documentation Validation (~0.5 days)
+
+  Verify all documentation is accurate:
+  - ✅ Build instructions work
+  - ✅ Code examples compile and run
+  - ✅ API documentation matches implementation
+  - ✅ Handoff docs are complete
+
+  6. Memory Safety Verification (~0.5 days)
+
+  Run Valgrind/AddressSanitizer:
+  # Build with sanitizers
+  cmake -DCMAKE_CXX_FLAGS="-fsanitize=address -g" -B build
+  cmake --build build
+
+  # Run all tests
+  ./build/test_sid_core
+  ./build/test_sid_rewrite
+  ./build/test_sid_integration
+
+  # Check for leaks
+
+  Target: Zero memory leaks, zero undefined behavior
+
+  Deliverables
+
+  Test Files (estimated 800-1000 lines total):
+  tests/
+  ├── test_sid_core.cpp          (368 lines - existing)
+  ├── test_sid_rewrite.cpp       (300 lines - new)
+  ├── test_sid_integration.cpp   (200 lines - new)
+  ├── test_sid_regression.cpp    (250 lines - new)
+  └── benchmark_sid.cpp          (150 lines - new)
+
+  Reports:
+  - ✅ Test coverage report (HTML)
+  - ✅ Performance comparison (Python vs C++)
+  - ✅ Memory safety report (Valgrind output)
+  - ✅ Validation report (side-by-side comparison)
+
+  Build Verification:
+  cmake --build build --target all
+  ctest --output-on-failure
+  # Expected: 100% tests passing
+
+  ---
+  Phase 4-5 Summary
+
+  | Phase   | Duration | Key Deliverable                             |
+  |---------|----------|---------------------------------------------|
+  | Phase 4 | 3-5 days | DASE CLI integration (sid_ternary engine)   |
+  | Phase 5 | 3-5 days | Production-ready with comprehensive testing |
+
+  Final Success Criteria
+
+  After Phase 5 completion:
+  - ✅ All 16 bugs fixed and regression tested
+  - ✅ Single binary deployment (dase_cli.exe)
+  - ✅ 10× performance improvement demonstrated
+  - ✅ 100% test coverage of critical paths
+  - ✅ Zero memory leaks
+  - ✅ Side-by-side validation passes
+  - ✅ Production documentation complete

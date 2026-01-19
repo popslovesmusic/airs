@@ -1,0 +1,125 @@
+{
+  "schema_version": "0.1.0",
+  "name": "SID Core Schema",
+  "description": "Minimal data model for Semantic Interaction Diagrams (SIDs) and CRF execution.",
+  "types": {
+    "DOF": {
+      "required": ["id"],
+      "fields": {
+        "id": "string",
+        "group": "string",
+        "meta": "object"
+      }
+    },
+    "CSI": {
+      "required": ["id", "allowed_dofs"],
+      "fields": {
+        "id": "string",
+        "allowed_dofs": "string[]",
+        "allowed_pairs": "string[][]",
+        "description": "string"
+      }
+    },
+    "INU": {
+      "enum": ["I", "N", "U"]
+    },
+    "Operator": {
+      "enum": ["P", "S_PLUS", "S_MINUS", "O", "C", "T"]
+    },
+    "Compartment": {
+      "required": ["id", "index"],
+      "fields": {
+        "id": "string",
+        "index": "integer",
+        "meta": "object"
+      }
+    },
+    "Diagram": {
+      "required": ["id", "nodes"],
+      "fields": {
+        "id": "string",
+        "nodes": "Node[]",
+        "edges": "Edge[]",
+        "compartment_id": "string",
+        "meta": "object"
+      }
+    },
+    "Node": {
+      "required": ["id", "op"],
+      "fields": {
+        "id": "string",
+        "op": "Operator",
+        "inputs": "string[]",
+        "dof_refs": "string[]",
+        "meta": "object"
+      }
+    },
+    "Edge": {
+      "required": ["id", "from", "to"],
+      "fields": {
+        "id": "string",
+        "from": "string",
+        "to": "string",
+        "label": "string",
+        "meta": "object"
+      }
+    },
+    "Constraint": {
+      "required": ["id", "type", "scope", "predicate"],
+      "fields": {
+        "id": "string",
+        "type": "string",
+        "scope": "string",
+        "predicate": "string",
+        "on_violation": "string",
+        "meta": "object"
+      }
+    },
+    "RewriteRule": {
+      "required": ["id"],
+      "fields": {
+        "id": "string",
+        "pattern": "string",
+        "replacement": "string",
+        "pattern_expr": "string",
+        "replacement_expr": "string",
+        "preconditions": "string[]",
+        "meta": "object"
+      }
+    },
+    "CRFProcedure": {
+      "required": ["id", "steps"],
+      "fields": {
+        "id": "string",
+        "steps": "string[]",
+        "meta": "object"
+      }
+    },
+    "SIDState": {
+      "required": ["id", "diagram_id", "csi_id"],
+      "fields": {
+        "id": "string",
+        "diagram_id": "string",
+        "csi_id": "string",
+        "compartment_id": "string",
+        "inu_labels": "object",
+        "meta": "object"
+      }
+    },
+    "Metric": {
+      "required": ["id", "compute"],
+      "fields": {
+        "id": "string",
+        "compute": "string",
+        "dependencies": "string[]",
+        "meta": "object"
+      }
+    }
+  },
+  "validation": {
+    "operator_irreversibility": "Collapse (O) must be marked irreversible across compartments.",
+    "csi_boundary": "All node interactions must be within CSI allowed_dofs/allowed_pairs.",
+    "rewrite_gate": "All rewrites must be authorized by CRF before application.",
+    "rewrite_rule_form": "RewriteRule must specify either (pattern + replacement) or (pattern_expr + replacement_expr)."
+  }
+}

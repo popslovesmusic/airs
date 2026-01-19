@@ -1,0 +1,31 @@
+{
+  "sid_ssp_integration": {
+    "relationship": "SID to SSP (Controller to Processor)",
+    "direction": "Integrate SID logic INTO the SSP environment.",
+    "functional_roles": {
+      "sid_layer": "Acts as the 'Semantic Orchestrator'. It manages the DAG structures, Compartments, and Causal Spheres of Influence (CSI).",
+      "ssp_layer": "Acts as the 'Computational Fabric'. it executes the low-level field operations, stability calculations, and the actual state 'collapse' requested by SID."
+    },
+    "logical_mapping": {
+      "sid_rewrite_rules": "Triggers SSP field updates to resolve tension and reach the ground state.",
+      "sid_collapse_operator": "Signals the SSP to latch a specific ternary value into the field buffer permanently.",
+      "ssp_metrics": "Feeds real-time data (Stability, Entropy) back to the SID layer to determine if a Rewrite Rule was successful."
+    }
+  }
+}
+
+{
+  "integration_architecture": {
+    "target_relationship": "Integrate SSP into DASE",
+    "rationale": "Integrating SSP into DASE is the recommended path for agent workflows. The DASE CLI provides a JSON command surface that allows agents to manage the engine lifecycle without creating a parallel orchestration layer.",
+    "implementation_details": {
+      "sid_engine_type": "Add a new engine type in DASE CLI (e.g., sid_ternary).",
+      "component_ownership": "The sid_ternary engine type will own three engine handles (I/N/U) and a Mixer instance.",
+      "sid_as_interface": "The standalone SID demo remains a development harness, while the integrated DASE path serves as the clean, agent-first control plane."
+    },
+    "formal_logic_mapping": {
+      "operators_to_commands": "SID commands like sid_step, sid_collapse, and sid_metrics will be added to the DASE CLI for agent control.",
+      "data_access": "C-APIs must be extended to expose field buffers for zero-copy access to metrics and collapse states."
+    }
+  }
+}
