@@ -1,7 +1,7 @@
 {
   "harness_version": "1.0.0",
   "cli_path": "D:\\airs\\Simulation\\bin\\dase_cli.exe",
-  "timestamp": 1768897924.3192263,
+  "timestamp": 1768920491.50418,
   "total_tests": 19,
   "passed": 19,
   "failed": 0,
@@ -12,7 +12,7 @@
       "passed": true,
       "message": "Parse error correctly detected",
       "details": {},
-      "timestamp": 1768897924.03259
+      "timestamp": 1768920491.1826873
     },
     {
       "test_id": "unknown_command_rejected",
@@ -28,7 +28,7 @@
           "status": "error"
         }
       },
-      "timestamp": 1768897924.0529916
+      "timestamp": 1768920491.2140644
     },
     {
       "test_id": "missing_required_parameters",
@@ -44,7 +44,7 @@
           "status": "error"
         }
       },
-      "timestamp": 1768897924.057775
+      "timestamp": 1768920491.2291403
     },
     {
       "test_id": "error_format_consistency",
@@ -76,7 +76,7 @@
           }
         ]
       },
-      "timestamp": 1768897924.0844057
+      "timestamp": 1768920491.2547688
     },
     {
       "test_id": "create_engine_success",
@@ -86,7 +86,7 @@
       "details": {
         "response": {
           "command": "create_engine",
-          "execution_time_ms": 0.047,
+          "execution_time_ms": 0.045,
           "result": {
             "R_c": 1.0,
             "dt": 0.01,
@@ -99,7 +99,7 @@
           "status": "success"
         }
       },
-      "timestamp": 1768897924.1000304
+      "timestamp": 1768920491.2834146
     },
     {
       "test_id": "create_engine_invalid_params_fail",
@@ -111,11 +111,11 @@
           "command": "create_engine",
           "error": "Invalid R_c parameter. Must be positive and finite.",
           "error_code": "INVALID_PARAMETER",
-          "execution_time_ms": 0.016,
+          "execution_time_ms": 0.011,
           "status": "error"
         }
       },
-      "timestamp": 1768897924.1157873
+      "timestamp": 1768920491.2834146
     },
     {
       "test_id": "destroy_engine_success",
@@ -139,7 +139,7 @@
         },
         "destroy": {
           "command": "destroy_engine",
-          "execution_time_ms": 0.011,
+          "execution_time_ms": 0.018,
           "result": {
             "destroyed": true,
             "engine_id": "engine_001"
@@ -147,7 +147,7 @@
           "status": "success"
         }
       },
-      "timestamp": 1768897924.13117
+      "timestamp": 1768920491.314661
     },
     {
       "test_id": "double_destroy_fails_cleanly",
@@ -157,7 +157,7 @@
       "details": {
         "destroy1": {
           "command": "destroy_engine",
-          "execution_time_ms": 0.011,
+          "execution_time_ms": 0.021,
           "result": {
             "destroyed": true,
             "engine_id": "engine_001"
@@ -168,11 +168,11 @@
           "command": "destroy_engine",
           "error": "Engine not found: engine_001.",
           "error_code": "ENGINE_NOT_FOUND",
-          "execution_time_ms": 0.005,
+          "execution_time_ms": 0.004,
           "status": "error"
         }
       },
-      "timestamp": 1768897924.1478345
+      "timestamp": 1768920491.3181744
     },
     {
       "test_id": "use_after_destroy_rejected",
@@ -193,11 +193,11 @@
           "command": "get_metrics",
           "error": "Engine not found: engine_001",
           "error_code": "ENGINE_NOT_FOUND",
-          "execution_time_ms": 0.009,
+          "execution_time_ms": 0.006,
           "status": "error"
         }
       },
-      "timestamp": 1768897924.1636488
+      "timestamp": 1768920491.3490827
     },
     {
       "test_id": "repeat_same_command_same_output",
@@ -207,7 +207,7 @@
       "details": {
         "resp1": {
           "command": "create_engine",
-          "execution_time_ms": 0.042,
+          "execution_time_ms": 0.041,
           "result": {
             "R_c": 1.5,
             "dt": 0.01,
@@ -221,7 +221,7 @@
         },
         "resp2": {
           "command": "create_engine",
-          "execution_time_ms": 0.04,
+          "execution_time_ms": 0.021,
           "result": {
             "R_c": 1.5,
             "dt": 0.01,
@@ -234,7 +234,7 @@
           "status": "success"
         }
       },
-      "timestamp": 1768897924.1785986
+      "timestamp": 1768920491.3687837
     },
     {
       "test_id": "state_hash_stability",
@@ -245,7 +245,7 @@
         "hash": "7baf11791d4b3721",
         "set_response": {
           "command": "set_igsoa_state",
-          "execution_time_ms": 0.016,
+          "execution_time_ms": 0.017,
           "result": {
             "applied": true,
             "profile_type": "uniform"
@@ -253,7 +253,7 @@
           "status": "success"
         }
       },
-      "timestamp": 1768897924.195247
+      "timestamp": 1768920491.3839085
     },
     {
       "test_id": "no_nan_in_outputs",
@@ -263,7 +263,7 @@
       "details": {
         "state_response": {
           "command": "get_state",
-          "execution_time_ms": 0.024,
+          "execution_time_ms": 0.023,
           "result": {
             "engine_type": "igsoa_complex",
             "num_nodes": 64,
@@ -469,7 +469,7 @@
           "status": "success"
         }
       },
-      "timestamp": 1768897924.211003
+      "timestamp": 1768920491.4107294
     },
     {
       "test_id": "no_infinite_values",
@@ -479,7 +479,7 @@
       "details": {
         "create_response": {
           "command": "create_engine",
-          "execution_time_ms": 0.044,
+          "execution_time_ms": 0.043,
           "result": {
             "R_c": 0.001,
             "dt": 0.01,
@@ -492,7 +492,7 @@
           "status": "success"
         }
       },
-      "timestamp": 1768897924.226286
+      "timestamp": 1768920491.41573
     },
     {
       "test_id": "division_by_zero_guarded",
@@ -502,7 +502,7 @@
       "details": {
         "state_response": {
           "command": "get_satp_state",
-          "execution_time_ms": 0.021,
+          "execution_time_ms": 0.023,
           "result": {
             "diagnostics": {
               "h_rms": 1.0,
@@ -528,7 +528,7 @@
           "status": "success"
         }
       },
-      "timestamp": 1768897924.2421424
+      "timestamp": 1768920491.4417496
     },
     {
       "test_id": "dimensions_consistent",
@@ -538,7 +538,7 @@
       "details": {
         "state_response": {
           "command": "get_state",
-          "execution_time_ms": 0.031,
+          "execution_time_ms": 0.036,
           "result": {
             "dimensions": {
               "N_x": 8,
@@ -940,7 +940,7 @@
           "status": "success"
         }
       },
-      "timestamp": 1768897924.2572725
+      "timestamp": 1768920491.4576843
     },
     {
       "test_id": "invalid_parameters_fail_early",
@@ -956,7 +956,7 @@
           "status": "error"
         }
       },
-      "timestamp": 1768897924.2622695
+      "timestamp": 1768920491.472808
     },
     {
       "test_id": "engine_not_found",
@@ -972,7 +972,7 @@
           "status": "error"
         }
       },
-      "timestamp": 1768897924.2880192
+      "timestamp": 1768920491.488007
     },
     {
       "test_id": "step_advances_state",
@@ -983,7 +983,7 @@
         "hash_before": "bab63f25a8180380",
         "hash_after": "fbee0f3006ecfb05"
       },
-      "timestamp": 1768897924.30358
+      "timestamp": 1768920491.503124
     },
     {
       "test_id": "metrics_change_after_step",
@@ -994,7 +994,7 @@
         "ops_before": 0,
         "ops_after": 2560
       },
-      "timestamp": 1768897924.3192263
+      "timestamp": 1768920491.50418
     }
   ],
   "baselines": {

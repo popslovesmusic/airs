@@ -548,6 +548,12 @@ class CLIHarness:
             engine_id = create_resp["result"]["engine_id"]
             state_resp = self.send_command({"command": "get_state", "params": {"engine_id": engine_id}})
 
+        if not self.assert_success(state_resp):
+            self.record_result("no_nan_in_outputs", "NUMERIC_INVARIANTS", False,
+                               "Failed to get state",
+                               {"state_response": state_resp})
+            return
+
         passed = self.assert_no_nan_inf(state_resp)
         self.record_result("no_nan_in_outputs", "NUMERIC_INVARIANTS", passed,
                            "No NaN/Inf in outputs" if passed else "NaN or Inf detected in output",
@@ -561,10 +567,13 @@ class CLIHarness:
                 "params": {"engine_type": "igsoa_complex", "num_nodes": 64, "R_c": 0.001},
             })
 
-        passed = True
-        if self.assert_success(create_resp):
-            passed = self.assert_no_nan_inf(create_resp)
+        if not self.assert_success(create_resp):
+            self.record_result("no_infinite_values", "NUMERIC_INVARIANTS", False,
+                               "Failed to create engine",
+                               {"create_response": create_resp})
+            return
 
+        passed = self.assert_no_nan_inf(create_resp)
         self.record_result("no_infinite_values", "NUMERIC_INVARIANTS", passed,
                            "No infinite values" if passed else "Infinite value detected",
                            {"create_response": create_resp})
@@ -671,7 +680,7 @@ class CLIHarness:
 
             engine_id = create_resp["result"]["engine_id"]
 
-            self.send_command({
+            set_resp = self.send_command({
                 "command": "set_igsoa_state",
                 "params": {
                     "engine_id": engine_id,
@@ -680,9 +689,21 @@ class CLIHarness:
                 },
             })
 
+            if not self.assert_success(set_resp):
+                self.record_result("step_advances_state", "STATE_EVOLUTION", False,
+                                   "Failed to set initial state",
+                                   {"set_response": set_resp})
+                return
+
             state1_resp = self.send_command({"command": "get_state", "params": {"engine_id": engine_id}})
 
-            self.send_command({"command": "run_mission", "params": {"engine_id": engine_id, "num_steps": 10}})
+            run_resp = self.send_command({"command": "run_mission", "params": {"engine_id": engine_id, "num_steps": 10}})
+
+            if not self.assert_success(run_resp):
+                self.record_result("step_advances_state", "STATE_EVOLUTION", False,
+                                   "Failed to run mission",
+                                   {"run_response": run_resp})
+                return
 
             state2_resp = self.send_command({"command": "get_state", "params": {"engine_id": engine_id}})
 
@@ -715,7 +736,19 @@ class CLIHarness:
             engine_id = create_resp["result"]["engine_id"]
 
             metrics1_resp = self.send_command({"command": "get_metrics", "params": {"engine_id": engine_id}})
-            self.send_command({"command": "run_mission", "params": {"engine_id": engine_id, "num_steps": 5}})
+            if not self.assert_success(metrics1_resp):
+                self.record_result("metrics_change_after_step", "STATE_EVOLUTION", False,
+                                   "Failed to get initial metrics",
+                                   {"metrics1": metrics1_resp})
+                return
+
+            run_resp = self.send_command({"command": "run_mission", "params": {"engine_id": engine_id, "num_steps": 5}})
+            if not self.assert_success(run_resp):
+                self.record_result("metrics_change_after_step", "STATE_EVOLUTION", False,
+                                   "Failed to run mission",
+                                   {"run_response": run_resp})
+                return
+
             metrics2_resp = self.send_command({"command": "get_metrics", "params": {"engine_id": engine_id}})
 
         if self.assert_success(metrics1_resp) and self.assert_success(metrics2_resp):
