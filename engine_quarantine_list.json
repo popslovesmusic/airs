@@ -1,54 +1,5 @@
 {
   "generated_from": "engine_family_test_results.json",
   "policy": "quarantine or exclude based on failure_classification_rules in continue.json",
-  "entries": [
-    {
-      "engine": "satp_higgs_1d",
-      "family": "satp_higgs_1d",
-      "action": "quarantine_engine",
-      "class": "engine_logic_incomplete",
-      "severity": "medium",
-      "reason": "metrics_zero_after_step"
-    },
-    {
-      "engine": "satp_higgs_2d",
-      "family": "satp_higgs_2d",
-      "action": "quarantine_engine",
-      "class": "engine_logic_incomplete",
-      "severity": "medium",
-      "reason": "metrics_zero_after_step"
-    },
-    {
-      "engine": "satp_higgs_3d",
-      "family": "satp_higgs_3d",
-      "action": "quarantine_engine",
-      "class": "engine_logic_incomplete",
-      "severity": "medium",
-      "reason": "metrics_zero_after_step"
-    },
-    {
-      "engine": "phase4b",
-      "family": "analog_avx2",
-      "action": "quarantine_engine",
-      "class": "cli_contract_violation",
-      "severity": "high",
-      "reason": "non_json_output"
-    },
-    {
-      "engine": "fftw_cache_example",
-      "family": "fft_backed",
-      "action": "exclude_from_fleet",
-      "class": "registration_error",
-      "severity": "high",
-      "reason": "engine_not_exposed"
-    },
-    {
-      "engine": "sid_ternary",
-      "family": "sid_semantic",
-      "action": "quarantine_engine",
-      "class": "unimplemented_step_logic",
-      "severity": "medium",
-      "reason": "execution_failed"
-    }
-  ]
+  "entries": []
 }

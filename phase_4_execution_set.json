@@ -39,14 +39,35 @@
       "mission": {
         "num_steps": 1
       }
+    },
+    {
+      "engine_type": "phase4b",
+      "params": {
+        "num_nodes": 128
+      },
+      "mission": {
+        "num_steps": 1
+      }
+    },
+    {
+      "engine_type": "igsoa_gw",
+      "params": {
+        "N_x": 4,
+        "N_y": 4,
+        "N_z": 4,
+        "dt": 0.01
+      },
+      "mission": {
+        "num_steps": 1
+      }
     }
   ],
   "excluded_engines": [
     "satp_higgs_1d",
     "satp_higgs_2d",
     "satp_higgs_3d",
-    "phase4b",
     "fftw_cache_example",
-    "sid_ternary"
+    "sid_ternary",
+    "sid_ssp"
   ]
 }

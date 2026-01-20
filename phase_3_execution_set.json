@@ -30,6 +30,52 @@
       "mission": {
         "num_steps": 1
       }
+    },
+    {
+      "engine_type": "satp_higgs_1d",
+      "params": {
+        "num_nodes": 16,
+        "R_c": 1.0
+      },
+      "mission": {
+        "num_steps": 1
+      }
+    },
+    {
+      "engine_type": "satp_higgs_2d",
+      "params": {
+        "N_x": 4,
+        "N_y": 4,
+        "R_c": 1.0
+      },
+      "mission": {
+        "num_steps": 1
+      }
+    },
+    {
+      "engine_type": "satp_higgs_3d",
+      "params": {
+        "N_x": 4,
+        "N_y": 4,
+        "N_z": 4,
+        "R_c": 1.0
+      },
+      "mission": {
+        "num_steps": 1
+      }
+    },
+    {
+      "engine_type": "igsoa_gw",
+      "params": {
+        "N_x": 4,
+        "N_y": 4,
+        "N_z": 4,
+        "R_c": 1.0,
+        "dt": 0.01
+      },
+      "mission": {
+        "num_steps": 1
+      }
     }
   ]
 }

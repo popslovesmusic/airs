@@ -17,8 +17,11 @@
     "satp_higgs_3d": "field",
 
     "sid_ternary": "semantic",
+    "sid_ssp": "semantic",
 
     "phase4b": "computational",
+
+    "igsoa_gw": "computational",
 
     "fftw_cache_example": "support"
   }
