@@ -365,9 +365,21 @@ EngineManager::~EngineManager() {
     // Clean up engines first to ensure proper FFTW cleanup
     engines.clear(); // Destroys all unique_ptrs, calls engine destructors
 
-    // DLL cleanup: Static handle remains loaded for process lifetime
-    // In CLI mode (single EngineManager instance), this is cleaned up at process exit
-    // NOTE: This prevents EngineManager reuse in library contexts (intentional for CLI-only use)
+    // Clean up DLL resources if loaded
+    if (dll_handle) {
+        FreeLibrary(dll_handle);
+        dll_handle = nullptr;
+
+        // Reset function pointers to prevent dangling references
+        dase_create_engine = nullptr;
+        dase_destroy_engine = nullptr;
+        dase_run_mission_optimized_phase4c = nullptr;
+        dase_get_metrics = nullptr;
+    }
+
+    // Clean up FFTW global state (wisdom cache, thread data, etc.)
+    // This prevents memory leaks in long-running services
+    fftw_cleanup();
 }
 
 std::string EngineManager::createEngine(const std::string& engine_type,

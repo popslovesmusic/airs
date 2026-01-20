@@ -20,7 +20,8 @@
       "Bash(\"D:\\airs\\Simulation\\src\\cpp\\sid_ssp\\sid_rewrite.hpp\")",
       "Bash(dumpbin:*)",
       "Bash(where dumpbin:*)",
-      "Bash(find:*)"
+      "Bash(find:*)",
+      "Bash(cat:*)"
     ],
     "deny": [],
     "ask": []
