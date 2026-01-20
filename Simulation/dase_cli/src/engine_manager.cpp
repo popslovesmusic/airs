@@ -55,8 +55,8 @@ struct FFTWCacheExampleEngine {
         for (int i = 0; i < num_steps; ++i) {
             fftw_execute(plan_forward);
             fftw_execute(plan_inverse);
-            // Count 2*N*log2(N) operations per round-trip (rough estimate)
-            double ops = 2.0 * static_cast<double>(num_nodes) * std::log2(static_cast<double>(num_nodes));
+            // Rough op count: each complex FFT ~5*N*log2(N); forward+inverse doubles it
+            double ops = 10.0 * static_cast<double>(num_nodes) * std::log2(static_cast<double>(num_nodes));
             total_operations += static_cast<uint64_t>(ops);
         }
     }
@@ -71,6 +71,15 @@ struct FFTWCacheExampleEngine {
         } else {
             ns_per_op = 0.0;
             ops_per_sec = 0.0;
+        }
+    }
+
+    void getState(std::vector<double>& real_out, std::vector<double>& imag_out) const {
+        real_out.resize(num_nodes);
+        imag_out.resize(num_nodes);
+        for (size_t i = 0; i < num_nodes; ++i) {
+            real_out[i] = buffer[i][0];
+            imag_out[i] = buffer[i][1];
         }
     }
 
@@ -626,11 +635,11 @@ bool EngineManager::runMission(const std::string& engine_id, int num_steps, int 
                 control_patterns.data()
             );
 
-        } else if (instance->engine_type == "igsoa_complex_3d") {
-            auto* engine = static_cast<dase::igsoa::IGSOAComplexEngine3D*>(instance->engine_handle);
-            engine->runMission(
-                num_steps,
-                input_signals.data(),
+    } else if (instance->engine_type == "igsoa_complex_3d") {
+        auto* engine = static_cast<dase::igsoa::IGSOAComplexEngine3D*>(instance->engine_handle);
+        engine->runMission(
+            num_steps,
+            input_signals.data(),
                 control_patterns.data()
             );
 
@@ -644,17 +653,17 @@ bool EngineManager::runMission(const std::string& engine_id, int num_steps, int 
             auto* engine = static_cast<dase::satp_higgs::SATPHiggsEngine2D*>(instance->engine_handle);
             engine->evolve(static_cast<size_t>(num_steps));
 
-        } else if (instance->engine_type == "satp_higgs_3d") {
-            // SATP+Higgs 3D engine
-            auto* engine = static_cast<dase::satp_higgs::SATPHiggsEngine3D*>(instance->engine_handle);
-            engine->evolve(static_cast<size_t>(num_steps));
+    } else if (instance->engine_type == "satp_higgs_3d") {
+        // SATP+Higgs 3D engine
+        auto* engine = static_cast<dase::satp_higgs::SATPHiggsEngine3D*>(instance->engine_handle);
+        engine->evolve(static_cast<size_t>(num_steps));
 
-        } else if (instance->engine_type == "fftw_cache_example") {
-            auto* engine = static_cast<FFTWCacheExampleEngine*>(instance->engine_handle);
-            engine->runMission(num_steps);
+    } else if (instance->engine_type == "fftw_cache_example") {
+        auto* engine = static_cast<FFTWCacheExampleEngine*>(instance->engine_handle);
+        engine->runMission(num_steps);
 
-        } else {
-            return false;
+    } else {
+        return false;
         }
 
         return true;
@@ -806,6 +815,14 @@ bool EngineManager::getAllNodeStates(const std::string& engine_id,
             phi[i] = nodes[i].phi;
         }
 
+        return true;
+
+    } else if (instance->engine_type == "fftw_cache_example") {
+        auto* engine = static_cast<FFTWCacheExampleEngine*>(instance->engine_handle);
+        psi_real.clear();
+        psi_imag.clear();
+        phi.clear();
+        engine->getState(psi_real, psi_imag);
         return true;
     }
 
