@@ -13,6 +13,7 @@
 #include <cstdint>
 #include <algorithm>
 #include <complex>
+#include <atomic>
 
 // Lightweight FFT-backed engine using FFTW for validation coverage
 // FFTW headers (distributed with simulation)
@@ -282,6 +283,7 @@ static CreateEngineFunc dase_create_engine = nullptr;
 static DestroyEngineFunc dase_destroy_engine = nullptr;
 static RunMissionFunc dase_run_mission_optimized_phase4c = nullptr;
 static GetMetricsFunc dase_get_metrics = nullptr;
+std::atomic<bool> EngineManager::instance_created_{false};
 
 // Load the DASE DLL and get function pointers
 static bool loadDaseDLL() {
@@ -352,6 +354,10 @@ static bool loadDaseDLL() {
 }
 
 EngineManager::EngineManager() : next_engine_id(1) {
+    bool expected = false;
+    if (!instance_created_.compare_exchange_strong(expected, true)) {
+        throw std::runtime_error("EngineManager already exists; CLI is single-instance/thread only");
+    }
     // Try to load the DLL on construction
     // If DLL not available, phase4b engine will be unavailable but other engines still work
     if (!loadDaseDLL()) {
@@ -380,6 +386,7 @@ EngineManager::~EngineManager() {
     // Clean up FFTW global state (wisdom cache, thread data, etc.)
     // This prevents memory leaks in long-running services
     fftw_cleanup();
+    instance_created_.store(false);
 }
 
 std::string EngineManager::createEngine(const std::string& engine_type,
@@ -429,6 +436,7 @@ std::string EngineManager::createEngine(const std::string& engine_type,
     instance->dimension_y = N_y;
     instance->dimension_z = N_z;
     instance->sid_role = sid_role;
+    instance->type_tag = EngineInstance::TypeTag::Unknown;
 
     void* handle = nullptr;
 
@@ -438,6 +446,7 @@ std::string EngineManager::createEngine(const std::string& engine_type,
             return "";
         }
         handle = dase_create_engine(static_cast<uint32_t>(num_nodes));
+        instance->type_tag = EngineInstance::TypeTag::Phase4B;
 
     } else if (engine_type == "igsoa_complex") {
         // IGSOA Complex - create directly
@@ -451,8 +460,13 @@ std::string EngineManager::createEngine(const std::string& engine_type,
 
             auto* engine = new dase::igsoa::IGSOAComplexEngine(config);
             handle = static_cast<void*>(engine);
+            instance->type_tag = EngineInstance::TypeTag::IgsoaComplex;
 
+        } catch (const std::exception& e) {
+            std::cerr << "[ERROR] Failed to create igsoa_complex: " << e.what() << std::endl;
+            return "";
         } catch (...) {
+            std::cerr << "[ERROR] Unknown exception creating igsoa_complex" << std::endl;
             return "";
         }
 
@@ -489,8 +503,13 @@ std::string EngineManager::createEngine(const std::string& engine_type,
             );
 
             handle = static_cast<void*>(engine);
+            instance->type_tag = EngineInstance::TypeTag::IgsoaComplex2D;
 
+        } catch (const std::exception& e) {
+            std::cerr << "[ERROR] Failed to create igsoa_complex_2d: " << e.what() << std::endl;
+            return "";
         } catch (...) {
+            std::cerr << "[ERROR] Unknown exception creating igsoa_complex_2d" << std::endl;
             return "";
         }
 
@@ -526,8 +545,13 @@ std::string EngineManager::createEngine(const std::string& engine_type,
             );
 
             handle = static_cast<void*>(engine);
+            instance->type_tag = EngineInstance::TypeTag::IgsoaComplex3D;
 
+        } catch (const std::exception& e) {
+            std::cerr << "[ERROR] Failed to create igsoa_complex_3d: " << e.what() << std::endl;
+            return "";
         } catch (...) {
+            std::cerr << "[ERROR] Unknown exception creating igsoa_complex_3d" << std::endl;
             return "";
         }
 
@@ -574,8 +598,13 @@ std::string EngineManager::createEngine(const std::string& engine_type,
 
             auto* engine = new IGSOAGWEngine(field_config, solver_config, merger_config);
             handle = static_cast<void*>(engine);
+            instance->type_tag = EngineInstance::TypeTag::IgsoaGW;
 
+        } catch (const std::exception& e) {
+            std::cerr << "[ERROR] Failed to create igsoa_gw: " << e.what() << std::endl;
+            return "";
         } catch (...) {
+            std::cerr << "[ERROR] Unknown exception creating igsoa_gw" << std::endl;
             return "";
         }
 
@@ -608,8 +637,13 @@ std::string EngineManager::createEngine(const std::string& engine_type,
             );
 
             handle = static_cast<void*>(engine);
+            instance->type_tag = EngineInstance::TypeTag::SatpHiggs1D;
 
+        } catch (const std::exception& e) {
+            std::cerr << "[ERROR] Failed to create satp_higgs_1d: " << e.what() << std::endl;
+            return "";
         } catch (...) {
+            std::cerr << "[ERROR] Unknown exception creating satp_higgs_1d" << std::endl;
             return "";
         }
 
@@ -650,8 +684,13 @@ std::string EngineManager::createEngine(const std::string& engine_type,
             );
 
             handle = static_cast<void*>(engine);
+            instance->type_tag = EngineInstance::TypeTag::SatpHiggs2D;
 
+        } catch (const std::exception& e) {
+            std::cerr << "[ERROR] Failed to create satp_higgs_2d: " << e.what() << std::endl;
+            return "";
         } catch (...) {
+            std::cerr << "[ERROR] Unknown exception creating satp_higgs_2d" << std::endl;
             return "";
         }
 
@@ -691,14 +730,28 @@ std::string EngineManager::createEngine(const std::string& engine_type,
             );
 
             handle = static_cast<void*>(engine);
+            instance->type_tag = EngineInstance::TypeTag::SatpHiggs3D;
 
+        } catch (const std::exception& e) {
+            std::cerr << "[ERROR] Failed to create satp_higgs_3d: " << e.what() << std::endl;
+            return "";
         } catch (...) {
+            std::cerr << "[ERROR] Unknown exception creating satp_higgs_3d" << std::endl;
             return "";
         }
 
     } else if (engine_type == "fftw_cache_example") {
         // Minimal no-op FFTW cache example engine (for validation coverage)
-        handle = static_cast<void*>(new FFTWCacheExampleEngine(static_cast<size_t>(num_nodes)));
+        try {
+            handle = static_cast<void*>(new FFTWCacheExampleEngine(static_cast<size_t>(num_nodes)));
+            instance->type_tag = EngineInstance::TypeTag::FFTWCache;
+        } catch (const std::exception& e) {
+            std::cerr << "[ERROR] Failed to create fftw_cache_example: " << e.what() << std::endl;
+            return "";
+        } catch (...) {
+            std::cerr << "[ERROR] Unknown exception creating fftw_cache_example" << std::endl;
+            return "";
+        }
 
     } else if (engine_type == "sid_ternary") {
         // SID Ternary Engine - Semantic State Processor with I/N/U fields
@@ -710,6 +763,7 @@ std::string EngineManager::createEngine(const std::string& engine_type,
             std::cerr << "[ERROR] Failed to create sid_ternary engine" << std::endl;
             return "";
         }
+        instance->type_tag = EngineInstance::TypeTag::SidTernary;
 
     } else if (engine_type == "sid_ssp") {
         if (sid_role < 0 || sid_role > 2) {
@@ -719,8 +773,12 @@ std::string EngineManager::createEngine(const std::string& engine_type,
         try {
             handle = static_cast<void*>(
                 new SidSSPEngine(static_cast<uint64_t>(num_nodes), R_c, sid_role));
+            instance->type_tag = EngineInstance::TypeTag::SidSSP;
+        } catch (const std::exception& e) {
+            std::cerr << "[ERROR] Failed to create sid_ssp engine: " << e.what() << std::endl;
+            return "";
         } catch (...) {
-            std::cerr << "[ERROR] Failed to create sid_ssp engine" << std::endl;
+            std::cerr << "[ERROR] Unknown exception creating sid_ssp" << std::endl;
             return "";
         }
 
@@ -749,34 +807,46 @@ bool EngineManager::destroyEngine(const std::string& engine_id) {
 
     // Destroy engine based on type
     if (it->second->engine_handle) {
-        if (it->second->engine_type == "phase4b" && dase_destroy_engine) {
-            dase_destroy_engine(it->second->engine_handle);
-        } else if (it->second->engine_type == "igsoa_complex") {
-            auto* engine = static_cast<dase::igsoa::IGSOAComplexEngine*>(it->second->engine_handle);
-            delete engine;
-        } else if (it->second->engine_type == "igsoa_complex_2d") {
-            auto* engine = static_cast<dase::igsoa::IGSOAComplexEngine2D*>(it->second->engine_handle);
-            delete engine;
-        } else if (it->second->engine_type == "igsoa_complex_3d") {
-            auto* engine = static_cast<dase::igsoa::IGSOAComplexEngine3D*>(it->second->engine_handle);
-            delete engine;
-        } else if (it->second->engine_type == "igsoa_gw") {
-            delete static_cast<IGSOAGWEngine*>(it->second->engine_handle);
-        } else if (it->second->engine_type == "satp_higgs_1d") {
-            auto* engine = static_cast<dase::satp_higgs::SATPHiggsEngine1D*>(it->second->engine_handle);
-            delete engine;
-        } else if (it->second->engine_type == "satp_higgs_2d") {
-            auto* engine = static_cast<dase::satp_higgs::SATPHiggsEngine2D*>(it->second->engine_handle);
-            delete engine;
-        } else if (it->second->engine_type == "satp_higgs_3d") {
-            auto* engine = static_cast<dase::satp_higgs::SATPHiggsEngine3D*>(it->second->engine_handle);
-            delete engine;
-        } else if (it->second->engine_type == "fftw_cache_example") {
-            delete static_cast<FFTWCacheExampleEngine*>(it->second->engine_handle);
-        } else if (it->second->engine_type == "sid_ternary") {
-            sid_destroy_engine(static_cast<sid_engine*>(it->second->engine_handle));
-        } else if (it->second->engine_type == "sid_ssp") {
-            delete static_cast<SidSSPEngine*>(it->second->engine_handle);
+        switch (it->second->type_tag) {
+            case EngineInstance::TypeTag::Phase4B:
+                if (dase_destroy_engine) {
+                    dase_destroy_engine(it->second->engine_handle);
+                }
+                break;
+            case EngineInstance::TypeTag::IgsoaComplex:
+                delete static_cast<dase::igsoa::IGSOAComplexEngine*>(it->second->engine_handle);
+                break;
+            case EngineInstance::TypeTag::IgsoaComplex2D:
+                delete static_cast<dase::igsoa::IGSOAComplexEngine2D*>(it->second->engine_handle);
+                break;
+            case EngineInstance::TypeTag::IgsoaComplex3D:
+                delete static_cast<dase::igsoa::IGSOAComplexEngine3D*>(it->second->engine_handle);
+                break;
+            case EngineInstance::TypeTag::IgsoaGW:
+                delete static_cast<IGSOAGWEngine*>(it->second->engine_handle);
+                break;
+            case EngineInstance::TypeTag::SatpHiggs1D:
+                delete static_cast<dase::satp_higgs::SATPHiggsEngine1D*>(it->second->engine_handle);
+                break;
+            case EngineInstance::TypeTag::SatpHiggs2D:
+                delete static_cast<dase::satp_higgs::SATPHiggsEngine2D*>(it->second->engine_handle);
+                break;
+            case EngineInstance::TypeTag::SatpHiggs3D:
+                delete static_cast<dase::satp_higgs::SATPHiggsEngine3D*>(it->second->engine_handle);
+                break;
+            case EngineInstance::TypeTag::FFTWCache:
+                delete static_cast<FFTWCacheExampleEngine*>(it->second->engine_handle);
+                break;
+            case EngineInstance::TypeTag::SidTernary:
+                sid_destroy_engine(static_cast<sid_engine*>(it->second->engine_handle));
+                break;
+            case EngineInstance::TypeTag::SidSSP:
+                delete static_cast<SidSSPEngine*>(it->second->engine_handle);
+                break;
+            case EngineInstance::TypeTag::Unknown:
+            default:
+                std::cerr << "[ERROR] Unknown engine type_tag for " << engine_id << std::endl;
+                break;
         }
     }
 

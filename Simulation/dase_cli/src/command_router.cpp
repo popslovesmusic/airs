@@ -441,10 +441,13 @@ json CommandRouter::handleCreateEngine(const json& params) {
                                    "INVALID_PARAMETER");
     }
 
-    if (engine_type == "igsoa_complex_2d") {
-        if (N_x <= 0 || N_y <= 0) {
+    // Dimension guardrails to prevent overflow before multiplication
+    auto validate_dim = [](int v) { return v > 0 && v <= 65536; };
+
+    if (engine_type == "igsoa_complex_2d" || engine_type == "satp_higgs_2d") {
+        if (!validate_dim(N_x) || !validate_dim(N_y)) {
             return createErrorResponse("create_engine",
-                                       "Invalid 2D dimensions. N_x and N_y must be greater than 0.",
+                                       "Invalid 2D dimensions. Each must be in range [1, 65536].",
                                        "INVALID_DIMENSIONS");
         }
 
@@ -456,10 +459,10 @@ json CommandRouter::handleCreateEngine(const json& params) {
         }
 
         num_nodes = static_cast<int>(expected_nodes);
-    } else if (engine_type == "igsoa_complex_3d") {
-        if (N_x <= 0 || N_y <= 0 || N_z <= 0) {
+    } else if (engine_type == "igsoa_complex_3d" || engine_type == "satp_higgs_3d") {
+        if (!validate_dim(N_x) || !validate_dim(N_y) || !validate_dim(N_z)) {
             return createErrorResponse("create_engine",
-                                       "Invalid 3D dimensions. N_x, N_y, and N_z must be greater than 0.",
+                                       "Invalid 3D dimensions. Each must be in range [1, 65536].",
                                        "INVALID_DIMENSIONS");
         }
 
@@ -608,6 +611,20 @@ json CommandRouter::handleRunMissionWithSnapshots(const json& params) {
     int num_steps = params.value("num_steps", 0);
     int iterations_per_node = params.value("iterations_per_node", 30);
     int snapshot_interval = params.value("snapshot_interval", 1);
+
+    if (snapshot_interval <= 0) {
+        return createErrorResponse("run_mission_with_snapshots",
+                                   "snapshot_interval must be positive",
+                                   "INVALID_PARAMETER");
+    }
+
+    int max_snapshots = (snapshot_interval > 0) ? (num_steps / snapshot_interval) : 0;
+    const int MAX_ALLOWED_SNAPSHOTS = 10000;
+    if (max_snapshots > MAX_ALLOWED_SNAPSHOTS) {
+        return createErrorResponse("run_mission_with_snapshots",
+                                   "Too many snapshots requested. Max: " + std::to_string(MAX_ALLOWED_SNAPSHOTS),
+                                   "TOO_MANY_SNAPSHOTS");
+    }
 
     json snapshots = json::array();
 
@@ -1128,8 +1145,34 @@ json CommandRouter::handleSidSetDiagramJson(const json& params) {
                                    "MISSING_PARAMETER");
     }
 
-    if (!diagram.is_object()) {
-        return createErrorResponse("sid_set_diagram_json", "diagram must be an object", "INVALID_PARAMETER");
+    auto validateDiagram = [](const json& d, std::string& err) -> bool {
+        if (!d.is_object()) { err = "Diagram must be an object"; return false; }
+        if (!d.contains("id") || !d["id"].is_string()) { err = "Diagram missing string id"; return false; }
+        if (d.contains("nodes")) {
+            if (!d["nodes"].is_array()) { err = "nodes must be an array"; return false; }
+            for (const auto& n : d["nodes"]) {
+                if (!n.is_object()) { err = "Each node must be an object"; return false; }
+                if (!n.contains("id") || !n["id"].is_string()) { err = "Node missing string id"; return false; }
+                if (n.contains("inputs") && !n["inputs"].is_array()) { err = "node.inputs must be array"; return false; }
+                if (n.contains("dof_refs") && !n["dof_refs"].is_array()) { err = "node.dof_refs must be array"; return false; }
+            }
+        }
+        if (d.contains("edges")) {
+            if (!d["edges"].is_array()) { err = "edges must be an array"; return false; }
+            for (const auto& e : d["edges"]) {
+                if (!e.is_object()) { err = "Each edge must be an object"; return false; }
+                if (!e.contains("id") || !e["id"].is_string()) { err = "Edge missing string id"; return false; }
+                if (!e.contains("from") || !e["from"].is_string()) { err = "Edge missing from"; return false; }
+                if (!e.contains("to") || !e["to"].is_string()) { err = "Edge missing to"; return false; }
+                if (e.contains("label") && !e["label"].is_string()) { err = "Edge label must be string"; return false; }
+            }
+        }
+        return true;
+    };
+
+    std::string validation_error;
+    if (!validateDiagram(diagram, validation_error)) {
+        return createErrorResponse("sid_set_diagram_json", validation_error, "INVALID_PARAMETER");
     }
 
     std::string message;

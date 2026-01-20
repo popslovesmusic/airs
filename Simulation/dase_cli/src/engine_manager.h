@@ -15,10 +15,26 @@
 #include <map>
 #include <memory>
 #include <vector>
+#include <atomic>
 #include "json.hpp"
 
 // Engine instance wrapper
 struct EngineInstance {
+    enum class TypeTag {
+        Unknown,
+        Phase4B,
+        IgsoaComplex,
+        IgsoaComplex2D,
+        IgsoaComplex3D,
+        IgsoaGW,
+        SatpHiggs1D,
+        SatpHiggs2D,
+        SatpHiggs3D,
+        FFTWCache,
+        SidTernary,
+        SidSSP
+    };
+
     std::string engine_id;
     std::string engine_type; // "phase4b", "igsoa_complex", or IGSOA lattice variants
     void* engine_handle;      // Opaque handle to DLL engine
@@ -32,6 +48,7 @@ struct EngineInstance {
     double kappa;
     double gamma;
     double dt;
+    TypeTag type_tag;
 
     EngineInstance()
         : engine_handle(nullptr)
@@ -44,7 +61,8 @@ struct EngineInstance {
         , R_c(1.0)
         , kappa(1.0)
         , gamma(0.1)
-        , dt(0.01) {}
+        , dt(0.01)
+        , type_tag(TypeTag::Unknown) {}
 };
 
 class EngineManager {
@@ -154,6 +172,7 @@ private:
     std::map<std::string, std::unique_ptr<EngineInstance>> engines;
     // Simple counter for engine ID generation (single-threaded, no atomic needed)
     int next_engine_id;
+    static std::atomic<bool> instance_created_;
 
     std::string generateEngineId();
     double getCurrentTimestamp();
