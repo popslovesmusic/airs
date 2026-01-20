@@ -764,6 +764,85 @@ class CLIHarness:
                                {"metrics1": metrics1_resp, "metrics2": metrics2_resp})
 
     # ========================================================================
+    # Category 7: ENGINE_FAMILY_COVERAGE
+    # ========================================================================
+
+    def test_gw_engine_step_and_metrics(self) -> None:
+        """igsoa_gw should create, step, and report metrics > 0."""
+        with self.session():
+            create_resp = self.send_command({
+                "command": "create_engine",
+                "params": {
+                    "engine_type": "igsoa_gw",
+                    "N_x": 4,
+                    "N_y": 4,
+                    "N_z": 4,
+                    "dt": 0.01,
+                },
+            })
+
+            if not self.assert_success(create_resp):
+                self.record_result("gw_engine_step_and_metrics", "ENGINE_FAMILY_COVERAGE", False,
+                                   "Failed to create igsoa_gw",
+                                   {"create_response": create_resp})
+                return
+
+            engine_id = create_resp["result"]["engine_id"]
+            run_resp = self.send_command({"command": "run_mission", "params": {"engine_id": engine_id, "num_steps": 1}})
+            metrics_resp = self.send_command({"command": "get_metrics", "params": {"engine_id": engine_id}})
+            destroy_resp = self.send_command({"command": "destroy_engine", "params": {"engine_id": engine_id}})
+
+        if not self.assert_success(run_resp) or not self.assert_success(metrics_resp):
+            self.record_result("gw_engine_step_and_metrics", "ENGINE_FAMILY_COVERAGE", False,
+                               "Run or metrics failed",
+                               {"run_response": run_resp, "metrics_response": metrics_resp})
+            return
+
+        total_ops = metrics_resp.get("result", {}).get("total_operations", 0)
+        passed = total_ops > 0 and self.assert_success(destroy_resp)
+        self.record_result("gw_engine_step_and_metrics", "ENGINE_FAMILY_COVERAGE", passed,
+                           "GW metrics reported" if passed else "GW metrics missing or destroy failed",
+                           {"total_operations": total_ops, "destroy_response": destroy_resp})
+
+    def test_sid_ssp_semantic_progress(self) -> None:
+        """sid_ssp should create, step, and expose state/metrics."""
+        with self.session():
+            create_resp = self.send_command({
+                "command": "create_engine",
+                "params": {
+                    "engine_type": "sid_ssp",
+                    "num_nodes": 16,
+                    "role": 2,
+                    "capacity": 1.0,
+                },
+            })
+
+            if not self.assert_success(create_resp):
+                self.record_result("sid_ssp_semantic_progress", "ENGINE_FAMILY_COVERAGE", False,
+                                   "Failed to create sid_ssp",
+                                   {"create_response": create_resp})
+                return
+
+            engine_id = create_resp["result"]["engine_id"]
+            run_resp = self.send_command({"command": "run_mission", "params": {"engine_id": engine_id, "num_steps": 2}})
+            metrics_resp = self.send_command({"command": "get_metrics", "params": {"engine_id": engine_id}})
+            state_resp = self.send_command({"command": "get_state", "params": {"engine_id": engine_id}})
+            destroy_resp = self.send_command({"command": "destroy_engine", "params": {"engine_id": engine_id}})
+
+        if not (self.assert_success(run_resp) and self.assert_success(metrics_resp) and self.assert_success(state_resp)):
+            self.record_result("sid_ssp_semantic_progress", "ENGINE_FAMILY_COVERAGE", False,
+                               "Run/state/metrics failed",
+                               {"run": run_resp, "metrics": metrics_resp, "state": state_resp})
+            return
+
+        total_ops = metrics_resp.get("result", {}).get("total_operations", 0)
+        num_nodes = state_resp.get("result", {}).get("num_nodes", 0)
+        passed = total_ops >= num_nodes and self.assert_success(destroy_resp)
+        self.record_result("sid_ssp_semantic_progress", "ENGINE_FAMILY_COVERAGE", passed,
+                           "SID SSP progressed and reported state" if passed else "SID SSP did not report expected progress",
+                           {"total_operations": total_ops, "num_nodes": num_nodes, "destroy_response": destroy_resp})
+
+    # ========================================================================
     # Harness Execution
     # ========================================================================
 
@@ -803,6 +882,10 @@ class CLIHarness:
             ("STATE_EVOLUTION", [
                 self.test_step_advances_state,
                 self.test_metrics_change_after_step,
+            ]),
+            ("ENGINE_FAMILY_COVERAGE", [
+                self.test_gw_engine_step_and_metrics,
+                self.test_sid_ssp_semantic_progress,
             ]),
         ]
 
