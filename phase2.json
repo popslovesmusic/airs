@@ -1,0 +1,91 @@
+{
+  "task_type": "validation",
+  "authority": "read-only",
+  "scope": [
+    "engines",
+    "validation_harness"
+  ],
+  "objective": "Validate engine families and fleet conformance against an already-passing core contract.",
+  "assumptions": {
+    "phase_1_contract_status": "PASS",
+    "harness_modification_allowed": false,
+    "engine_code_modification_allowed": false
+  },
+  "engine_families": {
+    "igsoa_core": ["igsoa_complex_engine"],
+    "igsoa_dimensional": [
+      "igsoa_complex_engine_2d",
+      "igsoa_complex_engine_3d"
+    ],
+    "satp_higgs": [
+      "satp_higgs_engine_1d",
+      "satp_higgs_engine_2d",
+      "satp_higgs_engine_3d"
+    ],
+    "analog_avx2": ["analog_universal_node_engine_avx2"],
+    "fft_backed": ["fftw_cache_example"],
+    "sid_semantic": ["sid_ternary_engine"]
+  },
+  "validation_phases": [
+    {
+      "phase": 2,
+      "name": "engine_family_validation",
+      "method": "run_unmodified_harness",
+      "selection_rule": "one_canonical_engine_per_family",
+      "pass_criteria": [
+        "create_success",
+        "step_success",
+        "metrics_valid",
+        "destroy_success"
+      ]
+    },
+    {
+      "phase": 3,
+      "name": "dimensional_conformance",
+      "method": "single_step_validation",
+      "targets": "all_dimensional_variants",
+      "checks": [
+        "no_nan",
+        "no_inf",
+        "metrics_schema_present"
+      ]
+    },
+    {
+      "phase": 4,
+      "name": "fleet_smoke_test",
+      "method": "create_step_destroy",
+      "targets": "all_registered_engines",
+      "checks": [
+        "no_crash",
+        "clean_exit"
+      ]
+    },
+    {
+      "phase": 5,
+      "name": "cross_engine_invariants",
+      "checks": [
+        "metrics_schema_consistency",
+        "determinism_under_fixed_seed",
+        "state_reset_integrity"
+      ]
+    }
+  ],
+  "failure_handling": {
+    "on_failure": "quarantine_engine",
+    "engine_patch_allowed": false,
+    "required_output": [
+      "engine_name",
+      "phase",
+      "failure_reason"
+    ]
+  },
+  "required_outputs": [
+    "validation_summary.json",
+    "engine_pass_fail_matrix.json"
+  ],
+  "stop_conditions": [
+    "harness_failure",
+    "schema_mismatch",
+    "undefined_engine"
+  ]
+}

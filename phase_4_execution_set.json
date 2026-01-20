@@ -1,0 +1,52 @@
+{
+  "phase": 4,
+  "name": "fleet_smoke_test",
+  "method": "create_step_destroy",
+  "checks": [
+    "no_crash",
+    "clean_exit"
+  ],
+  "engines": [
+    {
+      "engine_type": "igsoa_complex",
+      "params": {
+        "num_nodes": 64,
+        "R_c": 1.0
+      },
+      "mission": {
+        "num_steps": 1
+      }
+    },
+    {
+      "engine_type": "igsoa_complex_2d",
+      "params": {
+        "N_x": 4,
+        "N_y": 4,
+        "R_c": 1.0
+      },
+      "mission": {
+        "num_steps": 1
+      }
+    },
+    {
+      "engine_type": "igsoa_complex_3d",
+      "params": {
+        "N_x": 4,
+        "N_y": 4,
+        "N_z": 4,
+        "R_c": 1.0
+      },
+      "mission": {
+        "num_steps": 1
+      }
+    }
+  ],
+  "excluded_engines": [
+    "satp_higgs_1d",
+    "satp_higgs_2d",
+    "satp_higgs_3d",
+    "phase4b",
+    "fftw_cache_example",
+    "sid_ternary"
+  ]
+}

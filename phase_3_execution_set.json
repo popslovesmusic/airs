@@ -1,0 +1,35 @@
+{
+  "phase": 3,
+  "name": "dimensional_conformance",
+  "method": "single_step_validation",
+  "requirements": [
+    "single_step_only",
+    "metrics_schema_present",
+    "no_nan_inf"
+  ],
+  "engines": [
+    {
+      "engine_type": "igsoa_complex_2d",
+      "params": {
+        "N_x": 4,
+        "N_y": 4,
+        "R_c": 1.0
+      },
+      "mission": {
+        "num_steps": 1
+      }
+    },
+    {
+      "engine_type": "igsoa_complex_3d",
+      "params": {
+        "N_x": 4,
+        "N_y": 4,
+        "N_z": 4,
+        "R_c": 1.0
+      },
+      "mission": {
+        "num_steps": 1
+      }
+    }
+  ]
+}

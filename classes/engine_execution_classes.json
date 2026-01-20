@@ -1,0 +1,25 @@
+{
+  "version": "1.0",
+  "purpose": "Declare execution class for every engine to remove implicit semantics.",
+  "classes": {
+    "computational": "Each step performs measurable computation.",
+    "field": "Each step advances a field; work may be latent or non-countable.",
+    "semantic": "Each step advances semantic state; numeric work is not required.",
+    "support": "Non-engine or library; excluded from validation."
+  },
+  "engines": {
+    "igsoa_complex": "computational",
+    "igsoa_complex_2d": "computational",
+    "igsoa_complex_3d": "computational",
+
+    "satp_higgs_1d": "field",
+    "satp_higgs_2d": "field",
+    "satp_higgs_3d": "field",
+
+    "sid_ternary": "semantic",
+
+    "phase4b": "computational",
+
+    "fftw_cache_example": "support"
+  }
+}

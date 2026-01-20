@@ -1,0 +1,64 @@
+{
+  "task": "execution_class_contract_acknowledgement",
+  "inputs": {
+    "engine_execution_classes.json": "v1.0",
+    "execution_class_observables.json": "v1.0",
+    "validation_scope.json": "v1.0"
+  },
+  "constraints_respected": [
+    "no_validation_execution",
+    "no_engine_modification",
+    "no_metric_reinterpretation"
+  ],
+  "stop_conditions_encountered": [],
+  "engines": {
+    "igsoa_complex": "computational",
+    "igsoa_complex_2d": "computational",
+    "igsoa_complex_3d": "computational",
+    "satp_higgs_1d": "field",
+    "satp_higgs_2d": "field",
+    "satp_higgs_3d": "field",
+    "sid_ternary": "semantic",
+    "phase4b": "computational",
+    "fftw_cache_example": "support"
+  },
+  "observables_by_class": {
+    "computational": {
+      "required": ["total_operations > 0"],
+      "optional": ["ns_per_op"]
+    },
+    "field": {
+      "required": ["field_updates >= 1 OR field_state_changed == true"],
+      "optional": ["energy_delta", "flux"]
+    },
+    "semantic": {
+      "required": ["semantic_events >= 1 OR semantic_state_changed == true"],
+      "optional": ["symbol_count", "classification_events"]
+    },
+    "support": {
+      "required": [],
+      "optional": []
+    }
+  },
+  "validation_scope": {
+    "computational": {
+      "validate": true,
+      "phases": [2, 3, 4, 5]
+    },
+    "field": {
+      "validate": true,
+      "phases": [2, 3],
+      "restrictions": ["no requirement for total_operations", "field observables only"]
+    },
+    "semantic": {
+      "validate": true,
+      "phases": [2],
+      "restrictions": ["no numeric invariants", "semantic observables only"]
+    },
+    "support": {
+      "validate": false,
+      "reason": "Not an engine"
+    }
+  },
+  "notes": "Execution classes, observables, and validation eligibility ingested; no validation executed."
+}

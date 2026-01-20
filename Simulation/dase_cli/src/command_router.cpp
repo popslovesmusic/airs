@@ -98,7 +98,7 @@ json CommandRouter::handleGetCapabilities(const json& params) {
     json result = {
         {"version", "1.0.0"},
         {"status", "prototype"},
-        {"engines", json::array({"phase4b", "igsoa_complex", "igsoa_complex_2d", "igsoa_complex_3d", "satp_higgs_1d", "satp_higgs_2d", "satp_higgs_3d", "sid_ternary", "igsoa_gw"})},
+        {"engines", json::array({"phase4b", "igsoa_complex", "igsoa_complex_2d", "igsoa_complex_3d", "satp_higgs_1d", "satp_higgs_2d", "satp_higgs_3d", "sid_ternary", "igsoa_gw", "fftw_cache_example"})},
         {"cpu_features", {
             {"avx2", true},
             {"avx512", false},

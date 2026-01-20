@@ -1,0 +1,55 @@
+**Phase 1: Core Contract Validation (Complete)**
+Goal: Prove system rules correct.
+Tests: CLI parsing, Error format, Lifecycle, Determinism, Numeric invariants, State evolution.
+Result: 19/19 PASS.
+
+**Phase 2: Engine Family Validation (Next)**
+Goal: Prove classes of engines obey contract.
+Steps:
+1.  Define engine families (IGSOA core, SATP Higgs, Analog/AVX2, FFT-backed, SID semantic).
+2.  Representative engine test (Run unchanged harness for one canonical engine per family).
+
+**Phase 3: Dimensional Variant Conformance**
+Goal: Ensure dimension wiring correct.
+Tests: create, step once, metrics valid, no NaN/Inf, destroy.
+
+**Phase 4: Fleet Smoke Test**
+Goal: Detect wiring errors for all 44 engines.
+Tests: create, step, destroy, exit cleanly.
+
+**Phase 5: Cross-Engine Invariant Checks**
+Goal: Detect systemic issues (e.g., metrics schema consistency).
+
+## JSON Artifacts / Schemas Written or Defined
+
+### Agent Task Frame (governance framing JSON)
+*Required at the start of every agent task.*
+```json
+{
+  "task_type": "analysis | execution | proposal | validation",
+  "scope": ["files", "directories"],
+  "authority": "read-only | gated-exec | proposal-only",
+  "stop_conditions": [
+    "harness failure",
+    "schema ambiguity",
+    "missing instruction"
+  ]
+}
+```
+
+### Agent Change Proposal JSON
+*Required when an agent proposes changes.*
+```json
+{
+  "proposal": {
+    "files": ["engine_manager.cpp"],
+    "intent": "fix lifecycle edge case",
+    "rationale": "harness failure XYZ",
+    "risk": "low | medium | high",
+    "validation_plan": [
+      "run harness",
+      "expect test ABC to pass"
+    ]
+  }
+}
+```

@@ -1414,6 +1414,15 @@ EngineManager::EngineMetrics EngineManager::getMetrics(const std::string& engine
             metrics.speedup_factor,
             metrics.total_operations
         );
+    } else if (instance->engine_type == "satp_higgs_1d") {
+        auto* engine = static_cast<dase::satp_higgs::SATPHiggsEngine1D*>(instance->engine_handle);
+        engine->getMetrics(metrics.ns_per_op, metrics.ops_per_sec, metrics.total_operations);
+    } else if (instance->engine_type == "satp_higgs_2d") {
+        auto* engine = static_cast<dase::satp_higgs::SATPHiggsEngine2D*>(instance->engine_handle);
+        engine->getMetrics(metrics.ns_per_op, metrics.ops_per_sec, metrics.total_operations);
+    } else if (instance->engine_type == "satp_higgs_3d") {
+        auto* engine = static_cast<dase::satp_higgs::SATPHiggsEngine3D*>(instance->engine_handle);
+        engine->getMetrics(metrics.ns_per_op, metrics.ops_per_sec, metrics.total_operations);
     }
 
     return metrics;

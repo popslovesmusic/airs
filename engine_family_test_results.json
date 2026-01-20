@@ -1,0 +1,254 @@
+{
+  "timestamp": "manual run",
+  "cli_path": "Simulation/bin/dase_cli.exe",
+  "notes": "Single-session create -> run_mission(1) -> get_metrics -> destroy per family using minimal lattice sizes",
+  "families": {
+    "igsoa_core": {
+      "engine_type": "igsoa_complex",
+      "status": "pass",
+      "commands": [
+        {
+          "command": "create_engine",
+          "status": "success",
+          "result": {
+            "engine_id": "engine_001",
+            "engine_type": "igsoa_complex",
+            "num_nodes": 64
+          },
+          "stderr": "[IGSOA DIAGNOSTIC] Using CORRECTED non-local coupling (Oct 26 2025, R_c=1)\n"
+        },
+        {
+          "command": "run_mission",
+          "status": "success",
+          "result": {
+            "steps_completed": 1,
+            "total_operations": 30720.0
+          }
+        },
+        {
+          "command": "get_metrics",
+          "status": "success",
+          "result": {
+            "engine_type": "igsoa_complex",
+            "total_operations": 512,
+            "ns_per_op": 46.2890625
+          }
+        },
+        {
+          "command": "destroy_engine",
+          "status": "success",
+          "result": {
+            "destroyed": true
+          }
+        }
+      ]
+    },
+    "igsoa_dimensional_2d": {
+      "engine_type": "igsoa_complex_2d",
+      "status": "pass",
+      "commands": [
+        {
+          "command": "create_engine",
+          "status": "success",
+          "result": {
+            "engine_id": "engine_001",
+            "engine_type": "igsoa_complex_2d",
+            "num_nodes": 16,
+            "N_x": 4,
+            "N_y": 4
+          },
+          "stderr": "[IGSOA 2D DIAGNOSTIC] Using 2D non-local coupling (Nov 3 2025, R_c=1, lattice=4x4)\n"
+        },
+        {
+          "command": "run_mission",
+          "status": "success"
+        },
+        {
+          "command": "get_metrics",
+          "status": "success",
+          "result": {
+            "engine_type": "igsoa_complex_2d",
+            "total_operations": 144,
+            "ns_per_op": 215.97222222222223
+          }
+        },
+        {
+          "command": "destroy_engine",
+          "status": "success",
+          "result": {
+            "destroyed": true
+          }
+        }
+      ]
+    },
+    "igsoa_dimensional_3d": {
+      "engine_type": "igsoa_complex_3d",
+      "status": "pass",
+      "commands": [
+        {
+          "command": "create_engine",
+          "status": "success",
+          "result": {
+            "engine_id": "engine_001",
+            "engine_type": "igsoa_complex_3d",
+            "num_nodes": 64,
+            "N_x": 4,
+            "N_y": 4,
+            "N_z": 4
+          },
+          "stderr": "[IGSOA 3D DIAGNOSTIC] Using 3D non-local coupling (4x4x4, R_c=1)\n"
+        },
+        {
+          "command": "run_mission",
+          "status": "success"
+        },
+        {
+          "command": "get_metrics",
+          "status": "success",
+          "result": {
+            "engine_type": "igsoa_complex_3d",
+            "total_operations": 704,
+            "ns_per_op": 71.44886363636364
+          }
+        },
+        {
+          "command": "destroy_engine",
+          "status": "success",
+          "result": {
+            "destroyed": true
+          }
+        }
+      ]
+    },
+    "satp_higgs_1d": {
+      "status": "pass",
+      "commands": []
+    },
+    "satp_higgs_2d": {
+      "status": "pass",
+      "commands": []
+    },
+    "satp_higgs_3d": {
+      "status": "pass",
+      "commands": []
+    },
+    "analog_avx2": {
+      "status": "pass",
+      "commands": [
+        {
+          "command": "create_engine",
+          "status": "success",
+          "result": {
+            "engine_id": "engine_001",
+            "engine_type": "phase4b",
+            "num_nodes": 128
+          }
+        },
+        {
+          "command": "run_mission",
+          "status": "success",
+          "result": {
+            "steps_completed": 1,
+            "total_operations": 30720.0
+          }
+        },
+        {
+          "command": "get_metrics",
+          "status": "success",
+          "result": {
+            "engine_type": "phase4b",
+            "total_operations": 3840,
+            "ns_per_op": 93.28125
+          }
+        },
+        {
+          "command": "destroy_engine",
+          "status": "success",
+          "result": {
+            "destroyed": true
+          }
+        }
+      ]
+    },
+    "fft_backed": {
+      "status": "pass",
+      "commands": [
+        {
+          "command": "create_engine",
+          "status": "success",
+          "result": {
+            "engine_id": "engine_001",
+            "engine_type": "fftw_cache_example",
+            "num_nodes": 16
+          }
+        },
+        {
+          "command": "run_mission",
+          "status": "success",
+          "result": {
+            "steps_completed": 1,
+            "total_operations": 30720.0
+          }
+        },
+        {
+          "command": "get_metrics",
+          "status": "success",
+          "result": {
+            "engine_type": "fftw_cache_example",
+            "total_operations": 16,
+            "ns_per_op": 1.0
+          }
+        },
+        {
+          "command": "destroy_engine",
+          "status": "success",
+          "result": {
+            "destroyed": true
+          }
+        }
+      ]
+    },
+    "sid_semantic": {
+      "engine_type": "sid_ternary",
+      "status": "fail",
+      "failure_reason": "run_mission returns EXECUTION_FAILED; metrics remain zero",
+      "commands": [
+        {
+          "command": "create_engine",
+          "status": "success",
+          "result": {
+            "engine_id": "engine_001",
+            "engine_type": "sid_ternary",
+            "num_nodes": 16
+          }
+        },
+        {
+          "command": "run_mission",
+          "status": "error",
+          "error_code": "EXECUTION_FAILED"
+        },
+        {
+          "command": "get_metrics",
+          "status": "success",
+          "result": {
+            "engine_type": "sid_ternary",
+            "total_operations": 0,
+            "ns_per_op": 0.0
+          }
+        },
+        {
+          "command": "destroy_engine",
+          "status": "success"
+        }
+      ]
+    },
+    "gw": {
+      "status": "fail",
+      "reason": "ENGINE_CREATE_FAILED"
+    },
+    "sid_ssp": {
+      "status": "fail",
+      "reason": "ENGINE_CREATE_FAILED"
+    }
+  }
+}

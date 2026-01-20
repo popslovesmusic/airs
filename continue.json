@@ -1,0 +1,96 @@
+{
+  "task_type": "validation",
+  "authority": "read-only",
+  "scope": [
+    "engine_registry",
+    "validation_results"
+  ],
+  "input_artifacts": [
+    "engine_family_test_results.json"
+  ],
+  "objective": "Classify engine family validation results, quarantine non-conforming engines, and prepare Phase-3 and Phase-4 execution sets.",
+  "phase_2_outcome_summary": {
+    "passed_families": [
+      "igsoa_core",
+      "igsoa_dimensional_2d",
+      "igsoa_dimensional_3d"
+    ],
+    "failed_families": [
+      "satp_higgs_1d",
+      "satp_higgs_2d",
+      "satp_higgs_3d",
+      "analog_avx2",
+      "fft_backed",
+      "sid_semantic"
+    ]
+  },
+  "failure_classification_rules": {
+    "metrics_zero_after_step": {
+      "class": "engine_logic_incomplete",
+      "severity": "medium",
+      "action": "quarantine_engine"
+    },
+    "non_json_output": {
+      "class": "cli_contract_violation",
+      "severity": "high",
+      "action": "quarantine_engine"
+    },
+    "engine_not_exposed": {
+      "class": "registration_error",
+      "severity": "high",
+      "action": "exclude_from_fleet"
+    },
+    "execution_failed": {
+      "class": "unimplemented_step_logic",
+      "severity": "medium",
+      "action": "quarantine_engine"
+    }
+  },
+  "engine_actions": {
+    "satp_higgs_1d": "quarantine",
+    "satp_higgs_2d": "quarantine",
+    "satp_higgs_3d": "quarantine",
+    "analog_avx2": "quarantine",
+    "fft_backed": "exclude_from_fleet",
+    "sid_semantic": "quarantine"
+  },
+  "phase_3_preparation": {
+    "eligible_engines": [
+      "igsoa_complex_2d",
+      "igsoa_complex_3d"
+    ],
+    "requirements": [
+      "single_step_only",
+      "metrics_schema_present",
+      "no_nan_inf"
+    ]
+  },
+  "phase_4_preparation": {
+    "eligible_engines": [
+      "igsoa_complex",
+      "igsoa_complex_2d",
+      "igsoa_complex_3d"
+    ],
+    "excluded_engines": [
+      "satp_higgs_*",
+      "analog_avx2",
+      "fftw_cache_example",
+      "sid_ternary"
+    ]
+  },
+  "prohibited_actions": [
+    "patch_engine_code",
+    "special_case_harness_logic",
+    "reinterpret_metrics_semantics"
+  ],
+  "required_outputs": [
+    "engine_quarantine_list.json",
+    "phase_3_execution_set.json",
+    "phase_4_execution_set.json"
+  ],
+  "stop_conditions": [
+    "schema_mismatch",
+    "unexpected_engine_appearance",
+    "inconsistent_family_status"
+  ]
+}

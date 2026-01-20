@@ -1,0 +1,40 @@
+{
+  "version": "1.0",
+  "purpose": "Define minimum observable activity per execution class.",
+  "observables": {
+    "computational": {
+      "required": [
+        "total_operations > 0"
+      ],
+      "optional": [
+        "ns_per_op"
+      ],
+      "notes": "At least one measurable operation per step."
+    },
+    "field": {
+      "required": [
+        "field_updates >= 1 OR field_state_changed == true"
+      ],
+      "optional": [
+        "energy_delta",
+        "flux"
+      ],
+      "notes": "Numeric operation counts are not required."
+    },
+    "semantic": {
+      "required": [
+        "semantic_events >= 1 OR semantic_state_changed == true"
+      ],
+      "optional": [
+        "symbol_count",
+        "classification_events"
+      ],
+      "notes": "Non-numeric semantics are valid observables."
+    },
+    "support": {
+      "required": [],
+      "optional": [],
+      "notes": "Excluded from validation."
+    }
+  }
+}

@@ -1,0 +1,35 @@
+{
+  "version": "1.0",
+  "purpose": "Declare validation eligibility and rules by execution class.",
+  "eligibility": {
+    "computational": {
+      "validate": true,
+      "phases": [2, 3, 4, 5]
+    },
+    "field": {
+      "validate": true,
+      "phases": [2, 3],
+      "restrictions": [
+        "no requirement for total_operations",
+        "field observables only"
+      ]
+    },
+    "semantic": {
+      "validate": true,
+      "phases": [2],
+      "restrictions": [
+        "no numeric invariants",
+        "semantic observables only"
+      ]
+    },
+    "support": {
+      "validate": false,
+      "reason": "Not an engine"
+    }
+  },
+  "global_constraints": [
+    "no engine code changes",
+    "no harness changes",
+    "no reinterpretation of metrics"
+  ]
+}

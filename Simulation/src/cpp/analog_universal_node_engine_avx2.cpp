@@ -611,16 +611,6 @@ void AnalogCellularEngineAVX2::runMissionOptimized(
 
     metrics_.reset();
 
-    std::cout << "\n🚀 C++ OPTIMIZED MISSION LOOP STARTED (PHASE 4A) 🚀" << std::endl;
-    std::cout << "=========================================" << std::endl;
-    std::cout << "Total steps: " << num_steps << std::endl;
-    std::cout << "Total nodes: " << nodes.size() << std::endl;
-    std::cout << "Iterations/node: " << iterations_per_node << std::endl;
-    std::cout << "Threads: " << omp_get_max_threads() << std::endl;
-    std::cout << "Mode: ZERO-COPY (Julia FFI)" << std::endl;
-    std::cout << "Phase 4A: Hot-path inlining, no profiling overhead" << std::endl;
-    std::cout << "=========================================" << std::endl;
-
     auto mission_start = std::chrono::high_resolution_clock::now();
 
     // Phase 4A optimizations:
@@ -655,8 +645,7 @@ void AnalogCellularEngineAVX2::runMissionOptimized(
     metrics_.node_processes = metrics_.total_operations;  // Same count
     metrics_.update_performance();
 
-    metrics_.print_metrics();
-    std::cout << "=========================================" << std::endl;
+    // Suppress console metrics to keep CLI stdout JSON-only
 }
 
 // Phase 4B: Single parallel region version - eliminates 54,750 barriers!
@@ -673,16 +662,6 @@ void AnalogCellularEngineAVX2::runMissionOptimized_Phase4B(
     #endif
 
     metrics_.reset();
-
-    std::cout << "\n🚀 C++ OPTIMIZED MISSION LOOP STARTED (PHASE 4B) 🚀" << std::endl;
-    std::cout << "=========================================" << std::endl;
-    std::cout << "Total steps: " << num_steps << std::endl;
-    std::cout << "Total nodes: " << nodes.size() << std::endl;
-    std::cout << "Iterations/node: " << iterations_per_node << std::endl;
-    std::cout << "Threads: " << omp_get_max_threads() << std::endl;
-    std::cout << "Mode: ZERO-COPY (Julia FFI)" << std::endl;
-    std::cout << "Phase 4B: Single parallel region, zero barriers" << std::endl;
-    std::cout << "=========================================" << std::endl;
 
     auto mission_start = std::chrono::high_resolution_clock::now();
 
@@ -731,8 +710,7 @@ void AnalogCellularEngineAVX2::runMissionOptimized_Phase4B(
     metrics_.node_processes = metrics_.total_operations;
     metrics_.update_performance();
 
-    metrics_.print_metrics();
-    std::cout << "=========================================" << std::endl;
+    // Suppress console metrics to keep CLI stdout JSON-only
 }
 
 // Phase 4C: AVX2 Spatial Vectorization - Process 4 nodes in parallel
@@ -747,17 +725,8 @@ void AnalogCellularEngineAVX2::runMissionOptimized_Phase4C(
     omp_set_num_threads(omp_get_max_threads());
     #endif
 
-    std::cout << "\n🚀 C++ OPTIMIZED MISSION LOOP STARTED (PHASE 4C - AVX2 SPATIAL) 🚀" << std::endl;
-    std::cout << "=========================================" << std::endl;
-    std::cout << "Total steps: " << num_steps << std::endl;
-    std::cout << "Total nodes: " << nodes.size() << std::endl;
-    std::cout << "Iterations/node: " << iterations_per_node << std::endl;
-    #ifdef _OPENMP
-    std::cout << "Threads: " << omp_get_max_threads() << std::endl;
-    #endif
-    std::cout << "Mode: ZERO-COPY (Julia FFI)" << std::endl;
-    std::cout << "Phase 4C: AVX2 spatial vectorization (4 nodes/batch)" << std::endl;
-    std::cout << "=========================================" << std::endl;
+    // Suppress console banners to keep CLI stdout JSON-only
+
 
     auto mission_start = std::chrono::high_resolution_clock::now();
 
@@ -875,8 +844,7 @@ void AnalogCellularEngineAVX2::runMissionOptimized_Phase4C(
     metrics_.node_processes = metrics_.total_operations;
     metrics_.update_performance();
 
-    metrics_.print_metrics();
-    std::cout << "=========================================" << std::endl;
+    // Suppress console metrics to keep CLI stdout JSON-only
 }
 
 // New: The massive benchmark function to simulate a continuous heavy load

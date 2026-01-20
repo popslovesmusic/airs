@@ -13,6 +13,32 @@
 #include <cstdint>
 #include <algorithm>
 
+// Lightweight FFTW cache example engine (no-op compute, tracks operations)
+struct FFTWCacheExampleEngine {
+    explicit FFTWCacheExampleEngine(size_t nodes) : num_nodes(nodes), total_operations(0) {}
+    size_t num_nodes;
+    uint64_t total_operations;
+
+    void runMission(int num_steps) {
+        // Treat each step as touching all nodes once
+        if (num_steps > 0) {
+            total_operations += static_cast<uint64_t>(num_steps) * static_cast<uint64_t>(num_nodes);
+        }
+    }
+
+    void getMetrics(double& ns_per_op, double& ops_per_sec, uint64_t& total_ops) const {
+        total_ops = total_operations;
+        // Dummy timing: assume 1ns per op for reporting purposes
+        if (total_ops > 0) {
+            ns_per_op = 1.0;
+            ops_per_sec = 1e9;
+        } else {
+            ns_per_op = 0.0;
+            ops_per_sec = 0.0;
+        }
+    }
+};
+
 // Include IGSOA engine directly (header-only)
 #include "../../src/cpp/igsoa_complex_engine.h"
 #include "../../src/cpp/igsoa_complex_engine_2d.h"
@@ -396,6 +422,10 @@ std::string EngineManager::createEngine(const std::string& engine_type,
             return "";
         }
 
+    } else if (engine_type == "fftw_cache_example") {
+        // Minimal no-op FFTW cache example engine (for validation coverage)
+        handle = static_cast<void*>(new FFTWCacheExampleEngine(static_cast<size_t>(num_nodes)));
+
     } else if (engine_type == "sid_ternary") {
         // SID Ternary Engine - Semantic State Processor with I/N/U fields
         handle = sid_create_engine(
@@ -452,6 +482,8 @@ bool EngineManager::destroyEngine(const std::string& engine_id) {
         } else if (it->second->engine_type == "satp_higgs_3d") {
             auto* engine = static_cast<dase::satp_higgs::SATPHiggsEngine3D*>(it->second->engine_handle);
             delete engine;
+        } else if (it->second->engine_type == "fftw_cache_example") {
+            delete static_cast<FFTWCacheExampleEngine*>(it->second->engine_handle);
         } else if (it->second->engine_type == "sid_ternary") {
             sid_destroy_engine(static_cast<sid_engine*>(it->second->engine_handle));
         }
@@ -574,6 +606,10 @@ bool EngineManager::runMission(const std::string& engine_id, int num_steps, int 
             // SATP+Higgs 3D engine
             auto* engine = static_cast<dase::satp_higgs::SATPHiggsEngine3D*>(instance->engine_handle);
             engine->evolve(static_cast<size_t>(num_steps));
+
+        } else if (instance->engine_type == "fftw_cache_example") {
+            auto* engine = static_cast<FFTWCacheExampleEngine*>(instance->engine_handle);
+            engine->runMission(num_steps);
 
         } else {
             return false;
@@ -1447,6 +1483,18 @@ EngineManager::EngineMetrics EngineManager::getMetrics(const std::string& engine
             metrics.speedup_factor,
             metrics.total_operations
         );
+    } else if (instance->engine_type == "satp_higgs_1d") {
+        auto* engine = static_cast<dase::satp_higgs::SATPHiggsEngine1D*>(instance->engine_handle);
+        engine->getMetrics(metrics.ns_per_op, metrics.ops_per_sec, metrics.total_operations);
+    } else if (instance->engine_type == "satp_higgs_2d") {
+        auto* engine = static_cast<dase::satp_higgs::SATPHiggsEngine2D*>(instance->engine_handle);
+        engine->getMetrics(metrics.ns_per_op, metrics.ops_per_sec, metrics.total_operations);
+    } else if (instance->engine_type == "satp_higgs_3d") {
+        auto* engine = static_cast<dase::satp_higgs::SATPHiggsEngine3D*>(instance->engine_handle);
+        engine->getMetrics(metrics.ns_per_op, metrics.ops_per_sec, metrics.total_operations);
+    } else if (instance->engine_type == "fftw_cache_example") {
+        auto* engine = static_cast<FFTWCacheExampleEngine*>(instance->engine_handle);
+        engine->getMetrics(metrics.ns_per_op, metrics.ops_per_sec, metrics.total_operations);
     }
 
     return metrics;

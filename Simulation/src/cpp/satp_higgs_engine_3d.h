@@ -92,6 +92,7 @@ public:
     double getDt() const { return dt; }
     double getTime() const { return current_time; }
     uint64_t getStepCount() const { return step_count; }
+    uint64_t getTotalUpdates() const { return total_updates.load(std::memory_order_relaxed); }
     const SATPHiggsParams& getParams() const { return params; }
     const std::vector<SATPHiggsNode>& getNodes() const { return nodes; }
     std::vector<SATPHiggsNode>& getNodesMutable() { return nodes; }
@@ -136,6 +137,19 @@ public:
 
     // Physics evolution (implemented in satp_higgs_physics_3d.h)
     void evolve(size_t num_steps);
+
+    // Metrics helper
+    void getMetrics(double& ns_per_op, double& ops_per_sec, uint64_t& total_operations) const {
+        total_operations = total_updates.load(std::memory_order_relaxed);
+        const double elapsed_seconds = current_time;
+        if (total_operations > 0 && elapsed_seconds > 0.0) {
+            ops_per_sec = static_cast<double>(total_operations) / elapsed_seconds;
+            ns_per_op = (elapsed_seconds * 1e9) / static_cast<double>(total_operations);
+        } else {
+            ops_per_sec = 0.0;
+            ns_per_op = 0.0;
+        }
+    }
 
     // Diagnostics
     double computeTotalEnergy() const {

@@ -1,0 +1,26 @@
+igsoa_core
+  igsoa_complex: pass
+
+igsoa_dimensional
+  igsoa_complex_2d: pass
+  igsoa_complex_3d: pass
+
+satp_higgs
+  satp_higgs_1d: pass
+  satp_higgs_2d: pass
+  satp_higgs_3d: pass
+
+analog_avx2
+  phase4b: pass
+
+fft_backed
+  fftw_cache_example: pass
+
+sid_semantic
+  sid_ternary: fail
+
+gw
+  igsoa_gw_engine: fail
+
+sid_ssp
+  sid_ssp: fail

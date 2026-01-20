@@ -1,0 +1,26 @@
+{
+  "task_type": "analysis",
+  "authority": "read-only",
+  "scope": [
+    "engine_contracts",
+    "validation_policy"
+  ],
+  "objective": "Ingest and acknowledge updated execution-class contracts revealed by validation; do not run validation or modify code.",
+  "inputs": [
+    "engine_execution_classes.json",
+    "execution_class_observables.json",
+    "validation_scope.json"
+  ],
+  "required_outputs": [
+    "contract_acknowledgement.json"
+  ],
+  "constraints": [
+    "no_validation_execution",
+    "no_engine_modification",
+    "no_metric_reinterpretation"
+  ],
+  "stop_conditions": [
+    "ambiguous_execution_class",
+    "missing_observable_definition"
+  ]
+}
