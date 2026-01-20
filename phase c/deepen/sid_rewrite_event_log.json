@@ -1,0 +1,238 @@
+{
+  "timestamp": "2026-01-20T20:44:50.770694Z",
+  "events": [
+    {
+      "command": "create_engine",
+      "execution_time_ms": 0.058,
+      "result": {
+        "R_c": 1.0,
+        "dt": 0.01,
+        "engine_id": "engine_001",
+        "engine_type": "sid_ternary",
+        "gamma": 0.1,
+        "kappa": 1.0,
+        "num_nodes": 8
+      },
+      "status": "success"
+    },
+    {
+      "command": "sid_metrics",
+      "execution_time_ms": 0.012,
+      "result": {
+        "I_mass": 0.3333333333333333,
+        "N_mass": 0.3333333333333333,
+        "U_mass": 0.3333333333333333,
+        "engine_id": "engine_001",
+        "instantaneous_gain": 0.0,
+        "is_conserved": true,
+        "last_rewrite_applied": false,
+        "last_rewrite_message": ""
+      },
+      "status": "success"
+    },
+    {
+      "command": "sid_set_diagram_expr",
+      "error": "SID diagram set failed (invalid engine or expression)",
+      "error_code": "EXECUTION_FAILED",
+      "execution_time_ms": 0.077,
+      "status": "error"
+    },
+    {
+      "command": "sid_step",
+      "execution_time_ms": 0.008,
+      "result": {
+        "alpha": 0.1,
+        "engine_id": "engine_001"
+      },
+      "status": "success"
+    },
+    {
+      "command": "sid_rewrite",
+      "execution_time_ms": 0.017,
+      "result": {
+        "applied": false,
+        "engine_id": "engine_001",
+        "message": "Rewrite rw1 not applicable",
+        "rule_id": "rw1"
+      },
+      "status": "success"
+    },
+    {
+      "command": "sid_metrics",
+      "execution_time_ms": 0.006,
+      "result": {
+        "I_mass": 0.3333333333333333,
+        "N_mass": 0.3333333333333333,
+        "U_mass": 0.3333333333333333,
+        "engine_id": "engine_001",
+        "instantaneous_gain": 0.0,
+        "is_conserved": true,
+        "last_rewrite_applied": false,
+        "last_rewrite_message": "Rewrite rw1 not applicable"
+      },
+      "status": "success"
+    },
+    {
+      "command": "sid_step",
+      "execution_time_ms": 0.003,
+      "result": {
+        "alpha": 0.1,
+        "engine_id": "engine_001"
+      },
+      "status": "success"
+    },
+    {
+      "command": "sid_rewrite",
+      "execution_time_ms": 0.006,
+      "result": {
+        "applied": false,
+        "engine_id": "engine_001",
+        "message": "Rewrite rw2 not applicable",
+        "rule_id": "rw2"
+      },
+      "status": "success"
+    },
+    {
+      "command": "sid_metrics",
+      "execution_time_ms": 0.005,
+      "result": {
+        "I_mass": 0.3333333333333333,
+        "N_mass": 0.3333333333333333,
+        "U_mass": 0.3333333333333333,
+        "engine_id": "engine_001",
+        "instantaneous_gain": 0.0,
+        "is_conserved": true,
+        "last_rewrite_applied": false,
+        "last_rewrite_message": "Rewrite rw2 not applicable"
+      },
+      "status": "success"
+    },
+    {
+      "command": "sid_step",
+      "execution_time_ms": 0.003,
+      "result": {
+        "alpha": 0.1,
+        "engine_id": "engine_001"
+      },
+      "status": "success"
+    },
+    {
+      "command": "sid_rewrite",
+      "execution_time_ms": 0.005,
+      "result": {
+        "applied": false,
+        "engine_id": "engine_001",
+        "message": "Rewrite rw10 not applicable",
+        "rule_id": "rw10"
+      },
+      "status": "success"
+    },
+    {
+      "command": "sid_metrics",
+      "execution_time_ms": 0.005,
+      "result": {
+        "I_mass": 0.3333333333333333,
+        "N_mass": 0.3333333333333333,
+        "U_mass": 0.3333333333333333,
+        "engine_id": "engine_001",
+        "instantaneous_gain": 0.0,
+        "is_conserved": true,
+        "last_rewrite_applied": false,
+        "last_rewrite_message": "Rewrite rw10 not applicable"
+      },
+      "status": "success"
+    },
+    {
+      "command": "destroy_engine",
+      "execution_time_ms": 0.005,
+      "result": {
+        "destroyed": true,
+        "engine_id": "engine_001"
+      },
+      "status": "success"
+    },
+    {
+      "command": "create_engine",
+      "execution_time_ms": 0.049,
+      "result": {
+        "R_c": 1.0,
+        "dt": 0.01,
+        "engine_id": "engine_001",
+        "engine_type": "sid_ssp",
+        "gamma": 0.1,
+        "kappa": 1.0,
+        "num_nodes": 8
+      },
+      "status": "success"
+    },
+    {
+      "command": "run_mission",
+      "execution_time_ms": 0.009,
+      "result": {
+        "steps_completed": 1,
+        "total_operations": 8.0
+      },
+      "status": "success"
+    },
+    {
+      "command": "get_metrics",
+      "execution_time_ms": 0.006,
+      "result": {
+        "engine_type": "sid_ssp",
+        "ns_per_op": 1.0,
+        "ops_per_sec": 1000000000.0,
+        "total_operations": 8
+      },
+      "status": "success"
+    },
+    {
+      "command": "run_mission",
+      "execution_time_ms": 0.003,
+      "result": {
+        "steps_completed": 1,
+        "total_operations": 16.0
+      },
+      "status": "success"
+    },
+    {
+      "command": "get_metrics",
+      "execution_time_ms": 0.003,
+      "result": {
+        "engine_type": "sid_ssp",
+        "ns_per_op": 1.0,
+        "ops_per_sec": 1000000000.0,
+        "total_operations": 16
+      },
+      "status": "success"
+    },
+    {
+      "command": "run_mission",
+      "execution_time_ms": 0.002,
+      "result": {
+        "steps_completed": 1,
+        "total_operations": 24.0
+      },
+      "status": "success"
+    },
+    {
+      "command": "get_metrics",
+      "execution_time_ms": 0.003,
+      "result": {
+        "engine_type": "sid_ssp",
+        "ns_per_op": 1.0,
+        "ops_per_sec": 1000000000.0,
+        "total_operations": 24
+      },
+      "status": "success"
+    },
+    {
+      "command": "destroy_engine",
+      "execution_time_ms": 0.004,
+      "result": {
+        "destroyed": true,
+        "engine_id": "engine_001"
+      },
+      "status": "success"
+    }
+  ]
+}

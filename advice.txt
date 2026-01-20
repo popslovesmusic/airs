@@ -1,0 +1,30 @@
+Advice on SID semantic motion tasks
+===================================
+
+Summary
+-------
+Recent SID validation tasks (semantic motion and hybrid opt-in motion) failed because the current SID ternary engine implements rewrites as diagram transformations only; it does not adjust I/N/U masses. Mass remained conserved (1/3 each), and guard-based “refusal” logic isn’t tied to mass thresholds, so rewrites still report `applied: true` even when the intended semantic-motion guard should block them.
+
+Key observations
+----------------
+- Rewrites (`sid_rewrite`) modify the diagram; they do not move mass between I/N/U. Therefore expectations like “I_mass increases, U_mass decreases” cannot pass without code changes.
+- The refusal path in the hybrid task expected a guard (U_mass < alpha) to block rewrites, but the engine applied the rewrite anyway because guard logic is not implemented.
+- Mass is conserved across rewrites, consistent with current engine behavior, but that also means “semantic motion” is not supported.
+
+Options to satisfy the tasks
+----------------------------
+1) Implement semantic-motion-aware rewrites in the engine:
+   - Add an opt-in flag or rule metadata that, when present, applies mass adjustments (e.g., move `alpha` from U to I) in addition to diagram edits.
+   - Enforce guard checks (e.g., `U_mass >= alpha`) before applying mass motion; return `applied: false` when guards fail.
+   - Keep default behavior symbolic-only to avoid unintended mass drift.
+
+2) Adjust validation expectations to current behavior:
+   - Mark semantic motion as “not supported in current engine”; accept diagram-only rewrites and mass conservation as the success criteria.
+   - Skip or soften checks requiring I/U deltas and guard-based refusals until engine support exists.
+
+3) Provide explicit, applicable diagrams for rewrites:
+   - Use `sid_set_diagram_expr` with a simple expression (e.g., `X`) that matches the pattern to guarantee an `applied: true` for symbolic rewrites.
+
+Recommendation
+--------------
+Decide whether to add engine support for semantic-motion rewrites (Option 1) or to scope the validation to diagram-only semantics (Option 2). If semantic motion is required, we need a code change to implement mass-shifting rewrites with guard enforcement; otherwise, update the validation plan to reflect the engine’s current symbolic-only semantics.

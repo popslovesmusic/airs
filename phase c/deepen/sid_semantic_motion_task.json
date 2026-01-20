@@ -1,0 +1,120 @@
+{
+  "task_type": "validation",
+  "authority": "gated-exec",
+  "scope": ["sid_ternary"],
+  "objective": "Demonstrate controlled semantic motion via a single explicit rewrite while preserving I/N/U conservation.",
+  "preconditions": [
+    "engine_execution_classes.json acknowledged",
+    "execution_class_observables.json acknowledged",
+    "baseline_c_validation_complete"
+  ],
+  "engine_setup": {
+    "engine_type": "sid_ternary",
+    "parameters": {
+      "num_nodes": 8,
+      "alpha": 0.1,
+      "gamma": 0.1,
+      "kappa": 1.0,
+      "dt": 0.01,
+      "seed": 12345
+    }
+  },
+  "rewrite_rules": [
+    {
+      "rule_id": "rw_admit_one_from_U",
+      "description": "If U_mass >= alpha, move alpha mass from U to I.",
+      "guard": "U_mass >= alpha",
+      "effects": {
+        "I_mass": "+alpha",
+        "U_mass": "-alpha",
+        "N_mass": "+0"
+      },
+      "must_preserve": [
+        "I_mass + N_mass + U_mass == 1.0"
+      ]
+    }
+  ],
+  "execution_plan": [
+    {
+      "step": "initial_metrics",
+      "command": "sid_metrics",
+      "expect": {
+        "is_conserved": true
+      }
+    },
+    {
+      "step": "apply_single_rewrite",
+      "command": "sid_rewrite",
+      "parameters": {
+        "rule_id": "rw_admit_one_from_U"
+      },
+      "expect": {
+        "applied": true
+      }
+    },
+    {
+      "step": "metrics_after_single_rewrite",
+      "command": "sid_metrics",
+      "expect": {
+        "I_mass_increased": true,
+        "U_mass_decreased": true,
+        "is_conserved": true,
+        "last_rewrite_applied": true
+      }
+    },
+    {
+      "step": "apply_multiple_rewrites",
+      "repeat": 5,
+      "command": "sid_rewrite",
+      "parameters": {
+        "rule_id": "rw_admit_one_from_U"
+      }
+    },
+    {
+      "step": "metrics_after_multiple_rewrites",
+      "command": "sid_metrics",
+      "expect": {
+        "I_mass_monotonic": true,
+        "U_mass_monotonic": true,
+        "is_conserved": true
+      }
+    },
+    {
+      "step": "force_refusal_case",
+      "repeat_until": "U_mass < alpha",
+      "command": "sid_rewrite",
+      "parameters": {
+        "rule_id": "rw_admit_one_from_U"
+      }
+    },
+    {
+      "step": "metrics_after_refusal",
+      "command": "sid_metrics",
+      "expect": {
+        "last_rewrite_applied": false,
+        "is_conserved": true
+      }
+    }
+  ],
+  "validation_checks": [
+    "rewrite_applies_when_guard_satisfied",
+    "rewrite_refuses_when_guard_violated",
+    "semantic_mass_conserved_always",
+    "no_mass_changes_without_rewrite"
+  ],
+  "prohibited_actions": [
+    "introduce_additional_rewrite_rules",
+    "reinterpret_mass_semantics",
+    "relax_conservation_constraint",
+    "chain_rewrites_implicitly"
+  ],
+  "required_outputs": [
+    "sid_semantic_motion_results.json",
+    "sid_semantic_motion_timeline.json"
+  ],
+  "stop_conditions": [
+    "mass_not_conserved",
+    "rewrite_applied_without_guard",
+    "mass_changed_without_rewrite"
+  ]
+}

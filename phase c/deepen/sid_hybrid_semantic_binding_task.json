@@ -1,0 +1,128 @@
+{
+  "task_type": "validation",
+  "authority": "gated-exec",
+  "scope": ["sid_ternary"],
+  "objective": "Enable and validate opt-in semantic mass motion for a single rewrite rule while preserving symbolic rewrites as default.",
+  "design_intent": {
+    "default_rewrite_mode": "symbolic_only",
+    "semantic_motion_mode": "explicit_opt_in",
+    "rationale": "Prevent accidental semantic drift while allowing controlled semantic dynamics."
+  },
+  "engine_setup": {
+    "engine_type": "sid_ternary",
+    "parameters": {
+      "num_nodes": 8,
+      "alpha": 0.1,
+      "gamma": 0.1,
+      "kappa": 1.0,
+      "dt": 0.01,
+      "seed": 12345
+    }
+  },
+  "rewrite_rules": [
+    {
+      "rule_id": "rw_admit_one_from_U",
+      "mode": "semantic_motion",
+      "guard": "U_mass >= alpha",
+      "effects": {
+        "I_mass": "+alpha",
+        "U_mass": "-alpha",
+        "N_mass": "+0"
+      },
+      "must_preserve": [
+        "I_mass + N_mass + U_mass == 1.0"
+      ]
+    },
+    {
+      "rule_id": "rw_symbolic_only",
+      "mode": "symbolic_only",
+      "effects": {},
+      "notes": "All rewrites without explicit semantic_motion mode MUST NOT change masses."
+    }
+  ],
+  "execution_plan": [
+    {
+      "step": "initial_metrics",
+      "command": "sid_metrics",
+      "expect": {
+        "is_conserved": true
+      }
+    },
+    {
+      "step": "apply_semantic_motion_rewrite",
+      "command": "sid_rewrite",
+      "parameters": {
+        "rule_id": "rw_admit_one_from_U"
+      },
+      "expect": {
+        "applied": true
+      }
+    },
+    {
+      "step": "metrics_after_semantic_motion",
+      "command": "sid_metrics",
+      "expect": {
+        "I_mass_increased": true,
+        "U_mass_decreased": true,
+        "N_mass_unchanged": true,
+        "is_conserved": true,
+        "last_rewrite_applied": true
+      }
+    },
+    {
+      "step": "apply_symbolic_rewrite",
+      "command": "sid_rewrite",
+      "parameters": {
+        "rule_id": "rw_symbolic_only"
+      },
+      "expect": {
+        "applied": true
+      }
+    },
+    {
+      "step": "metrics_after_symbolic_rewrite",
+      "command": "sid_metrics",
+      "expect": {
+        "semantic_masses_unchanged": true,
+        "is_conserved": true
+      }
+    },
+    {
+      "step": "force_refusal_case",
+      "repeat_until": "U_mass < alpha",
+      "command": "sid_rewrite",
+      "parameters": {
+        "rule_id": "rw_admit_one_from_U"
+      }
+    },
+    {
+      "step": "metrics_after_refusal",
+      "command": "sid_metrics",
+      "expect": {
+        "last_rewrite_applied": false,
+        "semantic_masses_unchanged": true,
+        "is_conserved": true
+      }
+    }
+  ],
+  "validation_checks": [
+    "semantic_motion_only_when_opt_in",
+    "symbolic_rewrites_do_not_change_masses",
+    "semantic_mass_conserved_always",
+    "rewrite_refusal_when_guard_violated"
+  ],
+  "prohibited_actions": [
+    "implicit_mass_changes",
+    "automatic_binding_of_all_rewrites",
+    "reinterpretation_of_mass_semantics"
+  ],
+  "required_outputs": [
+    "sid_hybrid_semantic_motion_results.json",
+    "sid_hybrid_semantic_motion_timeline.json"
+  ],
+  "stop_conditions": [
+    "mass_changed_without_semantic_motion_mode",
+    "mass_not_conserved",
+    "rewrite_applied_when_guard_false"
+  ]
+}

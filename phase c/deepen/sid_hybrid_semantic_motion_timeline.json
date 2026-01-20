@@ -1,0 +1,131 @@
+{
+  "timestamp": "2026-01-20T21:21:46.302413Z",
+  "timeline": [
+    {
+      "command": "create_engine",
+      "execution_time_ms": 0.063,
+      "result": {
+        "R_c": 1.0,
+        "dt": 0.01,
+        "engine_id": "engine_001",
+        "engine_type": "sid_ternary",
+        "gamma": 0.1,
+        "kappa": 1.0,
+        "num_nodes": 8
+      },
+      "status": "success"
+    },
+    {
+      "command": "sid_set_diagram_expr",
+      "execution_time_ms": 0.027,
+      "result": {
+        "engine_id": "engine_001",
+        "message": "Diagram set from expression: X",
+        "rule_id": "init"
+      },
+      "status": "success"
+    },
+    {
+      "command": "sid_metrics",
+      "execution_time_ms": 0.011,
+      "result": {
+        "I_mass": 0.3333333333333333,
+        "N_mass": 0.3333333333333333,
+        "U_mass": 0.3333333333333333,
+        "engine_id": "engine_001",
+        "instantaneous_gain": 0.0,
+        "is_conserved": true,
+        "last_rewrite_applied": true,
+        "last_rewrite_message": "Diagram set from expression: X"
+      },
+      "status": "success"
+    },
+    {
+      "command": "sid_rewrite",
+      "execution_time_ms": 0.035,
+      "result": {
+        "applied": true,
+        "engine_id": "engine_001",
+        "message": "Rewrite rw_admit_one_from_U applied",
+        "rule_id": "rw_admit_one_from_U"
+      },
+      "status": "success"
+    },
+    {
+      "command": "sid_metrics",
+      "execution_time_ms": 0.008,
+      "result": {
+        "I_mass": 0.3333333333333333,
+        "N_mass": 0.3333333333333333,
+        "U_mass": 0.3333333333333333,
+        "engine_id": "engine_001",
+        "instantaneous_gain": 0.0,
+        "is_conserved": true,
+        "last_rewrite_applied": true,
+        "last_rewrite_message": "Rewrite rw_admit_one_from_U applied"
+      },
+      "status": "success"
+    },
+    {
+      "command": "sid_rewrite",
+      "execution_time_ms": 0.022,
+      "result": {
+        "applied": true,
+        "engine_id": "engine_001",
+        "message": "Rewrite rw_symbolic_only applied",
+        "rule_id": "rw_symbolic_only"
+      },
+      "status": "success"
+    },
+    {
+      "command": "sid_metrics",
+      "execution_time_ms": 0.007,
+      "result": {
+        "I_mass": 0.3333333333333333,
+        "N_mass": 0.3333333333333333,
+        "U_mass": 0.3333333333333333,
+        "engine_id": "engine_001",
+        "instantaneous_gain": 0.0,
+        "is_conserved": true,
+        "last_rewrite_applied": true,
+        "last_rewrite_message": "Rewrite rw_symbolic_only applied"
+      },
+      "status": "success"
+    },
+    {
+      "command": "sid_rewrite",
+      "execution_time_ms": 0.025,
+      "result": {
+        "applied": true,
+        "engine_id": "engine_001",
+        "message": "Rewrite rw_refuse applied",
+        "rule_id": "rw_refuse"
+      },
+      "status": "success"
+    },
+    {
+      "command": "sid_metrics",
+      "execution_time_ms": 0.008,
+      "result": {
+        "I_mass": 0.3333333333333333,
+        "N_mass": 0.3333333333333333,
+        "U_mass": 0.3333333333333333,
+        "engine_id": "engine_001",
+        "instantaneous_gain": 0.0,
+        "is_conserved": true,
+        "last_rewrite_applied": true,
+        "last_rewrite_message": "Rewrite rw_refuse applied"
+      },
+      "status": "success"
+    },
+    {
+      "command": "destroy_engine",
+      "execution_time_ms": 0.007,
+      "result": {
+        "destroyed": true,
+        "engine_id": "engine_001"
+      },
+      "status": "success"
+    }
+  ]
+}
