@@ -16,6 +16,7 @@
 #include <memory>
 #include <vector>
 #include <atomic>
+#include <unordered_map>
 #include "json.hpp"
 
 // Engine instance wrapper
@@ -48,6 +49,7 @@ struct EngineInstance {
     double kappa;
     double gamma;
     double dt;
+    double alpha;
     TypeTag type_tag;
 
     EngineInstance()
@@ -62,6 +64,7 @@ struct EngineInstance {
         , kappa(1.0)
         , gamma(0.1)
         , dt(0.01)
+        , alpha(0.1)
         , type_tag(TypeTag::Unknown) {}
 };
 
@@ -77,6 +80,7 @@ public:
                              double kappa = 1.0,
                              double gamma = 0.1,
                              double dt = 0.01,
+                             double alpha = 0.1,
                              int N_x = 0,
                              int N_y = 0,
                              int N_z = 0,
@@ -149,6 +153,23 @@ public:
         bool last_rewrite_applied;
         std::string last_rewrite_message;
     };
+    struct SidRewriteEvent {
+        uint64_t event_id;
+        std::string rule_id;
+        bool applied;
+        std::string message;
+        nlohmann::json metadata;
+        double timestamp;
+    };
+    struct SidWrapperState {
+        double I_mass;
+        double N_mass;
+        double U_mass;
+        uint64_t motion_applied_count;
+        size_t event_cursor;
+        nlohmann::json last_motion;
+        bool initialized;
+    };
 
     bool sidStep(const std::string& engine_id, double alpha);
     bool sidCollapse(const std::string& engine_id, double alpha);
@@ -156,6 +177,7 @@ public:
                          const std::string& pattern,
                          const std::string& replacement,
                          const std::string& rule_id,
+                         const nlohmann::json& rule_metadata,
                          bool& applied_out,
                          std::string& message_out);
     bool sidSetDiagramExpr(const std::string& engine_id,
@@ -163,14 +185,29 @@ public:
                            const std::string& rule_id,
                            std::string& message_out);
     bool sidSetDiagramJson(const std::string& engine_id,
-                           const std::string& diagram_json,
-                           std::string& message_out);
+                            const std::string& diagram_json,
+                            std::string& message_out);
     bool sidGetDiagramJson(const std::string& engine_id,
                            std::string& diagram_json_out);
     SidMetrics getSidMetrics(const std::string& engine_id);
+    bool getSidRewriteEvents(const std::string& engine_id,
+                             size_t cursor,
+                             size_t limit,
+                             std::vector<SidRewriteEvent>& events_out);
+    bool sidWrapperApplyMotion(const std::string& engine_id,
+                               size_t max_events_to_process,
+                               SidWrapperState& state_out);
+    bool getSidWrapperMetrics(const std::string& engine_id, SidWrapperState& state_out);
+    void recordSidRewriteEvent(const std::string& engine_id,
+                               const std::string& rule_id,
+                               bool applied,
+                               const std::string& message,
+                               const nlohmann::json& metadata);
 
 private:
     std::map<std::string, std::unique_ptr<EngineInstance>> engines;
+    std::unordered_map<std::string, std::vector<SidRewriteEvent>> sid_rewrite_events_;
+    std::unordered_map<std::string, SidWrapperState> sid_wrapper_state_;
     // Simple counter for engine ID generation (single-threaded, no atomic needed)
     int next_engine_id;
     static std::atomic<bool> instance_created_;

@@ -1,0 +1,148 @@
+{
+  "task_type": "design_and_validation",
+  "authority": "proposal-only",
+  "scope": [
+    "sid_ternary",
+    "sid_semantic_motion_wrapper"
+  ],
+  "objective": "Introduce a staged semantic-motion wrapper that applies explicit mass dynamics in response to SID rewrite signals, without modifying the base SID engine.",
+  "design_principle": {
+    "base_engine_immutable": true,
+    "semantic_motion_externalized": true,
+    "default_sid_behavior": "symbolic_only",
+    "motion_enabled_only_in_wrapper": true
+  },
+  "architecture": {
+    "base_engine": {
+      "engine_type": "sid_ternary",
+      "role": "semantic_control_and_rewrite_detection",
+      "responsibilities": [
+        "diagram management",
+        "rewrite applicability",
+        "I/N/U conservation enforcement",
+        "rewrite signaling"
+      ]
+    },
+    "wrapper_engine": {
+      "engine_type": "sid_ternary_motion",
+      "role": "semantic_dynamics",
+      "responsibilities": [
+        "listen_to_rewrite_events",
+        "apply_explicit_mass_deltas",
+        "enforce_mass_guards",
+        "reassert_conservation"
+      ]
+    }
+  },
+  "semantic_motion_contract": {
+    "motion_trigger": {
+      "source": "sid_rewrite_event",
+      "condition": "rule.mode == semantic_motion"
+    },
+    "guard_checks": [
+      "U_mass >= alpha"
+    ],
+    "effects": {
+      "I_mass": "+alpha",
+      "U_mass": "-alpha",
+      "N_mass": "+0"
+    },
+    "post_conditions": [
+      "I_mass + N_mass + U_mass == 1.0",
+      "I_mass >= 0",
+      "N_mass >= 0",
+      "U_mass >= 0"
+    ]
+  },
+  "execution_plan": [
+    {
+      "step": "create_base_engine",
+      "command": "create_engine",
+      "engine_type": "sid_ternary"
+    },
+    {
+      "step": "wrap_engine",
+      "command": "attach_motion_wrapper",
+      "wrapper_type": "sid_ternary_motion"
+    },
+    {
+      "step": "initial_metrics",
+      "command": "sid_metrics",
+      "expect": {
+        "is_conserved": true
+      }
+    },
+    {
+      "step": "apply_semantic_motion_rewrite",
+      "command": "sid_rewrite",
+      "parameters": {
+        "rule_id": "rw_admit_one_from_U",
+        "mode": "semantic_motion"
+      }
+    },
+    {
+      "step": "wrapper_applies_motion",
+      "command": "wrapper_apply_motion",
+      "expect": {
+        "I_mass_increased": true,
+        "U_mass_decreased": true,
+        "is_conserved": true
+      }
+    },
+    {
+      "step": "apply_symbolic_rewrite",
+      "command": "sid_rewrite",
+      "parameters": {
+        "rule_id": "rw_symbolic_only"
+      }
+    },
+    {
+      "step": "wrapper_no_motion",
+      "command": "wrapper_apply_motion",
+      "expect": {
+        "semantic_masses_unchanged": true,
+        "is_conserved": true
+      }
+    },
+    {
+      "step": "guard_refusal_case",
+      "repeat_until": "U_mass < alpha",
+      "command": "sid_rewrite",
+      "parameters": {
+        "rule_id": "rw_admit_one_from_U",
+        "mode": "semantic_motion"
+      }
+    },
+    {
+      "step": "wrapper_refusal",
+      "command": "wrapper_apply_motion",
+      "expect": {
+        "motion_applied": false,
+        "semantic_masses_unchanged": true,
+        "is_conserved": true
+      }
+    }
+  ],
+  "validation_checks": [
+    "base_engine_masses_only_change_via_wrapper",
+    "semantic_motion_only_for_opt_in_rules",
+    "symbolic_rewrites_do_not_trigger_motion",
+    "mass_conservation_enforced_after_motion",
+    "guards_block_motion_when_unsatisfied"
+  ],
+  "prohibited_actions": [
+    "modify_sid_ternary_internal_state",
+    "implicit_mass_motion",
+    "automatic_binding_of_all_rewrites"
+  ],
+  "required_outputs": [
+    "sid_motion_wrapper_design.json",
+    "sid_motion_wrapper_validation_results.json",
+    "sid_motion_wrapper_timeline.json"
+  ],
+  "stop_conditions": [
+    "base_engine_state_mutated_directly",
+    "mass_not_conserved",
+    "motion_applied_without_opt_in"
+  ]
+}

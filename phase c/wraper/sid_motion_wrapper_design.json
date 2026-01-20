@@ -1,0 +1,138 @@
+{
+  "version": "1.0",
+  "name": "sid_ternary_motion_wrapper",
+  "status": "proposal-only",
+  "goal": "Externalize semantic mass motion (I/N/U) as an opt-in layer driven by rewrite signals, without modifying sid_ternary core semantics.",
+  "non_goals": [
+    "Modify sid_ternary internal rewrite semantics",
+    "Add implicit mass motion to all rewrites",
+    "Claim meaning correctness or convergence"
+  ],
+  "baseline_guarantees_preserved": {
+    "sid_ternary_rewrites": "diagram-only",
+    "mass_conservation_in_sid_ternary": true,
+    "no_mass_motion_without_wrapper": true
+  },
+  "conceptual_architecture": {
+    "base_engine": {
+      "type": "sid_ternary",
+      "responsibilities": [
+        "parse/set diagram",
+        "determine rewrite applicability",
+        "apply diagram rewrites",
+        "expose sid_metrics",
+        "preserve I/N/U conservation"
+      ],
+      "outputs_needed_by_wrapper": [
+        "rewrite_event_stream",
+        "current I_mass/N_mass/U_mass",
+        "alpha (or rule-defined epsilon)"
+      ]
+    },
+    "wrapper_layer": {
+      "type": "sid_ternary_motion_layer",
+      "responsibilities": [
+        "subscribe to rewrite events",
+        "filter for semantic-motion-enabled rules",
+        "apply mass deltas in a separate motion state",
+        "enforce guards (U_mass >= epsilon)",
+        "reassert conservation and non-negativity",
+        "emit wrapper_metrics"
+      ],
+      "state_model": {
+        "mass_state": {
+          "I_mass": "float",
+          "N_mass": "float",
+          "U_mass": "float"
+        },
+        "event_cursor": "monotonic integer index into rewrite_event_stream",
+        "motion_applied_count": "integer",
+        "last_motion": {
+          "rule_id": "string",
+          "applied": "bool",
+          "reason": "string"
+        }
+      }
+    }
+  },
+  "rule_model": {
+    "default_mode": "symbolic_only",
+    "semantic_motion_mode": {
+      "enabled_when": "rule_metadata.motion == true",
+      "guard": "U_mass >= epsilon",
+      "effects": {
+        "I_mass": "+epsilon",
+        "U_mass": "-epsilon",
+        "N_mass": "+0"
+      },
+      "post_conditions": [
+        "I_mass + N_mass + U_mass == 1.0",
+        "I_mass >= 0",
+        "N_mass >= 0",
+        "U_mass >= 0"
+      ]
+    },
+    "epsilon_source_priority": [
+      "rule_metadata.epsilon",
+      "engine_alpha",
+      "fallback_error"
+    ]
+  },
+  "interface_contracts": {
+    "required_new_hooks_minimum": [
+      {
+        "hook": "sid_rewrite_events",
+        "type": "read-only",
+        "description": "Return append-only list of rewrite events since engine creation (or since cursor).",
+        "fields": [
+          "event_id",
+          "timestamp",
+          "rule_id",
+          "applied",
+          "message",
+          "optional_rule_metadata"
+        ]
+      },
+      {
+        "hook": "wrapper_metrics",
+        "type": "computed",
+        "description": "Expose wrapper-layer mass state and last motion decision.",
+        "fields": [
+          "I_mass",
+          "N_mass",
+          "U_mass",
+          "is_conserved",
+          "motion_applied_count",
+          "last_motion"
+        ]
+      }
+    ],
+    "nice_to_have_hooks": [
+      {
+        "hook": "sid_rule_metadata",
+        "description": "Allow rule metadata (motion flag, epsilon) to be registered or queried without embedding in diagram."
+      }
+    ],
+    "explicitly_not_required": [
+      "attach_motion_wrapper CLI command",
+      "engine mutation inside sid_ternary"
+    ]
+  },
+  "integration_options": [
+    {
+      "option": "in-process wrapper object",
+      "pros": ["fast", "direct access to event stream"],
+      "cons": ["requires API surface in C++ layer"]
+    },
+    {
+      "option": "out-of-process wrapper",
+      "pros": ["no engine code changes besides event export", "clean separation"],
+      "cons": ["requires event export endpoint", "more plumbing"]
+    }
+  ],
+  "risk_controls": [
+    "Wrapper never writes into sid_ternary diagram or state; it maintains its own mass_state.",
+    "Wrapper motion is opt-in per-rule; symbolic-only remains default.",
+    "All motion is guarded and conservation-checked; failures result in no-op with explicit reason."
+  ]
+}

@@ -1,0 +1,64 @@
+{
+  "version": "1.0",
+  "name": "sid_motion_wrapper_validation_plan_and_gap",
+  "status": "proposal-only",
+  "current_executability": {
+    "can_run_today": [
+      "sid_ternary symbolic rewrites",
+      "sid_metrics conservation checks",
+      "rewrite applied logging (message/rule_id)"
+    ],
+    "cannot_run_today": [
+      "wrapper_apply_motion",
+      "per-rule motion metadata",
+      "guard enforcement based on mass thresholds at rewrite time",
+      "event stream cursoring"
+    ],
+    "blocking_gap": "No exposed rewrite-event stream or rule metadata channel; no wrapper-layer metrics endpoint."
+  },
+  "minimal_hooks_required_to_execute": [
+    "sid_rewrite_events (read-only, append-only)",
+    "wrapper_metrics (wrapper-layer state exposure)",
+    "rule metadata field for motion enablement + epsilon (either embedded in event or queryable)"
+  ],
+  "validation_matrix": [
+    {
+      "test": "symbolic_only_does_not_move_mass",
+      "pre": "Apply rw_symbolic_only",
+      "expect": "sid_metrics I/N/U unchanged; conserved true",
+      "status_today": "executable"
+    },
+    {
+      "test": "semantic_motion_applies_when_enabled",
+      "pre": "Apply rw_admit_one_from_U with motion metadata; wrapper consumes event",
+      "expect": "wrapper_metrics I increases by epsilon; U decreases by epsilon; conserved true",
+      "status_today": "blocked_by_hooks"
+    },
+    {
+      "test": "guard_refuses_when_U_below_epsilon",
+      "pre": "Repeat motion until U < epsilon; wrapper consumes next motion event",
+      "expect": "wrapper_metrics last_motion.applied=false; masses unchanged; conserved true",
+      "status_today": "blocked_by_hooks"
+    },
+    {
+      "test": "no_motion_without_opt_in",
+      "pre": "Apply arbitrary rewrites without motion flag",
+      "expect": "wrapper_metrics motion_applied_count unchanged",
+      "status_today": "blocked_by_hooks"
+    }
+  ],
+  "notional_expected_results_after_hooks": {
+    "pass_criteria": [
+      "Mass changes only occur in wrapper state when motion flag true",
+      "Symbolic rewrites never change wrapper mass_state",
+      "Conservation holds after every motion attempt",
+      "Guard blocks motion when unsatisfied"
+    ],
+    "fail_fast_conditions": [
+      "Mass changes without motion flag",
+      "Conservation violated",
+      "Negative mass detected",
+      "Wrapper cannot reconcile event stream ordering"
+    ]
+  }
+}

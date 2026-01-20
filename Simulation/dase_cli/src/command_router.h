@@ -49,6 +49,9 @@ private:
     json handleSidSetDiagramExpr(const json& params);
     json handleSidSetDiagramJson(const json& params);
     json handleSidGetDiagramJson(const json& params);
+    json handleSidRewriteEvents(const json& params);
+    json handleSidWrapperApplyMotion(const json& params);
+    json handleSidWrapperMetrics(const json& params);
 
     // Analysis command handlers
     json handleCheckAnalysisTools(const json& params);

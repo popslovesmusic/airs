@@ -1,0 +1,103 @@
+{
+  "spec_name": "sid_semantic_motion_wrapper",
+  "spec_version": "1.0",
+  "status": "technical_spec_only",
+  "purpose": "Define an external semantic-motion wrapper that applies explicit I/N/U mass dynamics in response to SID rewrite signals, without modifying the sid_ternary engine.",
+  "design_constraints": {
+    "sid_core_immutable": true,
+    "no_implicit_semantic_motion": true,
+    "motion_opt_in_only": true,
+    "mass_conservation_mandatory": true
+  },
+  "system_boundary": {
+    "inside_sid_ternary": [
+      "diagram management",
+      "rewrite applicability",
+      "symbolic rewrite execution",
+      "I/N/U conservation enforcement"
+    ],
+    "outside_sid_ternary_wrapper": [
+      "semantic mass motion",
+      "motion guards",
+      "motion metrics",
+      "motion audit trail"
+    ]
+  },
+  "wrapper_state": {
+    "mass_state": {
+      "I_mass": "float",
+      "N_mass": "float",
+      "U_mass": "float"
+    },
+    "event_cursor": "uint64",
+    "motion_applied_count": "uint64",
+    "last_motion": {
+      "rule_id": "string",
+      "applied": "bool",
+      "reason": "string"
+    }
+  },
+  "required_inputs": {
+    "rewrite_event": {
+      "event_id": "uint64",
+      "rule_id": "string",
+      "applied": "bool",
+      "rule_metadata": {
+        "semantic_motion": "bool",
+        "epsilon": "optional<float>"
+      }
+    },
+    "engine_parameters": {
+      "alpha": "float"
+    }
+  },
+  "motion_semantics": {
+    "enable_condition": "rewrite_event.applied == true AND rule_metadata.semantic_motion == true",
+    "guard": "U_mass >= epsilon",
+    "epsilon_resolution_order": [
+      "rewrite_event.rule_metadata.epsilon",
+      "engine_parameters.alpha"
+    ],
+    "effects": {
+      "I_mass": "+epsilon",
+      "U_mass": "-epsilon",
+      "N_mass": "+0"
+    }
+  },
+  "post_conditions": [
+    "I_mass + N_mass + U_mass == 1.0",
+    "I_mass >= 0",
+    "N_mass >= 0",
+    "U_mass >= 0"
+  ],
+  "failure_modes": {
+    "guard_failed": {
+      "action": "no_op",
+      "reason": "U_mass < epsilon"
+    },
+    "epsilon_undefined": {
+      "action": "error",
+      "reason": "No epsilon available from rule or engine"
+    },
+    "conservation_violation": {
+      "action": "abort_motion",
+      "reason": "Post-condition failure"
+    }
+  },
+  "wrapper_outputs": {
+    "wrapper_metrics": {
+      "I_mass": "float",
+      "N_mass": "float",
+      "U_mass": "float",
+      "is_conserved": "bool",
+      "motion_applied_count": "uint64",
+      "last_motion": "object"
+    }
+  },
+  "explicit_non_features": [
+    "diagram mutation",
+    "automatic binding of all rewrites",
+    "semantic interpretation of meaning",
+    "long-term convergence logic"
+  ]
+}

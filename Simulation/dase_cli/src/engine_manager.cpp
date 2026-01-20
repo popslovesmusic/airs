@@ -411,6 +411,7 @@ std::string EngineManager::createEngine(const std::string& engine_type,
                                         double kappa,
                                         double gamma,
                                         double dt,
+                                        double alpha,
                                         int N_x,
                                         int N_y,
                                         int N_z,
@@ -448,6 +449,7 @@ std::string EngineManager::createEngine(const std::string& engine_type,
     instance->kappa = kappa;
     instance->gamma = gamma;
     instance->dt = dt;
+    instance->alpha = alpha;
     instance->dimension_x = N_x;
     instance->dimension_y = N_y;
     instance->dimension_z = N_z;
@@ -809,6 +811,28 @@ std::string EngineManager::createEngine(const std::string& engine_type,
 
     instance->engine_handle = handle;
 
+    if (instance->engine_type == "sid_ternary") {
+        sid_rewrite_events_[instance->engine_id] = {};
+        SidWrapperState wrapper{};
+        double I_mass = sid_get_I_mass(static_cast<sid_engine*>(handle));
+        double N_mass = sid_get_N_mass(static_cast<sid_engine*>(handle));
+        double U_mass = sid_get_U_mass(static_cast<sid_engine*>(handle));
+        double total_mass = I_mass + N_mass + U_mass;
+        if (total_mass > 0.0) {
+            I_mass /= total_mass;
+            N_mass /= total_mass;
+            U_mass /= total_mass;
+        }
+        wrapper.I_mass = I_mass;
+        wrapper.N_mass = N_mass;
+        wrapper.U_mass = U_mass;
+        wrapper.motion_applied_count = 0;
+        wrapper.event_cursor = 0;
+        wrapper.last_motion = nlohmann::json::object();
+        wrapper.initialized = true;
+        sid_wrapper_state_[instance->engine_id] = wrapper;
+    }
+
     std::string id = instance->engine_id;
     engines[id] = std::move(instance);
 
@@ -867,6 +891,8 @@ bool EngineManager::destroyEngine(const std::string& engine_id) {
     }
 
     engines.erase(it);
+    sid_rewrite_events_.erase(engine_id);
+    sid_wrapper_state_.erase(engine_id);
     return true;
 }
 
@@ -2108,6 +2134,7 @@ bool EngineManager::sidApplyRewrite(const std::string& engine_id,
                                     const std::string& pattern,
                                     const std::string& replacement,
                                     const std::string& rule_id,
+                                    const nlohmann::json& /*rule_metadata*/,
                                     bool& applied_out,
                                     std::string& message_out) {
     auto* instance = getEngine(engine_id);
@@ -2200,6 +2227,135 @@ bool EngineManager::sidGetDiagramJson(const std::string& engine_id,
     }
 
     return false;
+}
+
+void EngineManager::recordSidRewriteEvent(const std::string& engine_id,
+                                          const std::string& rule_id,
+                                          bool applied,
+                                          const std::string& message,
+                                          const nlohmann::json& metadata) {
+    auto it = engines.find(engine_id);
+    if (it == engines.end()) {
+        return;
+    }
+    auto& vec = sid_rewrite_events_[engine_id];
+    SidRewriteEvent ev{};
+    ev.event_id = static_cast<uint64_t>(vec.size());
+    ev.rule_id = rule_id;
+    ev.applied = applied;
+    ev.message = message;
+    ev.metadata = metadata;
+    ev.timestamp = getCurrentTimestamp();
+    vec.push_back(ev);
+}
+
+bool EngineManager::getSidRewriteEvents(const std::string& engine_id,
+                                        size_t cursor,
+                                        size_t limit,
+                                        std::vector<SidRewriteEvent>& events_out) {
+    auto it = sid_rewrite_events_.find(engine_id);
+    if (it == sid_rewrite_events_.end()) {
+        return false;
+    }
+    const auto& vec = it->second;
+    if (cursor > vec.size()) {
+        cursor = vec.size();
+    }
+    size_t end = vec.size();
+    if (limit > 0 && cursor + limit < end) {
+        end = cursor + limit;
+    }
+    events_out.assign(vec.begin() + static_cast<ptrdiff_t>(cursor), vec.begin() + static_cast<ptrdiff_t>(end));
+    return true;
+}
+
+bool EngineManager::sidWrapperApplyMotion(const std::string& engine_id,
+                                          size_t max_events_to_process,
+                                          SidWrapperState& state_out) {
+    auto inst = engines.find(engine_id);
+    if (inst == engines.end()) {
+        return false;
+    }
+    if (inst->second->engine_type != "sid_ternary") {
+        return false;
+    }
+    auto state_it = sid_wrapper_state_.find(engine_id);
+    if (state_it == sid_wrapper_state_.end()) {
+        return false;
+    }
+    auto events_it = sid_rewrite_events_.find(engine_id);
+    if (events_it == sid_rewrite_events_.end()) {
+        return false;
+    }
+    auto& wrapper = state_it->second;
+    const auto& events = events_it->second;
+
+    size_t start = wrapper.event_cursor;
+    size_t end = events.size();
+    if (max_events_to_process > 0 && start + max_events_to_process < end) {
+        end = start + max_events_to_process;
+    }
+
+    auto apply_motion = [&](double epsilon, const std::string& rule_id) {
+        if (epsilon <= 0.0) {
+            wrapper.last_motion = {{"rule_id", rule_id}, {"applied", false}, {"reason", "epsilon_invalid"}};
+            return;
+        }
+        if (wrapper.U_mass + 1e-12 < epsilon) {
+            wrapper.last_motion = {{"rule_id", rule_id}, {"applied", false}, {"reason", "guard_failed"}};
+            return;
+        }
+        wrapper.U_mass -= epsilon;
+        wrapper.I_mass += epsilon;
+        wrapper.motion_applied_count += 1;
+
+        double total = wrapper.I_mass + wrapper.N_mass + wrapper.U_mass;
+        if (total > 0.0) {
+            wrapper.I_mass /= total;
+            wrapper.N_mass /= total;
+            wrapper.U_mass /= total;
+        }
+        wrapper.last_motion = {{"rule_id", rule_id}, {"applied", true}, {"reason", "applied"}};
+    };
+
+    for (size_t idx = start; idx < end; ++idx) {
+        const auto& ev = events[idx];
+        wrapper.event_cursor = idx + 1;
+
+        bool semantic_motion = false;
+        double epsilon = 0.0;
+        if (ev.metadata.is_object()) {
+            const auto mode_it = ev.metadata.find("mode");
+            if (mode_it != ev.metadata.end() && mode_it->is_string()) {
+                semantic_motion = (*mode_it == "semantic_motion");
+            }
+            if (!semantic_motion && ev.metadata.value("semantic_motion", false)) {
+                semantic_motion = true;
+            }
+            if (ev.metadata.contains("epsilon") && ev.metadata["epsilon"].is_number()) {
+                epsilon = ev.metadata["epsilon"].get<double>();
+            }
+        }
+
+        if (semantic_motion && ev.applied) {
+            if (epsilon <= 0.0) {
+                epsilon = inst->second->alpha > 0.0 ? inst->second->alpha : 0.0;
+            }
+            apply_motion(epsilon, ev.rule_id);
+        }
+    }
+
+    state_out = wrapper;
+    return true;
+}
+
+bool EngineManager::getSidWrapperMetrics(const std::string& engine_id, SidWrapperState& state_out) {
+    auto it = sid_wrapper_state_.find(engine_id);
+    if (it == sid_wrapper_state_.end()) {
+        return false;
+    }
+    state_out = it->second;
+    return true;
 }
 
 EngineManager::SidMetrics EngineManager::getSidMetrics(const std::string& engine_id) {

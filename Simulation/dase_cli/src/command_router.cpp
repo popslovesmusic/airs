@@ -12,6 +12,7 @@
 #include "engine_fft_analysis.h"
 #include <chrono>
 #include <cstdint>
+#include <cmath>
 
 CommandRouter::CommandRouter()
     : engine_manager(std::make_unique<EngineManager>()) {
@@ -43,6 +44,9 @@ CommandRouter::CommandRouter()
     command_handlers["sid_set_diagram_expr"] = [this](const json& p) { return handleSidSetDiagramExpr(p); };
     command_handlers["sid_set_diagram_json"] = [this](const json& p) { return handleSidSetDiagramJson(p); };
     command_handlers["sid_get_diagram_json"] = [this](const json& p) { return handleSidGetDiagramJson(p); };
+    command_handlers["sid_rewrite_events"] = [this](const json& p) { return handleSidRewriteEvents(p); };
+    command_handlers["sid_wrapper_apply_motion"] = [this](const json& p) { return handleSidWrapperApplyMotion(p); };
+    command_handlers["sid_wrapper_metrics"] = [this](const json& p) { return handleSidWrapperMetrics(p); };
 
     // Register analysis commands
     command_handlers["check_analysis_tools"] = [this](const json& p) { return handleCheckAnalysisTools(p); };
@@ -398,6 +402,7 @@ json CommandRouter::handleCreateEngine(const json& params) {
     double kappa = params.value("kappa", 1.0);
     double gamma = params.value("gamma", 0.1);
     double dt = params.value("dt", 0.01);
+    double alpha = params.value("alpha", 0.1);
     int N_x = params.value("N_x", params.value("width", params.value("grid_nx", 0)));
     int N_y = params.value("N_y", params.value("height", params.value("grid_ny", 0)));
     int N_z = params.value("N_z", params.value("depth", params.value("grid_nz", 0)));
@@ -481,6 +486,7 @@ json CommandRouter::handleCreateEngine(const json& params) {
         kappa,
         gamma,
         dt,
+        alpha,
         N_x,
         N_y,
         N_z,
@@ -1024,6 +1030,7 @@ json CommandRouter::handleSidRewrite(const json& params) {
     std::string pattern = params.value("pattern", "");
     std::string replacement = params.value("replacement", "");
     std::string rule_id = params.value("rule_id", "rw");
+    nlohmann::json rule_metadata = params.value("rule_metadata", nlohmann::json::object());
 
     if (engine_id.empty()) {
         return createErrorResponse("sid_rewrite", "Missing engine_id", "MISSING_PARAMETER");
@@ -1034,11 +1041,12 @@ json CommandRouter::handleSidRewrite(const json& params) {
 
     bool applied = false;
     std::string message;
-    if (!engine_manager->sidApplyRewrite(engine_id, pattern, replacement, rule_id, applied, message)) {
+    if (!engine_manager->sidApplyRewrite(engine_id, pattern, replacement, rule_id, rule_metadata, applied, message)) {
         return createErrorResponse("sid_rewrite",
                                    "SID rewrite failed (invalid engine or parameters)",
                                    "EXECUTION_FAILED");
     }
+    engine_manager->recordSidRewriteEvent(engine_id, rule_id, applied, message, rule_metadata);
 
     json result = {
         {"engine_id", engine_id},
@@ -1046,6 +1054,9 @@ json CommandRouter::handleSidRewrite(const json& params) {
         {"applied", applied},
         {"message", message}
     };
+    if (!rule_metadata.is_null() && !rule_metadata.empty()) {
+        result["rule_metadata"] = rule_metadata;
+    }
 
     return createSuccessResponse("sid_rewrite", result, 0);
 }
@@ -1227,6 +1238,94 @@ json CommandRouter::handleSidGetDiagramJson(const json& params) {
     };
 
     return createSuccessResponse("sid_get_diagram_json", result, 0);
+}
+
+json CommandRouter::handleSidRewriteEvents(const json& params) {
+    std::string engine_id = params.value("engine_id", "");
+    size_t cursor = static_cast<size_t>(params.value("cursor", 0));
+    size_t limit = static_cast<size_t>(params.value("limit", 100));
+
+    if (engine_id.empty()) {
+        return createErrorResponse("sid_rewrite_events", "Missing engine_id", "MISSING_PARAMETER");
+    }
+
+    std::vector<EngineManager::SidRewriteEvent> events;
+    if (!engine_manager->getSidRewriteEvents(engine_id, cursor, limit, events)) {
+        return createErrorResponse("sid_rewrite_events", "Unable to fetch rewrite events", "EXECUTION_FAILED");
+    }
+
+    json ev_json = json::array();
+    for (const auto& ev : events) {
+        ev_json.push_back({
+            {"event_id", ev.event_id},
+            {"rule_id", ev.rule_id},
+            {"applied", ev.applied},
+            {"message", ev.message},
+            {"timestamp", ev.timestamp},
+            {"metadata", ev.metadata}
+        });
+    }
+
+    json result = {
+        {"engine_id", engine_id},
+        {"events", ev_json},
+        {"next_cursor", cursor + ev_json.size()}
+    };
+
+    return createSuccessResponse("sid_rewrite_events", result, 0);
+}
+
+json CommandRouter::handleSidWrapperApplyMotion(const json& params) {
+    std::string engine_id = params.value("engine_id", "");
+    size_t max_events = static_cast<size_t>(params.value("max_events", 0));
+
+    if (engine_id.empty()) {
+        return createErrorResponse("sid_wrapper_apply_motion", "Missing engine_id", "MISSING_PARAMETER");
+    }
+
+    EngineManager::SidWrapperState state{};
+    if (!engine_manager->sidWrapperApplyMotion(engine_id, max_events, state)) {
+        return createErrorResponse("sid_wrapper_apply_motion", "Unable to apply wrapper motion", "EXECUTION_FAILED");
+    }
+
+    json result = {
+        {"engine_id", engine_id},
+        {"I_mass", state.I_mass},
+        {"N_mass", state.N_mass},
+        {"U_mass", state.U_mass},
+        {"is_conserved", std::abs(state.I_mass + state.N_mass + state.U_mass - 1.0) < 1e-9},
+        {"motion_applied_count", state.motion_applied_count},
+        {"event_cursor", state.event_cursor},
+        {"last_motion", state.last_motion}
+    };
+
+    return createSuccessResponse("sid_wrapper_apply_motion", result, 0);
+}
+
+json CommandRouter::handleSidWrapperMetrics(const json& params) {
+    std::string engine_id = params.value("engine_id", "");
+
+    if (engine_id.empty()) {
+        return createErrorResponse("sid_wrapper_metrics", "Missing engine_id", "MISSING_PARAMETER");
+    }
+
+    EngineManager::SidWrapperState state{};
+    if (!engine_manager->getSidWrapperMetrics(engine_id, state)) {
+        return createErrorResponse("sid_wrapper_metrics", "Unable to fetch wrapper metrics", "EXECUTION_FAILED");
+    }
+
+    json result = {
+        {"engine_id", engine_id},
+        {"I_mass", state.I_mass},
+        {"N_mass", state.N_mass},
+        {"U_mass", state.U_mass},
+        {"is_conserved", std::abs(state.I_mass + state.N_mass + state.U_mass - 1.0) < 1e-9},
+        {"motion_applied_count", state.motion_applied_count},
+        {"event_cursor", state.event_cursor},
+        {"last_motion", state.last_motion}
+    };
+
+    return createSuccessResponse("sid_wrapper_metrics", result, 0);
 }
 
 // ============================================================================
