@@ -29,15 +29,31 @@ struct FFTWCacheExampleEngine {
         if (!buffer) {
             throw std::runtime_error("Failed to allocate FFT buffer");
         }
-        // Initialize with a simple pulse
-        for (size_t i = 0; i < num_nodes; ++i) {
-            buffer[i][0] = (i == 0) ? 1.0 : 0.0;
-            buffer[i][1] = 0.0;
-        }
-        plan_forward = fftw_plan_dft_1d(static_cast<int>(num_nodes), buffer, buffer, FFTW_FORWARD, FFTW_ESTIMATE);
-        plan_inverse = fftw_plan_dft_1d(static_cast<int>(num_nodes), buffer, buffer, FFTW_BACKWARD, FFTW_ESTIMATE);
-        if (!plan_forward || !plan_inverse) {
-            throw std::runtime_error("Failed to create FFTW plans");
+        try {
+            // Initialize with a simple pulse
+            for (size_t i = 0; i < num_nodes; ++i) {
+                buffer[i][0] = (i == 0) ? 1.0 : 0.0;
+                buffer[i][1] = 0.0;
+            }
+            plan_forward = fftw_plan_dft_1d(static_cast<int>(num_nodes), buffer, buffer, FFTW_FORWARD, FFTW_ESTIMATE);
+            plan_inverse = fftw_plan_dft_1d(static_cast<int>(num_nodes), buffer, buffer, FFTW_BACKWARD, FFTW_ESTIMATE);
+            if (!plan_forward || !plan_inverse) {
+                throw std::runtime_error("Failed to create FFTW plans");
+            }
+        } catch (...) {
+            if (plan_forward) {
+                fftw_destroy_plan(plan_forward);
+                plan_forward = nullptr;
+            }
+            if (plan_inverse) {
+                fftw_destroy_plan(plan_inverse);
+                plan_inverse = nullptr;
+            }
+            if (buffer) {
+                fftw_free(buffer);
+                buffer = nullptr;
+            }
+            throw;
         }
     }
 
@@ -855,6 +871,14 @@ bool EngineManager::destroyEngine(const std::string& engine_id) {
 }
 
 EngineInstance* EngineManager::getEngine(const std::string& engine_id) {
+    auto it = engines.find(engine_id);
+    if (it == engines.end()) {
+        return nullptr;
+    }
+    return it->second.get();
+}
+
+const EngineInstance* EngineManager::getEngineConst(const std::string& engine_id) const {
     auto it = engines.find(engine_id);
     if (it == engines.end()) {
         return nullptr;

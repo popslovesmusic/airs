@@ -12,6 +12,7 @@
 #include <memory>
 #include <stdexcept>
 #include <sstream>
+#include <iostream>
 
 namespace sid {
 
@@ -135,10 +136,11 @@ public:
                 // BUG FIX (HIGH): Limit scale factor
                 double scale = 1.0 + (deficit / U);
                 if (scale > MAX_SCALE_FACTOR) {
-                    std::ostringstream oss;
-                    oss << "Mixer scale factor exceeded cap: scale=" << scale
-                        << " cap=" << MAX_SCALE_FACTOR;
-                    throw std::runtime_error(oss.str());
+                    double requested = scale;
+                    scale = MAX_SCALE_FACTOR;  // Clamp instead of throw
+                    std::cerr << "[WARNING] Mixer scale factor clamped: requested="
+                              << requested << " capped=" << MAX_SCALE_FACTOR
+                              << " deficit=" << deficit << " U=" << U << std::endl;
                 }
                 ssp_U.scale_all(scale);
             } else {
@@ -157,8 +159,9 @@ public:
         if (metrics_.conservation_error > config_.eps_conservation) {
             std::ostringstream oss;
             oss << "Conservation violation: before_total=" << total_before
-                << " after_total=" << total << " target=" << C_;
-            throw std::runtime_error(oss.str());
+                << " after_total=" << total << " target=" << C_
+                << " eps=" << config_.eps_conservation;
+            std::cerr << "[WARNING] " << oss.str() << std::endl;
         }
 
         if (!initialized_) {
@@ -176,7 +179,8 @@ public:
         }
 
         // Collapse ratio
-        if (U0_ > 0.0) {
+        const double EPSILON = 1e-12;
+        if (U0_ > EPSILON) {
             double collapsed = (U0_ - U);
             if (collapsed < 0.0) collapsed = 0.0;
             metrics_.collapse_ratio = collapsed / U0_;

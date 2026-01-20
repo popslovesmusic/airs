@@ -83,6 +83,7 @@ public:
                              int sid_role = 2);
     bool destroyEngine(const std::string& engine_id);
     EngineInstance* getEngine(const std::string& engine_id);
+    const EngineInstance* getEngineConst(const std::string& engine_id) const;
 
     // List all engines
     std::vector<EngineInstance*> listEngines();

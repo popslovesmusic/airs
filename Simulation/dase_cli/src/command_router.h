@@ -9,6 +9,7 @@
 #include <functional>
 #include <memory>
 #include "json.hpp"
+#include "analysis_router.h"
 
 // Forward declarations
 class EngineManager;
@@ -67,6 +68,7 @@ private:
 
     // Engine manager (manages engine lifecycle)
     std::unique_ptr<EngineManager> engine_manager;
+    std::unique_ptr<dase::AnalysisRouter> analysis_router_;
 
     // Command registry
     std::map<std::string, std::function<json(const json&)>> command_handlers;

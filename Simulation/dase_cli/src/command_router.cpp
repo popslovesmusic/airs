@@ -13,14 +13,11 @@
 #include <chrono>
 #include <cstdint>
 
-// Global analysis router (initialized after engine_manager)
-static std::unique_ptr<dase::AnalysisRouter> g_analysis_router;
-
 CommandRouter::CommandRouter()
     : engine_manager(std::make_unique<EngineManager>()) {
 
     // Initialize analysis router
-    g_analysis_router = std::make_unique<dase::AnalysisRouter>(engine_manager.get());
+    analysis_router_ = std::make_unique<dase::AnalysisRouter>(engine_manager.get());
 
     // Register command handlers
     command_handlers["get_capabilities"] = [this](const json& p) { return handleGetCapabilities(p); };
@@ -1226,7 +1223,7 @@ json CommandRouter::handleSidGetDiagramJson(const json& params) {
 // ============================================================================
 
 json CommandRouter::handleCheckAnalysisTools(const json& params) {
-    json result = g_analysis_router->checkToolAvailability();
+    json result = analysis_router_->checkToolAvailability();
     return createSuccessResponse("check_analysis_tools", result, 0);
 }
 
@@ -1251,7 +1248,7 @@ json CommandRouter::handlePythonAnalyze(const json& params) {
     }
 
     try {
-        auto result_data = g_analysis_router->quickPythonAnalysis(engine_id, script, args);
+        auto result_data = analysis_router_->quickPythonAnalysis(engine_id, script, args);
 
         json result = {
             {"success", result_data.success},
@@ -1282,7 +1279,7 @@ json CommandRouter::handleEngineFFT(const json& params) {
     }
 
     try {
-        auto fft_result = g_analysis_router->quickFFT(engine_id, field);
+        auto fft_result = analysis_router_->quickFFT(engine_id, field);
         json result = dase::analysis::EngineFFTAnalysis::toJSON(fft_result);
 
         return createSuccessResponse("engine_fft", result, fft_result.execution_time_ms);
@@ -1360,7 +1357,7 @@ json CommandRouter::handleAnalyzeFields(const json& params) {
     }
 
     try {
-        auto combined_result = g_analysis_router->routeAnalysis(engine_id, config);
+        auto combined_result = analysis_router_->routeAnalysis(engine_id, config);
 
         json result = {
             {"success", combined_result.success},
