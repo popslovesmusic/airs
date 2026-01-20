@@ -1,0 +1,61 @@
+{
+  "version": "1.0",
+  "purpose": "Extend validation coverage to all engine classes using class-appropriate criteria.",
+  "engine_classes": {
+    "computational": {
+      "engines": [
+        "igsoa_complex",
+        "igsoa_complex_2d",
+        "igsoa_complex_3d",
+        "phase4b"
+      ],
+      "validate_for": [
+        "create_destroy_integrity",
+        "step_executes",
+        "metrics_increase",
+        "determinism_fixed_seed",
+        "no_nan_inf",
+        "cross_engine_invariants"
+      ],
+      "explicitly_not_validated_for": [
+        "physical_correctness",
+        "scientific_truth"
+      ]
+    },
+    "field": {
+      "engines": [
+        "satp_higgs_1d",
+        "satp_higgs_2d",
+        "satp_higgs_3d"
+      ],
+      "validate_for": [
+        "create_destroy_integrity",
+        "step_executes",
+        "field_state_observable",
+        "diagnostics_finite",
+        "no_nan_inf"
+      ],
+      "explicitly_not_validated_for": [
+        "energy_conservation",
+        "field_equation_correctness",
+        "long_term_stability"
+      ]
+    },
+    "semantic": {
+      "engines": [
+        "sid_ternary"
+      ],
+      "validate_for": [
+        "create_destroy_integrity",
+        "step_executes",
+        "semantic_state_changes",
+        "i_n_u_consistency"
+      ],
+      "explicitly_not_validated_for": [
+        "meaning_correctness",
+        "convergence",
+        "cognitive_validity"
+      ]
+    }
+  }
+}

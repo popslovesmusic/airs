@@ -1,0 +1,132 @@
+[
+  {
+    "label": "sid_ternary",
+    "returncode": 0,
+    "stdout": [
+      {
+        "command": "create_engine",
+        "execution_time_ms": 0.058,
+        "result": {
+          "R_c": 1.0,
+          "dt": 0.01,
+          "engine_id": "engine_001",
+          "engine_type": "sid_ternary",
+          "gamma": 0.1,
+          "kappa": 1.0,
+          "num_nodes": 16
+        },
+        "status": "success"
+      },
+      {
+        "command": "sid_metrics",
+        "execution_time_ms": 0.017,
+        "result": {
+          "I_mass": 0.3333333333333333,
+          "N_mass": 0.3333333333333333,
+          "U_mass": 0.3333333333333333,
+          "engine_id": "engine_001",
+          "instantaneous_gain": 0.0,
+          "is_conserved": true,
+          "last_rewrite_applied": false,
+          "last_rewrite_message": ""
+        },
+        "status": "success"
+      },
+      {
+        "command": "run_mission",
+        "execution_time_ms": 0.012,
+        "result": {
+          "steps_completed": 2,
+          "total_operations": 2.0
+        },
+        "status": "success"
+      },
+      {
+        "command": "sid_metrics",
+        "execution_time_ms": 0.006,
+        "result": {
+          "I_mass": 0.3333333333333333,
+          "N_mass": 0.3333333333333333,
+          "U_mass": 0.3333333333333333,
+          "engine_id": "engine_001",
+          "instantaneous_gain": 0.0,
+          "is_conserved": true,
+          "last_rewrite_applied": false,
+          "last_rewrite_message": ""
+        },
+        "status": "success"
+      },
+      {
+        "command": "destroy_engine",
+        "execution_time_ms": 0.015,
+        "result": {
+          "destroyed": true,
+          "engine_id": "engine_001"
+        },
+        "status": "success"
+      }
+    ],
+    "stderr": ""
+  },
+  {
+    "label": "sid_ssp",
+    "returncode": 0,
+    "stdout": [
+      {
+        "command": "create_engine",
+        "execution_time_ms": 0.049,
+        "result": {
+          "R_c": 1.0,
+          "dt": 0.01,
+          "engine_id": "engine_001",
+          "engine_type": "sid_ssp",
+          "gamma": 0.1,
+          "kappa": 1.0,
+          "num_nodes": 16
+        },
+        "status": "success"
+      },
+      {
+        "command": "get_metrics",
+        "execution_time_ms": 0.007,
+        "result": {
+          "engine_type": "sid_ssp",
+          "ns_per_op": 0.0,
+          "ops_per_sec": 0.0,
+          "total_operations": 0
+        },
+        "status": "success"
+      },
+      {
+        "command": "run_mission",
+        "execution_time_ms": 0.008,
+        "result": {
+          "steps_completed": 2,
+          "total_operations": 32.0
+        },
+        "status": "success"
+      },
+      {
+        "command": "get_metrics",
+        "execution_time_ms": 0.005,
+        "result": {
+          "engine_type": "sid_ssp",
+          "ns_per_op": 1.0,
+          "ops_per_sec": 1000000000.0,
+          "total_operations": 32
+        },
+        "status": "success"
+      },
+      {
+        "command": "destroy_engine",
+        "execution_time_ms": 0.004,
+        "result": {
+          "destroyed": true,
+          "engine_id": "engine_001"
+        },
+        "status": "success"
+      }
+    ],
+    "stderr": ""
+  }
+]

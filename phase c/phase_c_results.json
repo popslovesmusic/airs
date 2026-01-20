@@ -1,0 +1,122 @@
+{
+  "phase": "C",
+  "timestamp": "2026-01-20T20:26:37.130832Z",
+  "rules_version": "1.0",
+  "inputs_used": {
+    "task": "phase c/resume_validation_phase_c.json",
+    "matrix": "phase c/phase_c_validation_matrix.json",
+    "execution_classes": "classes/engine_execution_classes.json",
+    "observables": "classes/execution_class_observables.json",
+    "scope": "classes/validation_scope.json",
+    "run_data": "engine_family_test_results.json",
+    "sid_runs": "phase c/sid_semantic_runs.json"
+  },
+  "results": [
+    {
+      "engine": "igsoa_complex",
+      "class": "computational",
+      "status": "pass",
+      "checks": [
+        "create_destroy_integrity",
+        "observables: total_operations>0"
+      ],
+      "reason": ""
+    },
+    {
+      "engine": "igsoa_complex_2d",
+      "class": "computational",
+      "status": "pass",
+      "checks": [
+        "create_destroy_integrity",
+        "observables: total_operations>0"
+      ],
+      "reason": ""
+    },
+    {
+      "engine": "igsoa_complex_3d",
+      "class": "computational",
+      "status": "pass",
+      "checks": [
+        "create_destroy_integrity",
+        "observables: total_operations>0"
+      ],
+      "reason": ""
+    },
+    {
+      "engine": "phase4b",
+      "class": "computational",
+      "status": "pass",
+      "checks": [
+        "create_destroy_integrity",
+        "observables: total_operations>0"
+      ],
+      "reason": ""
+    },
+    {
+      "engine": "igsoa_gw",
+      "class": "computational",
+      "status": "pass",
+      "checks": [
+        "create_destroy_integrity",
+        "observables: total_operations>0"
+      ],
+      "reason": ""
+    },
+    {
+      "engine": "satp_higgs_1d",
+      "class": "field",
+      "status": "pass",
+      "checks": [
+        "create_destroy_integrity",
+        "field_state_changed"
+      ],
+      "reason": ""
+    },
+    {
+      "engine": "satp_higgs_2d",
+      "class": "field",
+      "status": "pass",
+      "checks": [
+        "create_destroy_integrity",
+        "field_state_changed"
+      ],
+      "reason": ""
+    },
+    {
+      "engine": "satp_higgs_3d",
+      "class": "field",
+      "status": "pass",
+      "checks": [
+        "create_destroy_integrity",
+        "field_state_changed"
+      ],
+      "reason": ""
+    },
+    {
+      "engine": "sid_ternary",
+      "class": "semantic",
+      "status": "pass",
+      "checks": [
+        "create_destroy_integrity",
+        "semantic_progress_observed (step executed)"
+      ],
+      "reason": ""
+    },
+    {
+      "engine": "sid_ssp",
+      "class": "semantic",
+      "status": "pass",
+      "checks": [
+        "create_destroy_integrity",
+        "semantic_progress_observed (step executed)"
+      ],
+      "reason": ""
+    },
+    {
+      "engine": "fftw_cache_example",
+      "class": "support",
+      "status": "skipped",
+      "reason": "support class excluded from validation"
+    }
+  ]
+}

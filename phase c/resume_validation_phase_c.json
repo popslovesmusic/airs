@@ -1,0 +1,29 @@
+{
+  "task_type": "validation",
+  "authority": "gated-exec",
+  "scope": [
+    "all_engines"
+  ],
+  "objective": "Resume validation under execution-class-aware rules (Phase C).",
+  "inputs": [
+    "engine_execution_classes.json",
+    "execution_class_observables.json",
+    "validation_scope.json",
+    "phase_c_validation_matrix.json"
+  ],
+  "rules": [
+    "validate engines only against their declared execution class",
+    "do not apply computational invariants to field or semantic engines",
+    "do not relax any computational checks",
+    "fail fast on lifecycle or observable violations"
+  ],
+  "outputs_required": [
+    "phase_c_results.json",
+    "engine_class_pass_fail_summary.json"
+  ],
+  "stop_conditions": [
+    "undeclared_observable",
+    "execution_class_mismatch",
+    "lifecycle_violation"
+  ]
+}
