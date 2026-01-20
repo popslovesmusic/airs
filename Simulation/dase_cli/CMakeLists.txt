@@ -94,6 +94,9 @@ target_link_libraries(dase_cli PRIVATE analysis_integration)
 # Link SID-SSP core and C API
 target_link_libraries(dase_cli PRIVATE sid_ssp sid_ssp_capi)
 
+# Link IGSOA GW core
+target_link_libraries(dase_cli PRIVATE igsoa_gw_core)
+
 # No additional linking required for DASE engine - we load the DLL dynamically at runtime
 # This allows the CLI to work without a .lib file
 

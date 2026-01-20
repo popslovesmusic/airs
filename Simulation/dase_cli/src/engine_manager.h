@@ -27,6 +27,7 @@ struct EngineInstance {
     int dimension_x;
     int dimension_y;
     int dimension_z;
+    int sid_role;
     double R_c;
     double kappa;
     double gamma;
@@ -39,6 +40,7 @@ struct EngineInstance {
         , dimension_x(0)
         , dimension_y(0)
         , dimension_z(0)
+        , sid_role(2)
         , R_c(1.0)
         , kappa(1.0)
         , gamma(0.1)
@@ -59,7 +61,8 @@ public:
                              double dt = 0.01,
                              int N_x = 0,
                              int N_y = 0,
-                             int N_z = 0);
+                             int N_z = 0,
+                             int sid_role = 2);
     bool destroyEngine(const std::string& engine_id);
     EngineInstance* getEngine(const std::string& engine_id);
 

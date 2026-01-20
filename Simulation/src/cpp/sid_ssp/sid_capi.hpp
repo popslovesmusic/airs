@@ -37,6 +37,7 @@ void sid_destroy_engine(sid_engine* eng);
 
 /* Evolution operations */
 void sid_step(sid_engine* eng, double alpha);
+uint64_t sid_get_step_count(sid_engine* eng);
 void sid_collapse(sid_engine* eng, double alpha);
 
 /* Metrics and queries */

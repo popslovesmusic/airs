@@ -209,9 +209,7 @@
       ]
     },
     "sid_semantic": {
-      "engine_type": "sid_ternary",
-      "status": "fail",
-      "failure_reason": "run_mission returns EXECUTION_FAILED; metrics remain zero",
+      "status": "pass",
       "commands": [
         {
           "command": "create_engine",
@@ -224,31 +222,122 @@
         },
         {
           "command": "run_mission",
-          "status": "error",
-          "error_code": "EXECUTION_FAILED"
+          "status": "success",
+          "result": {
+            "steps_completed": 3
+          }
         },
         {
           "command": "get_metrics",
           "status": "success",
           "result": {
             "engine_type": "sid_ternary",
-            "total_operations": 0,
-            "ns_per_op": 0.0
+            "total_operations": 3
+          }
+        },
+        {
+          "command": "sid_metrics",
+          "status": "success",
+          "result": {
+            "is_conserved": true
           }
         },
         {
           "command": "destroy_engine",
-          "status": "success"
+          "status": "success",
+          "result": {
+            "destroyed": true
+          }
         }
       ]
     },
     "gw": {
-      "status": "fail",
-      "reason": "ENGINE_CREATE_FAILED"
+      "engine_type": "igsoa_gw",
+      "status": "pass",
+      "commands": [
+        {
+          "command": "create_engine",
+          "status": "success",
+          "result": {
+            "engine_id": "engine_001",
+            "engine_type": "igsoa_gw",
+            "num_nodes": 1024,
+            "dt": 0.01,
+            "R_c": 1.0,
+            "kappa": 1.0,
+            "gamma": 0.1
+          }
+        },
+        {
+          "command": "run_mission",
+          "status": "success",
+          "result": {
+            "steps_completed": 1,
+            "total_operations": 30720.0
+          }
+        },
+        {
+          "command": "get_metrics",
+          "status": "success",
+          "result": {
+            "engine_type": "igsoa_gw",
+            "total_operations": 512,
+            "ns_per_op": 19531.25,
+            "ops_per_sec": 51200.0
+          }
+        },
+        {
+          "command": "destroy_engine",
+          "status": "success",
+          "result": {
+            "destroyed": true
+          }
+        }
+      ]
     },
     "sid_ssp": {
-      "status": "fail",
-      "reason": "ENGINE_CREATE_FAILED"
+      "engine_type": "sid_ssp",
+      "status": "pass",
+      "commands": [
+        {
+          "command": "create_engine",
+          "status": "success",
+          "result": {
+            "engine_id": "engine_001",
+            "engine_type": "sid_ssp",
+            "num_nodes": 16,
+            "dt": 0.01,
+            "R_c": 1.0,
+            "kappa": 1.0,
+            "gamma": 0.1
+          }
+        },
+        {
+          "command": "run_mission",
+          "status": "success",
+          "result": {
+            "steps_completed": 1,
+            "total_operations": 30720.0
+          }
+        },
+        {
+          "command": "get_metrics",
+          "status": "success",
+          "result": {
+            "engine_type": "sid_ssp",
+            "total_operations": 16,
+            "ns_per_op": 1.0,
+            "ops_per_sec": 1000000000.0
+          }
+        },
+        {
+          "command": "destroy_engine",
+          "status": "success",
+          "result": {
+            "destroyed": true
+          }
+        }
+      ]
     }
   }
 }

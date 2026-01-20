@@ -12,6 +12,7 @@
 #include <iostream>
 #include <cstdint>
 #include <algorithm>
+#include <complex>
 
 // Lightweight FFT-backed engine using FFTW for validation coverage
 // FFTW headers (distributed with simulation)
@@ -55,9 +56,10 @@ struct FFTWCacheExampleEngine {
         for (int i = 0; i < num_steps; ++i) {
             fftw_execute(plan_forward);
             fftw_execute(plan_inverse);
-            // Rough op count: each complex FFT ~5*N*log2(N); forward+inverse doubles it
-            double ops = 10.0 * static_cast<double>(num_nodes) * std::log2(static_cast<double>(num_nodes));
-            total_operations += static_cast<uint64_t>(ops);
+        // Rough op count: ~5*N*log2(N) per transform; forward+inverse doubles it
+        const double logN = std::log2(static_cast<double>(num_nodes));
+        const double ops_per_step = 10.0 * static_cast<double>(num_nodes) * logN;
+        total_operations += static_cast<uint64_t>(ops_per_step);
         }
     }
 
@@ -74,12 +76,16 @@ struct FFTWCacheExampleEngine {
         }
     }
 
-    void getState(std::vector<double>& real_out, std::vector<double>& imag_out) const {
+    void getState(std::vector<double>& real_out,
+                  std::vector<double>& imag_out,
+                  std::vector<double>& magnitude_out) const {
         real_out.resize(num_nodes);
         imag_out.resize(num_nodes);
+        magnitude_out.resize(num_nodes);
         for (size_t i = 0; i < num_nodes; ++i) {
             real_out[i] = buffer[i][0];
             imag_out[i] = buffer[i][1];
+            magnitude_out[i] = std::hypot(buffer[i][0], buffer[i][1]);
         }
     }
 
@@ -108,6 +114,145 @@ struct FFTWCacheExampleEngine {
 #include "../../src/cpp/satp_higgs_physics_3d.h"
 #include "../../src/cpp/satp_higgs_state_init_3d.h"
 #include "../../src/cpp/sid_ssp/sid_capi.hpp"
+
+// Include IGSOA GW engine modules
+#include "../../src/cpp/igsoa_gw_engine/core/symmetry_field.h"
+#include "../../src/cpp/igsoa_gw_engine/core/fractional_solver.h"
+#include "../../src/cpp/igsoa_gw_engine/core/source_manager.h"
+
+struct IGSOAGWEngine {
+    explicit IGSOAGWEngine(const dase::igsoa::gw::SymmetryFieldConfig& field_config,
+                           const dase::igsoa::gw::FractionalSolverConfig& solver_config,
+                           const dase::igsoa::gw::BinaryMergerConfig& merger_config)
+        : field(field_config),
+          solver(solver_config, field.getTotalPoints()),
+          merger(merger_config),
+          step_count(0),
+          total_operations(0) {
+        double alpha = 0.5 * (field_config.alpha_min + field_config.alpha_max);
+        for (int i = 0; i < field_config.nx; ++i) {
+            for (int j = 0; j < field_config.ny; ++j) {
+                for (int k = 0; k < field_config.nz; ++k) {
+                    field.setAlpha(i, j, k, alpha);
+                }
+            }
+        }
+        second_derivs.assign(field.getTotalPoints(), std::complex<double>(0.0, 0.0));
+    }
+
+    void runMission(int num_steps) {
+        const int total_points = field.getTotalPoints();
+        for (int step = 0; step < num_steps; ++step) {
+            double t = field.getCurrentTime();
+            auto sources = merger.computeSourceTerms(field, t);
+            auto alpha_values = field.getAlphaValues();
+            auto frac_derivs = solver.computeDerivatives(alpha_values);
+            field.evolveStep(frac_derivs, sources);
+            solver.updateHistory(field.getDeltaPhiFlat(), second_derivs, alpha_values, field.getTimestep());
+            merger.evolveOrbit(field.getTimestep());
+            field.setCurrentTime(t + field.getTimestep());
+            step_count++;
+            total_operations += static_cast<uint64_t>(total_points);
+        }
+    }
+
+    void getMetrics(double& ns_per_op, double& ops_per_sec, uint64_t& total_ops) const {
+        total_ops = total_operations;
+        double elapsed_seconds = field.getCurrentTime();
+        if (total_ops > 0 && elapsed_seconds > 0.0) {
+            ops_per_sec = static_cast<double>(total_ops) / elapsed_seconds;
+            ns_per_op = 1e9 / ops_per_sec;
+        } else {
+            ops_per_sec = 0.0;
+            ns_per_op = 0.0;
+        }
+    }
+
+    void getState(std::vector<double>& real_out,
+                  std::vector<double>& imag_out,
+                  std::vector<double>& alpha_out) const {
+        const auto& delta_phi = field.getDeltaPhiFlat();
+        const auto alpha_vals = field.getAlphaValues();
+        const size_t count = delta_phi.size();
+        real_out.resize(count);
+        imag_out.resize(count);
+        alpha_out.resize(count);
+        for (size_t i = 0; i < count; ++i) {
+            real_out[i] = delta_phi[i].real();
+            imag_out[i] = delta_phi[i].imag();
+            alpha_out[i] = alpha_vals[i];
+        }
+    }
+
+    dase::igsoa::gw::SymmetryField field;
+    dase::igsoa::gw::FractionalSolver solver;
+    dase::igsoa::gw::BinaryMerger merger;
+    std::vector<std::complex<double>> second_derivs;
+    uint64_t step_count;
+    uint64_t total_operations;
+};
+
+struct SidSSPEngine {
+    SidSSPEngine(uint64_t field_len, double capacity, int role)
+        : ssp(nullptr),
+          field_len(field_len),
+          step_count(0),
+          total_operations(0) {
+        ssp = sid_ssp_create(role, static_cast<unsigned long>(field_len), capacity);
+        if (!ssp) {
+            throw std::runtime_error("Failed to create sid_ssp");
+        }
+        double* field = sid_ssp_field(ssp);
+        if (field && field_len > 0) {
+            double init_value = (capacity > 0.0)
+                ? (capacity / static_cast<double>(field_len))
+                : 0.0;
+            for (uint64_t i = 0; i < field_len; ++i) {
+                field[i] = init_value;
+            }
+        }
+    }
+
+    ~SidSSPEngine() {
+        if (ssp) {
+            sid_ssp_destroy(ssp);
+        }
+    }
+
+    void runMission(int num_steps) {
+        for (int step = 0; step < num_steps; ++step) {
+            sid_ssp_commit_step(ssp);
+            step_count++;
+            total_operations += field_len;
+        }
+    }
+
+    void getMetrics(double& ns_per_op, double& ops_per_sec, uint64_t& total_ops) const {
+        total_ops = total_operations;
+        if (total_ops > 0) {
+            ns_per_op = 1.0;
+            ops_per_sec = 1e9;
+        } else {
+            ns_per_op = 0.0;
+            ops_per_sec = 0.0;
+        }
+    }
+
+    void getState(std::vector<double>& field_out) {
+        field_out.assign(field_len, 0.0);
+        double* field = sid_ssp_field(ssp);
+        if (field) {
+            for (uint64_t i = 0; i < field_len; ++i) {
+                field_out[i] = field[i];
+            }
+        }
+    }
+
+    sid_ssp_t* ssp;
+    uint64_t field_len;
+    uint64_t step_count;
+    uint64_t total_operations;
+};
 
 #ifdef _WIN32
 #include <windows.h>
@@ -223,7 +368,8 @@ std::string EngineManager::createEngine(const std::string& engine_type,
                                         double dt,
                                         int N_x,
                                         int N_y,
-                                        int N_z) {
+                                        int N_z,
+                                        int sid_role) {
     // Validate parameters
     if (num_nodes <= 0 || num_nodes > 1048576) {
         return "";
@@ -260,6 +406,7 @@ std::string EngineManager::createEngine(const std::string& engine_type,
     instance->dimension_x = N_x;
     instance->dimension_y = N_y;
     instance->dimension_z = N_z;
+    instance->sid_role = sid_role;
 
     void* handle = nullptr;
 
@@ -350,6 +497,54 @@ std::string EngineManager::createEngine(const std::string& engine_type,
                 static_cast<size_t>(N_z)
             );
 
+            handle = static_cast<void*>(engine);
+
+        } catch (...) {
+            return "";
+        }
+
+    } else if (engine_type == "igsoa_gw") {
+        int nx = (N_x > 0) ? N_x : 16;
+        int ny = (N_y > 0) ? N_y : 16;
+        int nz = (N_z > 0) ? N_z : 16;
+        int64_t total_points = static_cast<int64_t>(nx) * static_cast<int64_t>(ny) * static_cast<int64_t>(nz);
+        if (total_points <= 0 || total_points > 1048576) {
+            return "";
+        }
+
+        instance->num_nodes = static_cast<int>(total_points);
+        instance->dimension_x = nx;
+        instance->dimension_y = ny;
+        instance->dimension_z = nz;
+
+        try {
+            dase::igsoa::gw::SymmetryFieldConfig field_config;
+            field_config.nx = nx;
+            field_config.ny = ny;
+            field_config.nz = nz;
+            field_config.dx = 1.0;
+            field_config.dy = 1.0;
+            field_config.dz = 1.0;
+            field_config.R_c_default = R_c;
+            field_config.kappa = kappa;
+            field_config.lambda = 0.1;
+            field_config.alpha_min = 1.0;
+            field_config.alpha_max = 2.0;
+            field_config.dt = dt;
+
+            dase::igsoa::gw::FractionalSolverConfig solver_config;
+            solver_config.dt = field_config.dt;
+            solver_config.alpha_min = field_config.alpha_min;
+            solver_config.alpha_max = field_config.alpha_max;
+
+            dase::igsoa::gw::BinaryMergerConfig merger_config;
+            merger_config.center = dase::igsoa::gw::Vector3D(
+                field_config.nx * field_config.dx * 0.5,
+                field_config.ny * field_config.dy * 0.5,
+                field_config.nz * field_config.dz * 0.5
+            );
+
+            auto* engine = new IGSOAGWEngine(field_config, solver_config, merger_config);
             handle = static_cast<void*>(engine);
 
         } catch (...) {
@@ -488,6 +683,19 @@ std::string EngineManager::createEngine(const std::string& engine_type,
             return "";
         }
 
+    } else if (engine_type == "sid_ssp") {
+        if (sid_role < 0 || sid_role > 2) {
+            std::cerr << "[ERROR] Invalid sid_ssp role: " << sid_role << std::endl;
+            return "";
+        }
+        try {
+            handle = static_cast<void*>(
+                new SidSSPEngine(static_cast<uint64_t>(num_nodes), R_c, sid_role));
+        } catch (...) {
+            std::cerr << "[ERROR] Failed to create sid_ssp engine" << std::endl;
+            return "";
+        }
+
     } else {
         // Unknown engine type
         return "";
@@ -524,6 +732,8 @@ bool EngineManager::destroyEngine(const std::string& engine_id) {
         } else if (it->second->engine_type == "igsoa_complex_3d") {
             auto* engine = static_cast<dase::igsoa::IGSOAComplexEngine3D*>(it->second->engine_handle);
             delete engine;
+        } else if (it->second->engine_type == "igsoa_gw") {
+            delete static_cast<IGSOAGWEngine*>(it->second->engine_handle);
         } else if (it->second->engine_type == "satp_higgs_1d") {
             auto* engine = static_cast<dase::satp_higgs::SATPHiggsEngine1D*>(it->second->engine_handle);
             delete engine;
@@ -537,6 +747,8 @@ bool EngineManager::destroyEngine(const std::string& engine_id) {
             delete static_cast<FFTWCacheExampleEngine*>(it->second->engine_handle);
         } else if (it->second->engine_type == "sid_ternary") {
             sid_destroy_engine(static_cast<sid_engine*>(it->second->engine_handle));
+        } else if (it->second->engine_type == "sid_ssp") {
+            delete static_cast<SidSSPEngine*>(it->second->engine_handle);
         }
     }
 
@@ -635,13 +847,17 @@ bool EngineManager::runMission(const std::string& engine_id, int num_steps, int 
                 control_patterns.data()
             );
 
-    } else if (instance->engine_type == "igsoa_complex_3d") {
-        auto* engine = static_cast<dase::igsoa::IGSOAComplexEngine3D*>(instance->engine_handle);
-        engine->runMission(
-            num_steps,
-            input_signals.data(),
+        } else if (instance->engine_type == "igsoa_complex_3d") {
+            auto* engine = static_cast<dase::igsoa::IGSOAComplexEngine3D*>(instance->engine_handle);
+            engine->runMission(
+                num_steps,
+                input_signals.data(),
                 control_patterns.data()
             );
+
+        } else if (instance->engine_type == "igsoa_gw") {
+            auto* engine = static_cast<IGSOAGWEngine*>(instance->engine_handle);
+            engine->runMission(num_steps);
 
         } else if (instance->engine_type == "satp_higgs_1d") {
             // SATP+Higgs engine - use evolve() method
@@ -653,17 +869,26 @@ bool EngineManager::runMission(const std::string& engine_id, int num_steps, int 
             auto* engine = static_cast<dase::satp_higgs::SATPHiggsEngine2D*>(instance->engine_handle);
             engine->evolve(static_cast<size_t>(num_steps));
 
-    } else if (instance->engine_type == "satp_higgs_3d") {
-        // SATP+Higgs 3D engine
-        auto* engine = static_cast<dase::satp_higgs::SATPHiggsEngine3D*>(instance->engine_handle);
-        engine->evolve(static_cast<size_t>(num_steps));
+        } else if (instance->engine_type == "satp_higgs_3d") {
+            // SATP+Higgs 3D engine
+            auto* engine = static_cast<dase::satp_higgs::SATPHiggsEngine3D*>(instance->engine_handle);
+            engine->evolve(static_cast<size_t>(num_steps));
 
-    } else if (instance->engine_type == "fftw_cache_example") {
-        auto* engine = static_cast<FFTWCacheExampleEngine*>(instance->engine_handle);
-        engine->runMission(num_steps);
+        } else if (instance->engine_type == "fftw_cache_example") {
+            auto* engine = static_cast<FFTWCacheExampleEngine*>(instance->engine_handle);
+            engine->runMission(num_steps);
 
-    } else {
-        return false;
+        } else if (instance->engine_type == "sid_ternary") {
+            for (int i = 0; i < num_steps; ++i) {
+                sid_step(static_cast<sid_engine*>(instance->engine_handle), 1.0);
+            }
+
+        } else if (instance->engine_type == "sid_ssp") {
+            auto* engine = static_cast<SidSSPEngine*>(instance->engine_handle);
+            engine->runMission(num_steps);
+
+        } else {
+            return false;
         }
 
         return true;
@@ -817,12 +1042,30 @@ bool EngineManager::getAllNodeStates(const std::string& engine_id,
 
         return true;
 
+    } else if (instance->engine_type == "igsoa_gw") {
+        auto* engine = static_cast<IGSOAGWEngine*>(instance->engine_handle);
+        psi_real.clear();
+        psi_imag.clear();
+        phi.clear();
+        engine->getState(psi_real, psi_imag, phi);
+        return true;
+
     } else if (instance->engine_type == "fftw_cache_example") {
         auto* engine = static_cast<FFTWCacheExampleEngine*>(instance->engine_handle);
         psi_real.clear();
         psi_imag.clear();
         phi.clear();
-        engine->getState(psi_real, psi_imag);
+        std::vector<double> mag;
+        engine->getState(psi_real, psi_imag, mag);
+        phi = std::move(mag);  // reuse phi slot to expose magnitude for diagnostics
+        return true;
+
+    } else if (instance->engine_type == "sid_ssp") {
+        auto* engine = static_cast<SidSSPEngine*>(instance->engine_handle);
+        psi_real.assign(static_cast<size_t>(instance->num_nodes), 0.0);
+        psi_imag.assign(static_cast<size_t>(instance->num_nodes), 0.0);
+        phi.clear();
+        engine->getState(phi);
         return true;
     }
 
@@ -1542,6 +1785,9 @@ EngineManager::EngineMetrics EngineManager::getMetrics(const std::string& engine
             metrics.speedup_factor,
             metrics.total_operations
         );
+    } else if (instance->engine_type == "igsoa_gw") {
+        auto* engine = static_cast<IGSOAGWEngine*>(instance->engine_handle);
+        engine->getMetrics(metrics.ns_per_op, metrics.ops_per_sec, metrics.total_operations);
     } else if (instance->engine_type == "satp_higgs_1d") {
         auto* engine = static_cast<dase::satp_higgs::SATPHiggsEngine1D*>(instance->engine_handle);
         engine->getMetrics(metrics.ns_per_op, metrics.ops_per_sec, metrics.total_operations);
@@ -1553,6 +1799,13 @@ EngineManager::EngineMetrics EngineManager::getMetrics(const std::string& engine
         engine->getMetrics(metrics.ns_per_op, metrics.ops_per_sec, metrics.total_operations);
     } else if (instance->engine_type == "fftw_cache_example") {
         auto* engine = static_cast<FFTWCacheExampleEngine*>(instance->engine_handle);
+        engine->getMetrics(metrics.ns_per_op, metrics.ops_per_sec, metrics.total_operations);
+    } else if (instance->engine_type == "sid_ternary") {
+        metrics.ns_per_op = 0.0;
+        metrics.ops_per_sec = 0.0;
+        metrics.total_operations = sid_get_step_count(static_cast<sid_engine*>(instance->engine_handle));
+    } else if (instance->engine_type == "sid_ssp") {
+        auto* engine = static_cast<SidSSPEngine*>(instance->engine_handle);
         engine->getMetrics(metrics.ns_per_op, metrics.ops_per_sec, metrics.total_operations);
     }
 

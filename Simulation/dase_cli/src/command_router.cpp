@@ -367,6 +367,11 @@ json CommandRouter::handleListEngines(const json& params) {
             engine_json["config"] = {
                 {"R_c", engine->R_c}
             };
+        } else if (engine->engine_type == "sid_ssp") {
+            engine_json["config"] = {
+                {"capacity", engine->R_c},
+                {"role", engine->sid_role}
+            };
         }
 
         engines_array.push_back(engine_json);
@@ -396,9 +401,23 @@ json CommandRouter::handleCreateEngine(const json& params) {
     double kappa = params.value("kappa", 1.0);
     double gamma = params.value("gamma", 0.1);
     double dt = params.value("dt", 0.01);
-    int N_x = params.value("N_x", params.value("width", 0));
-    int N_y = params.value("N_y", params.value("height", 0));
-    int N_z = params.value("N_z", params.value("depth", 0));
+    int N_x = params.value("N_x", params.value("width", params.value("grid_nx", 0)));
+    int N_y = params.value("N_y", params.value("height", params.value("grid_ny", 0)));
+    int N_z = params.value("N_z", params.value("depth", params.value("grid_nz", 0)));
+    int sid_role = params.value("role", 2);
+
+    if (engine_type == "sid_ssp") {
+        if (params.contains("capacity") && !params["capacity"].is_null()) {
+            R_c = params["capacity"].get<double>();
+        } else if (params.contains("semantic_capacity") && !params["semantic_capacity"].is_null()) {
+            R_c = params["semantic_capacity"].get<double>();
+        }
+        if (sid_role < 0 || sid_role > 2) {
+            return createErrorResponse("create_engine",
+                                       "Invalid sid_ssp role. Must be 0 (I), 1 (N), or 2 (U).",
+                                       "INVALID_PARAMETER");
+        }
+    }
 
     // Validate physics parameters
     if (R_c <= 0.0 || !std::isfinite(R_c)) {
@@ -464,7 +483,8 @@ json CommandRouter::handleCreateEngine(const json& params) {
         dt,
         N_x,
         N_y,
-        N_z
+        N_z,
+        sid_role
     );
 
     if (engine_id.empty()) {

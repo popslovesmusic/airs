@@ -90,6 +90,10 @@ void sid_step(sid_engine* eng, double alpha) {
     }
 }
 
+uint64_t sid_get_step_count(sid_engine* eng) {
+    return (eng && eng->engine) ? eng->engine->getStepCount() : 0;
+}
+
 void sid_collapse(sid_engine* eng, double alpha) {
     if (eng && eng->engine) {
         eng->engine->collapse(alpha);

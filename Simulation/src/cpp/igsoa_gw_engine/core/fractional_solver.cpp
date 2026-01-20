@@ -103,7 +103,7 @@ double SOEKernel::estimateError(double alpha, double t) const {
     double exact_kernel = t_power / gamma_value;
 
     // Compute approximation using SOE sum-of-exponentials
-    double approx_kernel = compute(t);
+    double approx_kernel = evaluate(t);
 
     // Relative error
     double abs_error = std::abs(exact_kernel - approx_kernel);
