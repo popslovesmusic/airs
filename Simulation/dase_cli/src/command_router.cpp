@@ -697,9 +697,20 @@ json CommandRouter::handleRunBenchmark(const json& params) {
 json CommandRouter::handleGetMetrics(const json& params) {
     std::string engine_id = params.value("engine_id", "");
 
+    if (engine_id.empty()) {
+        return createErrorResponse("get_metrics",
+                                   "Missing 'engine_id' parameter",
+                                   "MISSING_PARAMETER");
+    }
+
     // Get engine instance to retrieve actual engine type
     auto* instance = engine_manager->getEngine(engine_id);
-    std::string engine_type = instance ? instance->engine_type : "unknown";
+    if (!instance) {
+        return createErrorResponse("get_metrics",
+                                   "Engine not found: " + engine_id + ".",
+                                   "ENGINE_NOT_FOUND");
+    }
+    std::string engine_type = instance->engine_type;
 
     auto metrics = engine_manager->getMetrics(engine_id);
 
