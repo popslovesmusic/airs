@@ -197,7 +197,8 @@ struct SidSSPEngine {
         : ssp(nullptr),
           field_len(field_len),
           step_count(0),
-          total_operations(0) {
+          total_operations(0),
+          diagram_json("{\"id\":\"sid_ssp\",\"nodes\":[],\"edges\":[]}") {
         ssp = sid_ssp_create(role, static_cast<unsigned long>(field_len), capacity);
         if (!ssp) {
             throw std::runtime_error("Failed to create sid_ssp");
@@ -248,10 +249,19 @@ struct SidSSPEngine {
         }
     }
 
+    void setDiagramJson(const std::string& json_str) {
+        diagram_json = json_str;
+    }
+
+    const std::string& getDiagramJson() const {
+        return diagram_json;
+    }
+
     sid_ssp_t* ssp;
     uint64_t field_len;
     uint64_t step_count;
     uint64_t total_operations;
+    std::string diagram_json;
 };
 
 #ifdef _WIN32
@@ -447,6 +457,9 @@ std::string EngineManager::createEngine(const std::string& engine_type,
         }
 
         instance->num_nodes = static_cast<int>(expected_nodes);
+        instance->dimension_x = N_x;
+        instance->dimension_y = N_y;
+        instance->dimension_z = 1;
 
         try {
             dase::igsoa::IGSOAComplexConfig config;
@@ -480,6 +493,9 @@ std::string EngineManager::createEngine(const std::string& engine_type,
         }
 
         instance->num_nodes = static_cast<int>(expected_nodes);
+        instance->dimension_x = N_x;
+        instance->dimension_y = N_y;
+        instance->dimension_z = N_z;
 
         try {
             dase::igsoa::IGSOAComplexConfig config;
@@ -772,27 +788,167 @@ std::vector<EngineInstance*> EngineManager::listEngines() {
     return result;
 }
 
-bool EngineManager::setNodeState(const std::string& engine_id, int node_index, double value) {
+bool EngineManager::setNodeState(const std::string& engine_id, int node_index, double value, const std::string& field) {
     auto* instance = getEngine(engine_id);
     if (!instance || !instance->engine_handle) {
         return false;
     }
 
-    // Phase 4B doesn't expose individual node state setting in the C API
-    // This would require extending the C API
-    // For now, return success (no-op)
-    return true;
+    if (instance->engine_type == "igsoa_complex") {
+        auto* engine = static_cast<dase::igsoa::IGSOAComplexEngine*>(instance->engine_handle);
+        if (node_index < 0 || node_index >= instance->num_nodes) {
+            return false;
+        }
+        engine->setNodePhi(static_cast<size_t>(node_index), value);
+        return true;
+
+    } else if (instance->engine_type == "igsoa_complex_2d") {
+        auto* engine = static_cast<dase::igsoa::IGSOAComplexEngine2D*>(instance->engine_handle);
+        if (node_index < 0 || node_index >= instance->num_nodes) {
+            return false;
+        }
+        size_t x = 0, y = 0;
+        engine->indexToCoord(static_cast<size_t>(node_index), x, y);
+        engine->setNodePhi(x, y, value);
+        return true;
+
+    } else if (instance->engine_type == "igsoa_complex_3d") {
+        auto* engine = static_cast<dase::igsoa::IGSOAComplexEngine3D*>(instance->engine_handle);
+        if (node_index < 0 || node_index >= instance->num_nodes) {
+            return false;
+        }
+        size_t x = 0, y = 0, z = 0;
+        engine->indexToCoord(static_cast<size_t>(node_index), x, y, z);
+        engine->setNodePhi(x, y, z, value);
+        return true;
+
+    } else if (instance->engine_type == "satp_higgs_1d") {
+        auto* engine = static_cast<dase::satp_higgs::SATPHiggsEngine1D*>(instance->engine_handle);
+        if (node_index < 0 || node_index >= instance->num_nodes) {
+            return false;
+        }
+        auto& node = engine->getNodesMutable()[static_cast<size_t>(node_index)];
+        if (field == "phi") {
+            node.phi = value;
+        } else if (field == "phi_dot") {
+            node.phi_dot = value;
+        } else if (field == "h") {
+            node.h = value;
+        } else if (field == "h_dot") {
+            node.h_dot = value;
+        } else {
+            return false;
+        }
+        return true;
+
+    } else if (instance->engine_type == "satp_higgs_2d") {
+        auto* engine = static_cast<dase::satp_higgs::SATPHiggsEngine2D*>(instance->engine_handle);
+        if (node_index < 0 || node_index >= instance->num_nodes) {
+            return false;
+        }
+        auto& node = engine->getNodesMutable()[static_cast<size_t>(node_index)];
+        if (field == "phi") {
+            node.phi = value;
+        } else if (field == "phi_dot") {
+            node.phi_dot = value;
+        } else if (field == "h") {
+            node.h = value;
+        } else if (field == "h_dot") {
+            node.h_dot = value;
+        } else {
+            return false;
+        }
+        return true;
+
+    } else if (instance->engine_type == "satp_higgs_3d") {
+        auto* engine = static_cast<dase::satp_higgs::SATPHiggsEngine3D*>(instance->engine_handle);
+        if (node_index < 0 || node_index >= instance->num_nodes) {
+            return false;
+        }
+        auto& node = engine->getNodesMutable()[static_cast<size_t>(node_index)];
+        if (field == "phi") {
+            node.phi = value;
+        } else if (field == "phi_dot") {
+            node.phi_dot = value;
+        } else if (field == "h") {
+            node.h = value;
+        } else if (field == "h_dot") {
+            node.h_dot = value;
+        } else {
+            return false;
+        }
+        return true;
+    }
+
+    // Unsupported engine type for direct node set
+    return false;
 }
 
-double EngineManager::getNodeState(const std::string& engine_id, int node_index) {
+double EngineManager::getNodeState(const std::string& engine_id, int node_index, const std::string& field) {
     auto* instance = getEngine(engine_id);
     if (!instance || !instance->engine_handle) {
         return 0.0;
     }
 
-    // Phase 4B doesn't expose individual node state reading in the C API
-    // This would require extending the C API
-    // For now, return 0.0
+    if (instance->engine_type == "igsoa_complex") {
+        if (node_index < 0 || node_index >= instance->num_nodes) {
+            return 0.0;
+        }
+        auto* engine = static_cast<dase::igsoa::IGSOAComplexEngine*>(instance->engine_handle);
+        return engine->getNodes()[static_cast<size_t>(node_index)].phi;
+
+    } else if (instance->engine_type == "igsoa_complex_2d") {
+        if (node_index < 0 || node_index >= instance->num_nodes) {
+            return 0.0;
+        }
+        auto* engine = static_cast<dase::igsoa::IGSOAComplexEngine2D*>(instance->engine_handle);
+        return engine->getNodes()[static_cast<size_t>(node_index)].phi;
+
+    } else if (instance->engine_type == "igsoa_complex_3d") {
+        if (node_index < 0 || node_index >= instance->num_nodes) {
+            return 0.0;
+        }
+        auto* engine = static_cast<dase::igsoa::IGSOAComplexEngine3D*>(instance->engine_handle);
+        return engine->getNodes()[static_cast<size_t>(node_index)].phi;
+
+    } else if (instance->engine_type == "satp_higgs_1d") {
+        if (node_index < 0 || node_index >= instance->num_nodes) {
+            return 0.0;
+        }
+        auto* engine = static_cast<dase::satp_higgs::SATPHiggsEngine1D*>(instance->engine_handle);
+        const auto& node = engine->getNodes()[static_cast<size_t>(node_index)];
+        if (field == "phi") return node.phi;
+        if (field == "phi_dot") return node.phi_dot;
+        if (field == "h") return node.h;
+        if (field == "h_dot") return node.h_dot;
+        return 0.0;
+
+    } else if (instance->engine_type == "satp_higgs_2d") {
+        if (node_index < 0 || node_index >= instance->num_nodes) {
+            return 0.0;
+        }
+        auto* engine = static_cast<dase::satp_higgs::SATPHiggsEngine2D*>(instance->engine_handle);
+        const auto& node = engine->getNodes()[static_cast<size_t>(node_index)];
+        if (field == "phi") return node.phi;
+        if (field == "phi_dot") return node.phi_dot;
+        if (field == "h") return node.h;
+        if (field == "h_dot") return node.h_dot;
+        return 0.0;
+
+    } else if (instance->engine_type == "satp_higgs_3d") {
+        if (node_index < 0 || node_index >= instance->num_nodes) {
+            return 0.0;
+        }
+        auto* engine = static_cast<dase::satp_higgs::SATPHiggsEngine3D*>(instance->engine_handle);
+        const auto& node = engine->getNodes()[static_cast<size_t>(node_index)];
+        if (field == "phi") return node.phi;
+        if (field == "phi_dot") return node.phi_dot;
+        if (field == "h") return node.h;
+        if (field == "h_dot") return node.h_dot;
+        return 0.0;
+    }
+
+    // Unsupported engine type for direct node get
     return 0.0;
 }
 
@@ -1894,19 +2050,24 @@ bool EngineManager::sidSetDiagramJson(const std::string& engine_id,
     if (!instance || !instance->engine_handle) {
         return false;
     }
-    if (instance->engine_type != "sid_ternary") {
-        return false;
+    if (instance->engine_type == "sid_ternary") {
+        bool ok = sid_set_diagram_json(
+            static_cast<sid_engine*>(instance->engine_handle),
+            diagram_json.c_str()
+        );
+
+        const char* message = sid_last_rewrite_message(
+            static_cast<sid_engine*>(instance->engine_handle));
+        message_out = message ? message : "";
+        return ok;
+    } else if (instance->engine_type == "sid_ssp") {
+        auto* engine = static_cast<SidSSPEngine*>(instance->engine_handle);
+        engine->setDiagramJson(diagram_json);
+        message_out.clear();
+        return true;
     }
 
-    bool ok = sid_set_diagram_json(
-        static_cast<sid_engine*>(instance->engine_handle),
-        diagram_json.c_str()
-    );
-
-    const char* message = sid_last_rewrite_message(
-        static_cast<sid_engine*>(instance->engine_handle));
-    message_out = message ? message : "";
-    return ok;
+    return false;
 }
 
 bool EngineManager::sidGetDiagramJson(const std::string& engine_id,
@@ -1915,14 +2076,18 @@ bool EngineManager::sidGetDiagramJson(const std::string& engine_id,
     if (!instance || !instance->engine_handle) {
         return false;
     }
-    if (instance->engine_type != "sid_ternary") {
-        return false;
+    if (instance->engine_type == "sid_ternary") {
+        const char* json_data = sid_get_diagram_json(
+            static_cast<sid_engine*>(instance->engine_handle));
+        diagram_json_out = json_data ? json_data : "";
+        return true;
+    } else if (instance->engine_type == "sid_ssp") {
+        auto* engine = static_cast<SidSSPEngine*>(instance->engine_handle);
+        diagram_json_out = engine->getDiagramJson();
+        return true;
     }
 
-    const char* json_data = sid_get_diagram_json(
-        static_cast<sid_engine*>(instance->engine_handle));
-    diagram_json_out = json_data ? json_data : "";
-    return true;
+    return false;
 }
 
 EngineManager::SidMetrics EngineManager::getSidMetrics(const std::string& engine_id) {

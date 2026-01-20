@@ -70,8 +70,8 @@ public:
     std::vector<EngineInstance*> listEngines();
 
     // Engine operations (Phase 4B)
-    bool setNodeState(const std::string& engine_id, int node_index, double value);
-    double getNodeState(const std::string& engine_id, int node_index);
+    bool setNodeState(const std::string& engine_id, int node_index, double value, const std::string& field = "phi");
+    double getNodeState(const std::string& engine_id, int node_index, const std::string& field = "phi");
     bool runMission(const std::string& engine_id, int num_steps, int iterations_per_node);
 
     // Engine operations (IGSOA Complex)

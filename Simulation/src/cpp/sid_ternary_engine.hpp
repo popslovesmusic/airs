@@ -13,6 +13,7 @@
 #include "sid_ssp/sid_parser_impl.hpp"
 #include "sid_ssp/sid_diagram_builder.hpp"
 #include "sid_ssp/sid_rewrite.hpp"
+#include "../../dase_cli/src/json.hpp"
 #include <vector>
 #include <string>
 #include <memory>
@@ -300,10 +301,57 @@ public:
      * @return true if successful
      */
     bool setDiagramJson(const std::string& json_str) {
-        // TODO: Implement JSON parsing and diagram loading
-        // For now, just track that it was called
-        last_rewrite_message_ = "Diagram JSON loading not yet implemented";
-        return false;
+        try {
+            auto data = nlohmann::json::parse(json_str);
+            if (!data.is_object()) {
+                last_rewrite_message_ = "Diagram JSON must be an object";
+                return false;
+            }
+
+            auto new_diagram = std::make_unique<Diagram>(data.value("id", "sid_engine_diagram"));
+
+            if (data.contains("nodes") && data["nodes"].is_array()) {
+                for (const auto& n : data["nodes"]) {
+                    Node node;
+                    node.id = n.value("id", "");
+                    node.op = n.value("op", "");
+                    if (n.contains("inputs") && n["inputs"].is_array()) {
+                        for (const auto& inp : n["inputs"]) {
+                            if (inp.is_string()) node.inputs.push_back(inp.get<std::string>());
+                        }
+                    }
+                    if (n.contains("dof_refs") && n["dof_refs"].is_array()) {
+                        for (const auto& d : n["dof_refs"]) {
+                            if (d.is_string()) node.dof_refs.push_back(d.get<std::string>());
+                        }
+                    }
+                    if (!node.id.empty()) {
+                        new_diagram->add_node(node);
+                    }
+                }
+            }
+
+            if (data.contains("edges") && data["edges"].is_array()) {
+                for (const auto& e : data["edges"]) {
+                    Edge edge;
+                    edge.id = e.value("id", "");
+                    edge.from = e.value("from", "");
+                    edge.to = e.value("to", "");
+                    edge.label = e.value("label", "arg");
+                    edge.port = e.value("port", 0);
+                    if (!edge.id.empty()) {
+                        new_diagram->add_edge(edge);
+                    }
+                }
+            }
+
+            diagram_ = std::move(new_diagram);
+            last_rewrite_message_.clear();
+            return true;
+        } catch (const std::exception& e) {
+            last_rewrite_message_ = std::string("Diagram parse error: ") + e.what();
+            return false;
+        }
     }
 
     /**
@@ -312,9 +360,31 @@ public:
      * @return JSON representation of current diagram
      */
     std::string getDiagramJson() const {
-        // TODO: Implement diagram serialization
-        // For now, return minimal valid JSON
-        return "{\"id\":\"" + diagram_->id() + "\",\"nodes\":[],\"edges\":[]}";
+        nlohmann::json data;
+        data["id"] = diagram_->id();
+        data["nodes"] = nlohmann::json::array();
+        data["edges"] = nlohmann::json::array();
+
+        for (const auto& node : diagram_->nodes()) {
+            nlohmann::json n;
+            n["id"] = node.id;
+            n["op"] = node.op;
+            n["inputs"] = node.inputs;
+            n["dof_refs"] = node.dof_refs;
+            data["nodes"].push_back(n);
+        }
+
+        for (const auto& edge : diagram_->edges()) {
+            nlohmann::json e;
+            e["id"] = edge.id;
+            e["from"] = edge.from;
+            e["to"] = edge.to;
+            e["label"] = edge.label;
+            e["port"] = edge.port;
+            data["edges"].push_back(e);
+        }
+
+        return data.dump();
     }
 
     /**

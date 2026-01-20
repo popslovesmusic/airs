@@ -226,12 +226,30 @@ public:
         }
 
         const uint64_t len = ssp_U.field_len();
+        const double alpha = 0.05;  // Mild collapse strength
 
-        // Policy-free stub: uniform admissibility, small alpha
-        std::vector<double> uniform_mask(len, 1.0);
-        const double alpha = 0.01;
+        auto& field_I = ssp_I.field();
+        auto& field_N = ssp_N.field();
+        auto& field_U = ssp_U.field();
 
-        ssp_U.apply_collapse(uniform_mask, alpha);
+        if (field_I.size() != len || field_N.size() != len || field_U.size() != len) {
+            throw std::logic_error("request_collapse field length mismatch");
+        }
+
+        for (uint64_t i = 0; i < len; ++i) {
+            const double u_val = field_U[i];
+            const double remove = u_val * alpha;
+            const double to_I = remove * 0.5;
+            const double to_N = remove - to_I;
+            field_U[i] -= remove;
+            field_I[i] += to_I;
+            field_N[i] += to_N;
+        }
+
+        // Recompute metrics for updated fields
+        ssp_I.commit_step();
+        ssp_N.commit_step();
+        ssp_U.commit_step();
     }
 };
 

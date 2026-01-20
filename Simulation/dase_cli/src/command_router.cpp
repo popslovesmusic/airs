@@ -539,8 +539,9 @@ json CommandRouter::handleSetNodeState(const json& params) {
     std::string engine_id = params.value("engine_id", "");
     int node_index = params.value("node_index", 0);
     double value = params.value("value", 0.0);
+    std::string field = params.value("field", "phi");
 
-    bool success = engine_manager->setNodeState(engine_id, node_index, value);
+    bool success = engine_manager->setNodeState(engine_id, node_index, value, field);
 
     if (!success) {
         return createErrorResponse("set_node_state",
@@ -551,6 +552,7 @@ json CommandRouter::handleSetNodeState(const json& params) {
     json result = {
         {"node_index", node_index},
         {"value", value},
+        {"field", field},
         {"updated", true}
     };
 
@@ -560,12 +562,14 @@ json CommandRouter::handleSetNodeState(const json& params) {
 json CommandRouter::handleGetNodeState(const json& params) {
     std::string engine_id = params.value("engine_id", "");
     int node_index = params.value("node_index", 0);
+    std::string field = params.value("field", "phi");
 
-    double value = engine_manager->getNodeState(engine_id, node_index);
+    double value = engine_manager->getNodeState(engine_id, node_index, field);
 
     json result = {
         {"node_index", node_index},
-        {"value", value}
+        {"value", value},
+        {"field", field}
     };
 
     return createSuccessResponse("get_node_state", result, 0);
@@ -584,9 +588,16 @@ json CommandRouter::handleRunMission(const json& params) {
                                    "EXECUTION_FAILED");
     }
 
+    auto metrics = engine_manager->getMetrics(engine_id);
+    double total_ops = metrics.total_operations;
+    if (total_ops <= 0.0) {
+        // Fallback to legacy estimate only when real metrics are unavailable
+        total_ops = static_cast<double>(num_steps) * iterations_per_node * 1024;
+    }
+
     json result = {
         {"steps_completed", num_steps},
-        {"total_operations", static_cast<double>(num_steps) * iterations_per_node * 1024}
+        {"total_operations", total_ops}
     };
 
     return createSuccessResponse("run_mission", result, 0);
@@ -640,12 +651,30 @@ json CommandRouter::handleRunMissionWithSnapshots(const json& params) {
 }
 
 json CommandRouter::handleRunBenchmark(const json& params) {
-    // STUB: Benchmark command not implemented
-    // Returning stub response to indicate feature unavailability
+    std::string engine_id = params.value("engine_id", "");
+    int num_steps = params.value("num_steps", 1);
+    int iterations_per_node = params.value("iterations_per_node", 30);
+
+    if (engine_id.empty()) {
+        return createErrorResponse("run_benchmark", "Missing engine_id", "MISSING_PARAMETER");
+    }
+    if (num_steps <= 0 || iterations_per_node <= 0) {
+        return createErrorResponse("run_benchmark", "Invalid num_steps or iterations_per_node", "INVALID_PARAMETER");
+    }
+
+    bool ok = engine_manager->runMission(engine_id, num_steps, iterations_per_node);
+    if (!ok) {
+        return createErrorResponse("run_benchmark", "Mission execution failed", "EXECUTION_FAILED");
+    }
+
+    auto metrics = engine_manager->getMetrics(engine_id);
     json result = {
-        {"status", "stub"},
-        {"message", "Benchmark command is not implemented. Use get_metrics on a real engine instead."},
-        {"benchmark_type", "not_available"}
+        {"engine_id", engine_id},
+        {"steps_completed", num_steps},
+        {"iterations_per_node", iterations_per_node},
+        {"ns_per_op", metrics.ns_per_op},
+        {"ops_per_sec", metrics.ops_per_sec},
+        {"total_operations", metrics.total_operations}
     };
 
     return createSuccessResponse("run_benchmark", result, 0);
