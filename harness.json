@@ -1,0 +1,141 @@
+{
+  "task_id": "DASE_CLI_VALIDATION_TEST_HARNESS",
+  "task_type": "test_harness_design_and_implementation",
+  "execution_phase": "validation",
+  "execution_model": "single_threaded",
+  "scope_lock": true,
+
+  "purpose": [
+    "Establish confidence in correctness",
+    "Detect regressions deterministically",
+    "Validate engine invariants",
+    "Expose meaningful failure modes",
+    "Create a baseline for future parallelism"
+  ],
+
+  "explicit_non_goals": [
+    "Performance benchmarking",
+    "Stress testing",
+    "Multi-threaded execution",
+    "OpenMP validation",
+    "Fuzzing",
+    "Property-based testing frameworks"
+  ],
+
+  "harness_scope": {
+    "system_under_test": "dase_cli.exe",
+    "interface": "stdin_json_lines / stdout_json_lines",
+    "black_box": true,
+    "white_box": false
+  },
+
+  "test_categories": [
+    {
+      "id": "CLI_PARSER_AND_ROUTING",
+      "description": "Verify JSON parsing, command routing, and error handling.",
+      "tests": [
+        "invalid_json_rejected",
+        "unknown_command_rejected",
+        "missing_required_parameters",
+        "extra_parameters_ignored_or_reported",
+        "error_format_consistency"
+      ]
+    },
+    {
+      "id": "ENGINE_LIFECYCLE",
+      "description": "Validate engine creation, use, and destruction semantics.",
+      "tests": [
+        "create_engine_success",
+        "create_engine_invalid_params_fail",
+        "destroy_engine_success",
+        "double_destroy_fails_cleanly",
+        "use_after_destroy_rejected"
+      ]
+    },
+    {
+      "id": "DETERMINISM",
+      "description": "Ensure identical inputs produce identical outputs.",
+      "tests": [
+        "repeat_same_command_same_output",
+        "fixed_seed_reproducibility",
+        "state_hash_stability"
+      ]
+    },
+    {
+      "id": "NUMERIC_INVARIANTS",
+      "description": "Ensure physical and numeric invariants hold.",
+      "tests": [
+        "no_nan_in_outputs",
+        "no_infinite_values",
+        "division_by_zero_guarded",
+        "dimensions_consistent"
+      ]
+    },
+    {
+      "id": "ERROR_PATHS",
+      "description": "Ensure failures are informative and non-destructive.",
+      "tests": [
+        "invalid_parameters_fail_early",
+        "engine_not_found",
+        "analysis_failure_does_not_corrupt_state",
+        "resource_cleanup_on_error"
+      ]
+    },
+    {
+      "id": "STATE_EVOLUTION",
+      "description": "Validate that state changes are causal and monotonic where expected.",
+      "tests": [
+        "step_advances_state",
+        "no_step_no_state_change",
+        "metrics_change_after_step"
+      ]
+    }
+  ],
+
+  "test_execution_rules": {
+    "one_engine_at_a_time": true,
+    "no_parallel_tests": true,
+    "tests_run_in_fixed_order": true,
+    "process_restart_between_suites": true
+  },
+
+  "oracle_strategy": {
+    "numeric_tolerance": "explicit_per_test",
+    "golden_files_allowed": true,
+    "exact_match_required_for": [
+      "error_codes",
+      "error_messages",
+      "json_structure"
+    ]
+  },
+
+  "required_harness_features": [
+    "stdin_command_feeder",
+    "stdout_json_capture",
+    "exit_code_capture",
+    "timeout_guard",
+    "output_normalization",
+    "state_snapshot_support",
+    "state_hashing"
+  ],
+
+  "output_artifacts": {
+    "test_results_report": "json",
+    "failed_test_details": "json",
+    "baseline_state_hashes": "json",
+    "known_good_run_manifest": "json"
+  },
+
+  "success_criteria": {
+    "all_tests_pass": true,
+    "no_flaky_tests": true,
+    "results_reproducible_across_runs": true,
+    "no_undefined_behavior_detected": true
+  },
+
+  "completion_gate": {
+    "harness_runs_clean_on_fresh_build": true,
+    "no_production_code_changes_required": true,
+    "baseline_established": true
+  }
+}

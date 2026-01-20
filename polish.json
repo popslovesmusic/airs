@@ -1,0 +1,97 @@
+{
+  "task_id": "DASE_CLI_VALIDATION_IMPLEMENTATION_REVIEW",
+  "task_type": "code_review_and_targeted_remediation",
+  "execution_phase": "validation",
+  "execution_model": "single_threaded",
+  "scope_lock": true,
+
+  "objectives": [
+    "Establish correctness-first baseline",
+    "Eliminate misleading or fake outputs",
+    "Enforce deterministic behavior",
+    "Add defensive validation and invariants",
+    "Remove ambiguity about threading and lifecycle"
+  ],
+
+  "explicit_non_goals": [
+    "Multi-threading",
+    "OpenMP orchestration",
+    "Performance optimization",
+    "Cross-engine synchronization",
+    "Platform portability beyond Windows",
+    "Architectural rewrites"
+  ],
+
+  "assumptions": {
+    "one_command_processed_at_a_time": true,
+    "no_concurrent_engine_mutation": true,
+    "cli_is_dispatch_only": true,
+    "engines_are_stateful_and_isolated": true
+  },
+
+  "required_actions": [
+    {
+      "id": "REMOVE_FAKE_BENCHMARKS",
+      "description": "Identify any command handlers returning fabricated or placeholder metrics (e.g., run_benchmark) and either remove them or explicitly mark outputs as stub.",
+      "files_hint": ["command_router.cpp"],
+      "success_criteria": "No command returns numeric performance data that is not computed."
+    },
+    {
+      "id": "MAKE_SINGLE_THREAD_ASSUMPTION_EXPLICIT",
+      "description": "Remove misleading concurrency artifacts (e.g., std::atomic used without full locking). Replace with comments or assertions documenting single-threaded assumption.",
+      "files_hint": ["engine_manager.h", "engine_manager.cpp"],
+      "success_criteria": "No code implies thread safety where it does not exist."
+    },
+    {
+      "id": "FIX_RESOURCE_LIFETIME_LEAKS",
+      "description": "Ensure all temporary files, DLL handles, and external resources are released deterministically even on error or exception paths.",
+      "files_hint": ["analysis_router.cpp", "engine_manager.cpp"],
+      "success_criteria": "All resources are exception-safe or RAII-managed."
+    },
+    {
+      "id": "ADD_INPUT_VALIDATION",
+      "description": "Add explicit validation for all user-supplied JSON parameters, including ranges, null checks, and type safety.",
+      "files_hint": ["command_router.cpp", "engine_manager.cpp"],
+      "success_criteria": "Invalid inputs fail early with informative errors."
+    },
+    {
+      "id": "GUARD_NUMERIC_INVARIANTS",
+      "description": "Add defensive checks for numeric invariants such as division by zero, invalid dimensions, and non-physical parameter values.",
+      "files_hint": ["engine_manager.cpp"],
+      "success_criteria": "Numeric errors cannot silently propagate."
+    },
+    {
+      "id": "REMOVE_PRODUCTION_DIAGNOSTIC_NOISE",
+      "description": "Remove or gate all debug-only stderr/stdout prints from production execution paths.",
+      "files_hint": ["engine_manager.cpp"],
+      "success_criteria": "Production output is clean, deterministic, and JSON-only."
+    },
+    {
+      "id": "NORMALIZE_ERROR_MESSAGES",
+      "description": "Standardize error message format across all commands (sentence case, context included, period-terminated).",
+      "files_hint": ["command_router.cpp"],
+      "success_criteria": "Errors are consistent and machine-parseable."
+    }
+  ],
+
+  "validation_requirements": {
+    "determinism": true,
+    "reproducibility": true,
+    "no_fake_metrics": true,
+    "exception_safety": true,
+    "clear_failure_modes": true
+  },
+
+  "output_requirements": {
+    "change_log": "list of concrete code changes made",
+    "validation_notes": "what was verified and how",
+    "remaining_risks": "issues intentionally deferred",
+    "no_parallelism_introduced": true
+  },
+
+  "completion_gate": {
+    "all_required_actions_completed": true,
+    "no_new_features_added": true,
+    "no_behavior_change_for_valid_inputs": true
+  }
+}

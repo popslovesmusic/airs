@@ -330,7 +330,7 @@ json CommandRouter::handleDescribeEngine(const json& params) {
 
     // Unknown engine
     return createErrorResponse("describe_engine",
-                              "Unknown engine: " + engine_name + ". Available: igsoa_gw, igsoa_complex, igsoa_complex_2d, igsoa_complex_3d, phase4b, satp_higgs_1d, satp_higgs_2d, satp_higgs_3d, sid_ternary",
+                              "Unknown engine: " + engine_name + ". Available engines: igsoa_gw, igsoa_complex, igsoa_complex_2d, igsoa_complex_3d, phase4b, satp_higgs_1d, satp_higgs_2d, satp_higgs_3d, sid_ternary.",
                               "UNKNOWN_ENGINE");
 }
 
@@ -384,8 +384,15 @@ json CommandRouter::handleCreateEngine(const json& params) {
     // Extract parameters with defaults
     std::string engine_type = params.value("engine_type", "phase4b");
     int num_nodes = params.value("num_nodes", 1024);
-    // Try both R_c_default (IGSOA parameter name) and R_c (generic name)
-    double R_c = params.value("R_c_default", params.value("R_c", 1.0));
+
+    // Extract R_c with explicit fallback logic (avoid nested .value() which can throw on null)
+    double R_c = 1.0;
+    if (params.contains("R_c_default") && !params["R_c_default"].is_null()) {
+        R_c = params["R_c_default"].get<double>();
+    } else if (params.contains("R_c") && !params["R_c"].is_null()) {
+        R_c = params["R_c"].get<double>();
+    }
+
     double kappa = params.value("kappa", 1.0);
     double gamma = params.value("gamma", 0.1);
     double dt = params.value("dt", 0.01);
@@ -393,17 +400,39 @@ json CommandRouter::handleCreateEngine(const json& params) {
     int N_y = params.value("N_y", params.value("height", 0));
     int N_z = params.value("N_z", params.value("depth", 0));
 
+    // Validate physics parameters
+    if (R_c <= 0.0 || !std::isfinite(R_c)) {
+        return createErrorResponse("create_engine",
+                                   "Invalid R_c parameter. Must be positive and finite.",
+                                   "INVALID_PARAMETER");
+    }
+    if (kappa <= 0.0 || !std::isfinite(kappa)) {
+        return createErrorResponse("create_engine",
+                                   "Invalid kappa parameter. Must be positive and finite.",
+                                   "INVALID_PARAMETER");
+    }
+    if (gamma < 0.0 || !std::isfinite(gamma)) {
+        return createErrorResponse("create_engine",
+                                   "Invalid gamma parameter. Must be non-negative and finite.",
+                                   "INVALID_PARAMETER");
+    }
+    if (dt <= 0.0 || !std::isfinite(dt)) {
+        return createErrorResponse("create_engine",
+                                   "Invalid dt parameter. Must be positive and finite.",
+                                   "INVALID_PARAMETER");
+    }
+
     if (engine_type == "igsoa_complex_2d") {
         if (N_x <= 0 || N_y <= 0) {
             return createErrorResponse("create_engine",
-                                       "Invalid 2D dimensions (N_x and N_y must be > 0)",
+                                       "Invalid 2D dimensions. N_x and N_y must be greater than 0.",
                                        "INVALID_DIMENSIONS");
         }
 
         int64_t expected_nodes = static_cast<int64_t>(N_x) * static_cast<int64_t>(N_y);
         if (expected_nodes <= 0 || expected_nodes > 1048576) {
             return createErrorResponse("create_engine",
-                                       "Requested lattice size exceeds limits",
+                                       "Requested lattice size exceeds limits (max 1048576 nodes).",
                                        "INVALID_DIMENSIONS");
         }
 
@@ -411,14 +440,14 @@ json CommandRouter::handleCreateEngine(const json& params) {
     } else if (engine_type == "igsoa_complex_3d") {
         if (N_x <= 0 || N_y <= 0 || N_z <= 0) {
             return createErrorResponse("create_engine",
-                                       "Invalid 3D dimensions (N_x, N_y, N_z must be > 0)",
+                                       "Invalid 3D dimensions. N_x, N_y, and N_z must be greater than 0.",
                                        "INVALID_DIMENSIONS");
         }
 
         int64_t expected_nodes = static_cast<int64_t>(N_x) * static_cast<int64_t>(N_y) * static_cast<int64_t>(N_z);
         if (expected_nodes <= 0 || expected_nodes > 1048576) {
             return createErrorResponse("create_engine",
-                                       "Requested lattice size exceeds limits",
+                                       "Requested lattice size exceeds limits (max 1048576 nodes).",
                                        "INVALID_DIMENSIONS");
         }
 
@@ -439,7 +468,7 @@ json CommandRouter::handleCreateEngine(const json& params) {
     );
 
     if (engine_id.empty()) {
-        return createErrorResponse("create_engine", "Failed to create engine", "ENGINE_CREATE_FAILED");
+        return createErrorResponse("create_engine", "Failed to create engine.", "ENGINE_CREATE_FAILED");
     }
 
     json result = {
@@ -466,7 +495,7 @@ json CommandRouter::handleCreateEngine(const json& params) {
 
 json CommandRouter::handleDestroyEngine(const json& params) {
     if (!params.contains("engine_id")) {
-        return createErrorResponse("destroy_engine", "Missing engine_id", "MISSING_PARAM");
+        return createErrorResponse("destroy_engine", "Missing 'engine_id' parameter.", "MISSING_PARAMETER");
     }
 
     std::string engine_id = params["engine_id"].get<std::string>();
@@ -474,7 +503,7 @@ json CommandRouter::handleDestroyEngine(const json& params) {
 
     if (!success) {
         return createErrorResponse("destroy_engine",
-                                   "Engine not found: " + engine_id,
+                                   "Engine not found: " + engine_id + ".",
                                    "ENGINE_NOT_FOUND");
     }
 
@@ -495,7 +524,7 @@ json CommandRouter::handleSetNodeState(const json& params) {
 
     if (!success) {
         return createErrorResponse("set_node_state",
-                                   "Failed to set node state",
+                                   "Failed to set node state.",
                                    "EXECUTION_FAILED");
     }
 
@@ -531,7 +560,7 @@ json CommandRouter::handleRunMission(const json& params) {
 
     if (!success) {
         return createErrorResponse("run_mission",
-                                   "Mission execution failed",
+                                   "Mission execution failed.",
                                    "EXECUTION_FAILED");
     }
 
@@ -591,12 +620,12 @@ json CommandRouter::handleRunMissionWithSnapshots(const json& params) {
 }
 
 json CommandRouter::handleRunBenchmark(const json& params) {
+    // STUB: Benchmark command not implemented
+    // Returning stub response to indicate feature unavailability
     json result = {
-        {"benchmark_type", "quick"},
-        {"duration_seconds", 0.151},
-        {"ns_per_op", 2.76},
-        {"ops_per_sec", 362000000},
-        {"performance_rating", "excellent"}
+        {"status", "stub"},
+        {"message", "Benchmark command is not implemented. Use get_metrics on a real engine instead."},
+        {"benchmark_type", "not_available"}
     };
 
     return createSuccessResponse("run_benchmark", result, 0);
@@ -772,8 +801,12 @@ json CommandRouter::handleGetSatpState(const json& params) {
         phi_rms += phi[i] * phi[i];
         h_rms += h[i] * h[i];
     }
-    phi_rms = std::sqrt(phi_rms / static_cast<double>(num_nodes));
-    h_rms = std::sqrt(h_rms / static_cast<double>(num_nodes));
+
+    // Guard against division by zero (should not occur, but defensive)
+    if (num_nodes > 0) {
+        phi_rms = std::sqrt(phi_rms / static_cast<double>(num_nodes));
+        h_rms = std::sqrt(h_rms / static_cast<double>(num_nodes));
+    }
 
     // Return state arrays with diagnostics
     json result = {

@@ -1,0 +1,85 @@
+{
+  "task_id": "DASE_HARNESS_SESSION_SCOPED_REFACTOR",
+  "task_type": "test_harness_review_and_refactor",
+  "execution_phase": "validation",
+  "scope_lock": true,
+
+  "system_under_review": {
+    "component": "DASE CLI Test Harness",
+    "file": "test_cli_harness.py",
+    "role": "paradigm_resolution_authority",
+    "interface": "stdin_stdout_json"
+  },
+
+  "current_problem_statement": [
+    "Harness assumes engine and state persistence across commands",
+    "Harness currently spawns a new CLI process per command",
+    "This creates a semantic mismatch that invalidates lifecycle and state tests"
+  ],
+
+  "required_resolution": {
+    "execution_model": "session_scoped",
+    "definition": "One CLI process per test case, multiple commands per process",
+    "process_lifetime": "test_case_bound",
+    "no_process_sharing_between_tests": true
+  },
+
+  "mandatory_actions": [
+    {
+      "id": "DECLARE_EXECUTION_MODEL",
+      "description": "Make the harness execution model explicit in code (session_scoped) and enforce it consistently.",
+      "success_criteria": "Execution model is declared once and referenced by harness control flow."
+    },
+    {
+      "id": "REFACTOR_COMMAND_EXECUTION",
+      "description": "Replace process-per-command execution with session-based execution (start_session, send_command, end_session).",
+      "success_criteria": "All multi-step tests operate within a single CLI process."
+    },
+    {
+      "id": "PRESERVE_TEST_LOGIC",
+      "description": "Do not weaken, skip, or rewrite any existing test cases or assertions.",
+      "success_criteria": "Test definitions and categories remain unchanged."
+    },
+    {
+      "id": "CAPTURE_STDERR_ALWAYS",
+      "description": "Ensure stderr output is always captured and attached to command results, even on success.",
+      "success_criteria": "All test results include stderr field when present."
+    },
+    {
+      "id": "EXPLICIT_TIMEOUT_CLASSIFICATION",
+      "description": "Classify timeouts explicitly with error_code=TIMEOUT and paradigm=STRUCTURAL_SAFETY.",
+      "success_criteria": "Timeout failures are distinguishable from other errors."
+    }
+  ],
+
+  "explicit_non_goals": [
+    "Modifying dase_cli.exe",
+    "Changing test expectations",
+    "Skipping failing tests",
+    "Adding parallelism",
+    "Performance optimization",
+    "Adding new tests",
+    "Introducing mocks or stubs"
+  ],
+
+  "validation_requirements": {
+    "categories_unchanged": true,
+    "test_order_unchanged": true,
+    "harness_remains_black_box": true,
+    "single_authority": true
+  },
+
+  "deliverables": {
+    "updated_harness_file": "test_cli_harness.py",
+    "change_summary": "concise list of harness-only changes",
+    "execution_model_statement": "inline documentation explaining session-scoped semantics"
+  },
+
+  "completion_gate": {
+    "no_cli_code_touched": true,
+    "session_scoped_execution_verified": true,
+    "all_tests_execute_without_harness_exceptions": true,
+    "failure_count_may_change": true,
+    "failure_causes_more_precise": true
+  }
+}

@@ -255,10 +255,11 @@ void AnalysisRouter::runPythonAnalysis(
 ) {
     result.python.executed = true;
 
+    std::string temp_file;
     try {
         // Extract state and write to file
         nlohmann::json state_data = extractEngineState(engine_id);
-        std::string temp_file = writeTempStateFile(state_data);
+        temp_file = writeTempStateFile(state_data);
 
         // Run each requested script
         for (const auto& script : config.python.scripts) {
@@ -271,12 +272,18 @@ void AnalysisRouter::runPythonAnalysis(
             result.python.script_results.push_back(py_result);
         }
 
-        // Cleanup
-        fs::remove(temp_file);
-
     } catch (const std::exception& e) {
         result.success = false;
         result.error_message += std::string("Python analysis failed: ") + e.what() + "; ";
+    }
+
+    // Cleanup temp file (exception-safe - runs even if exception thrown)
+    if (!temp_file.empty()) {
+        try {
+            fs::remove(temp_file);
+        } catch (...) {
+            // Ignore cleanup failures (file may not exist or be inaccessible)
+        }
     }
 }
 

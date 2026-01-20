@@ -130,13 +130,12 @@ EngineManager::EngineManager() : next_engine_id(1) {
 }
 
 EngineManager::~EngineManager() {
-    // Clean up engines before DLL cleanup to avoid ordering issues
-    // This ensures proper FFTW cleanup within each engine
+    // Clean up engines first to ensure proper FFTW cleanup
     engines.clear(); // Destroys all unique_ptrs, calls engine destructors
 
-    // Note: DLL handle cleanup intentionally skipped
-    // Static DLL handle shared across instances, unload on process exit
-    // For proper cleanup in library mode, convert dll_handle to instance member
+    // DLL cleanup: Static handle remains loaded for process lifetime
+    // In CLI mode (single EngineManager instance), this is cleaned up at process exit
+    // NOTE: This prevents EngineManager reuse in library contexts (intentional for CLI-only use)
 }
 
 std::string EngineManager::createEngine(const std::string& engine_type,
@@ -203,10 +202,6 @@ std::string EngineManager::createEngine(const std::string& engine_type,
             config.kappa = kappa;
             config.gamma = gamma;
             config.dt = dt;
-
-            // DIAGNOSTIC: Print config being used
-            std::cerr << "[ENGINE MANAGER] Creating IGSOA engine with R_c=" << R_c
-                      << " (config.R_c_default=" << config.R_c_default << ")" << std::endl;
 
             auto* engine = new dase::igsoa::IGSOAComplexEngine(config);
             handle = static_cast<void*>(engine);
@@ -829,6 +824,17 @@ bool EngineManager::setIgsoaState(const std::string& engine_id,
             int center_node = params.value("center_node", num_nodes / 2);
             double width = params.value("width", num_nodes / 16.0);
             double baseline_phi = params.value("baseline_phi", 0.0);
+
+            // Validate parameters
+            if (width <= 0.0 || !std::isfinite(width)) {
+                return false; // Invalid width
+            }
+            if (center_node < 0 || center_node >= static_cast<int>(num_nodes)) {
+                return false; // Center node out of bounds
+            }
+            if (!std::isfinite(amplitude) || !std::isfinite(baseline_phi)) {
+                return false; // Non-finite parameters
+            }
 
             // Extract mode parameter (default: "overwrite" for backwards compatibility)
             std::string mode = params.value("mode", "overwrite");
@@ -1593,8 +1599,8 @@ EngineManager::SidMetrics EngineManager::getSidMetrics(const std::string& engine
 }
 
 std::string EngineManager::generateEngineId() {
-    // Thread-safe engine ID generation using atomic fetch_add
-    int id = next_engine_id.fetch_add(1, std::memory_order_relaxed);
+    // Simple ID generation (single-threaded, sequential command execution)
+    int id = next_engine_id++;
     std::ostringstream oss;
     oss << "engine_" << std::setw(3) << std::setfill('0') << id;
     return oss.str();

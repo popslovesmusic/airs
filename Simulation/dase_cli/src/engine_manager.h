@@ -2,10 +2,11 @@
  * Engine Manager - Manages lifecycle of DASE engines
  * Handles both Phase 4B (real) and IGSOA Complex (complex) engines
  *
- * @warning NOT THREAD-SAFE
- * This class is designed for single-threaded use only.
- * Concurrent access from multiple threads will cause undefined behavior.
- * For multi-threaded applications, add mutex protection around all public methods.
+ * @warning SINGLE-THREADED ONLY
+ * This class is designed for single-threaded CLI use only.
+ * All operations assume sequential command execution from stdin.
+ * No thread safety mechanisms are implemented.
+ * DO NOT use from multiple threads - undefined behavior will occur.
  */
 
 #pragma once
@@ -14,7 +15,6 @@
 #include <map>
 #include <memory>
 #include <vector>
-#include <atomic>
 #include "json.hpp"
 
 // Engine instance wrapper
@@ -149,7 +149,8 @@ public:
 
 private:
     std::map<std::string, std::unique_ptr<EngineInstance>> engines;
-    std::atomic<int> next_engine_id;
+    // Simple counter for engine ID generation (single-threaded, no atomic needed)
+    int next_engine_id;
 
     std::string generateEngineId();
     double getCurrentTimestamp();
