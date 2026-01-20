@@ -1,0 +1,40 @@
+{
+  "task_type": "validation",
+  "authority": "gated-exec",
+  "scope": ["satp_higgs_1d", "satp_higgs_2d", "satp_higgs_3d"],
+  "objective": "Deepen SATP field validation: time consistency, finite diagnostics over multiple steps, and non-trivial evolution under perturbed initial conditions.",
+  "parameters": {
+    "dt": 0.01,
+    "steps": [1, 2, 10, 100],
+    "initial_conditions": [
+      {
+        "name": "baseline_uniform",
+        "h": "all_ones",
+        "phi": "all_zeros",
+        "h_dot": "all_zeros",
+        "phi_dot": "all_zeros"
+      },
+      {
+        "name": "single_node_phi_bump",
+        "phi": {"index": 0, "value": 0.1}
+      }
+    ],
+    "tolerances": {
+      "time_abs": 1e-12,
+      "finite_required": true
+    }
+  },
+  "checks": [
+    "time_equals_steps_times_dt",
+    "diagnostics_finite_over_steps",
+    "non_trivial_evolution_with_bump"
+  ],
+  "required_outputs": [
+    "satp_deep_results.json",
+    "satp_time_series_summary.json"
+  ],
+  "stop_conditions": [
+    "nan_or_inf_detected",
+    "time_inconsistent"
+  ]
+}

@@ -1,0 +1,311 @@
+{
+  "timestamp": "2026-01-20T20:41:31.177652Z",
+  "results": [
+    {
+      "engine": "satp_higgs_1d",
+      "initial_condition": "baseline_uniform",
+      "runs": [
+        {
+          "steps": 1,
+          "time": 0.01,
+          "expected_time": 0.01,
+          "diagnostics": {
+            "h_rms": 1.0,
+            "phi_rms": 0.0,
+            "total_energy": -0.8000000000000002
+          },
+          "finite": true
+        },
+        {
+          "steps": 2,
+          "time": 0.03,
+          "expected_time": 0.03,
+          "diagnostics": {
+            "h_rms": 1.0,
+            "phi_rms": 0.0,
+            "total_energy": -0.8000000000000002
+          },
+          "finite": true
+        },
+        {
+          "steps": 10,
+          "time": 0.12999999999999998,
+          "expected_time": 0.13,
+          "diagnostics": {
+            "h_rms": 1.0,
+            "phi_rms": 0.0,
+            "total_energy": -0.8000000000000002
+          },
+          "finite": true
+        },
+        {
+          "steps": 100,
+          "time": 1.1300000000000008,
+          "expected_time": 1.13,
+          "diagnostics": {
+            "h_rms": 1.0,
+            "phi_rms": 0.0,
+            "total_energy": -0.8000000000000002
+          },
+          "finite": true
+        }
+      ],
+      "status": "pass"
+    },
+    {
+      "engine": "satp_higgs_1d",
+      "initial_condition": "single_node_phi_bump",
+      "runs": [
+        {
+          "steps": 1,
+          "time": 0.01,
+          "expected_time": 0.01,
+          "diagnostics": {
+            "h_rms": 0.9999999375000292,
+            "phi_rms": 0.024748131368852885,
+            "total_energy": -0.6990267364486645
+          },
+          "finite": true
+        },
+        {
+          "steps": 2,
+          "time": 0.03,
+          "expected_time": 0.03,
+          "diagnostics": {
+            "h_rms": 0.9999994527851539,
+            "phi_rms": 0.02282696185136384,
+            "total_energy": -0.6992520034809359
+          },
+          "finite": true
+        },
+        {
+          "steps": 10,
+          "time": 0.12999999999999998,
+          "expected_time": 0.13,
+          "diagnostics": {
+            "h_rms": 0.9999927328128634,
+            "phi_rms": 0.016545928284065484,
+            "total_energy": -0.7008082289283365
+          },
+          "finite": true
+        },
+        {
+          "steps": 100,
+          "time": 1.1300000000000008,
+          "expected_time": 1.13,
+          "diagnostics": {
+            "h_rms": 0.9997598906075795,
+            "phi_rms": 0.018693997117844915,
+            "total_energy": -0.7099538897075234
+          },
+          "finite": true
+        }
+      ],
+      "status": "pass"
+    },
+    {
+      "engine": "satp_higgs_2d",
+      "initial_condition": "baseline_uniform",
+      "runs": [
+        {
+          "steps": 1,
+          "time": 0.01,
+          "expected_time": 0.01,
+          "diagnostics": {
+            "h_rms": 1.0,
+            "phi_rms": 0.0,
+            "total_energy": -0.08000000000000004
+          },
+          "finite": true
+        },
+        {
+          "steps": 2,
+          "time": 0.03,
+          "expected_time": 0.03,
+          "diagnostics": {
+            "h_rms": 1.0,
+            "phi_rms": 0.0,
+            "total_energy": -0.08000000000000004
+          },
+          "finite": true
+        },
+        {
+          "steps": 10,
+          "time": 0.12999999999999998,
+          "expected_time": 0.13,
+          "diagnostics": {
+            "h_rms": 1.0,
+            "phi_rms": 0.0,
+            "total_energy": -0.08000000000000004
+          },
+          "finite": true
+        },
+        {
+          "steps": 100,
+          "time": 1.1300000000000008,
+          "expected_time": 1.13,
+          "diagnostics": {
+            "h_rms": 1.0,
+            "phi_rms": 0.0,
+            "total_energy": -0.08000000000000004
+          },
+          "finite": true
+        }
+      ],
+      "status": "pass"
+    },
+    {
+      "engine": "satp_higgs_2d",
+      "initial_condition": "single_node_phi_bump",
+      "runs": [
+        {
+          "steps": 1,
+          "time": 0.01,
+          "expected_time": 0.01,
+          "diagnostics": {
+            "h_rms": 0.9999999375000292,
+            "phi_rms": 0.024498775607160458,
+            "total_energy": -0.05991443216736792
+          },
+          "finite": true
+        },
+        {
+          "steps": 2,
+          "time": 0.03,
+          "expected_time": 0.03,
+          "diagnostics": {
+            "h_rms": 0.9999994668298092,
+            "phi_rms": 0.02074007882357998,
+            "total_energy": -0.06002071573525796
+          },
+          "finite": true
+        },
+        {
+          "steps": 10,
+          "time": 0.12999999999999998,
+          "expected_time": 0.13,
+          "diagnostics": {
+            "h_rms": 0.9999940254768863,
+            "phi_rms": 0.02006361772715692,
+            "total_energy": -0.06021828637537982
+          },
+          "finite": true
+        },
+        {
+          "steps": 100,
+          "time": 1.1300000000000008,
+          "expected_time": 1.13,
+          "diagnostics": {
+            "h_rms": 0.9997599875371442,
+            "phi_rms": 0.01934348297555092,
+            "total_energy": -0.062101855806612996
+          },
+          "finite": true
+        }
+      ],
+      "status": "pass"
+    },
+    {
+      "engine": "satp_higgs_3d",
+      "initial_condition": "baseline_uniform",
+      "runs": [
+        {
+          "steps": 1,
+          "time": 0.01,
+          "expected_time": 0.01,
+          "diagnostics": {
+            "h_rms": 1.0,
+            "phi_rms": 0.0,
+            "total_energy": -0.03200000000000002
+          },
+          "finite": true
+        },
+        {
+          "steps": 2,
+          "time": 0.03,
+          "expected_time": 0.03,
+          "diagnostics": {
+            "h_rms": 1.0,
+            "phi_rms": 0.0,
+            "total_energy": -0.03200000000000002
+          },
+          "finite": true
+        },
+        {
+          "steps": 10,
+          "time": 0.12999999999999998,
+          "expected_time": 0.13,
+          "diagnostics": {
+            "h_rms": 1.0,
+            "phi_rms": 0.0,
+            "total_energy": -0.03200000000000002
+          },
+          "finite": true
+        },
+        {
+          "steps": 100,
+          "time": 1.1300000000000008,
+          "expected_time": 1.13,
+          "diagnostics": {
+            "h_rms": 1.0,
+            "phi_rms": 0.0,
+            "total_energy": -0.03200000000000002
+          },
+          "finite": true
+        }
+      ],
+      "status": "pass"
+    },
+    {
+      "engine": "satp_higgs_3d",
+      "initial_condition": "single_node_phi_bump",
+      "runs": [
+        {
+          "steps": 1,
+          "time": 0.01,
+          "expected_time": 0.01,
+          "diagnostics": {
+            "h_rms": 0.9999999843750077,
+            "phi_rms": 0.01212471655596534,
+            "total_energy": -0.028994100325366576
+          },
+          "finite": true
+        },
+        {
+          "steps": 2,
+          "time": 0.03,
+          "expected_time": 0.03,
+          "diagnostics": {
+            "h_rms": 0.999999870088683,
+            "phi_rms": 0.009358821817264386,
+            "total_energy": -0.029021539016594676
+          },
+          "finite": true
+        },
+        {
+          "steps": 10,
+          "time": 0.12999999999999998,
+          "expected_time": 0.13,
+          "diagnostics": {
+            "h_rms": 0.9999986195083412,
+            "phi_rms": 0.010439070201987132,
+            "total_energy": -0.029045108030232625
+          },
+          "finite": true
+        },
+        {
+          "steps": 100,
+          "time": 1.1300000000000008,
+          "expected_time": 1.13,
+          "diagnostics": {
+            "h_rms": 0.9999407394704377,
+            "phi_rms": 0.009202336892434356,
+            "total_energy": -0.02933386552539317
+          },
+          "finite": true
+        }
+      ],
+      "status": "pass"
+    }
+  ]
+}

@@ -1,0 +1,26 @@
+{
+  "task_type": "validation",
+  "authority": "gated-exec",
+  "scope": ["sid_ternary", "sid_ssp"],
+  "objective": "Deepen SID semantic validation: conservation invariants and demonstrable semantic state changes under rewrite/transition triggers.",
+  "parameters": {
+    "steps": [1, 2, 10],
+    "require_rewrite_event": true,
+    "tolerances": {
+      "mass_abs": 1e-12
+    }
+  },
+  "checks": [
+    "mass_conservation_always",
+    "rewrite_event_observed_when_enabled",
+    "semantic_state_changes_after_rewrite"
+  ],
+  "required_outputs": [
+    "sid_deep_results.json",
+    "sid_rewrite_event_log.json"
+  ],
+  "stop_conditions": [
+    "mass_not_conserved",
+    "rewrite_expected_but_not_observed"
+  ]
+}
