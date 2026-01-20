@@ -172,6 +172,7 @@ public:
                                                  double dx) {
         // Capture parameters by value
         return [params, dx](double t, double x, int index) -> double {
+            (void)index; // index is unused in current source profile
             // Check if source is active
             if (t < params.t_start) return 0.0;
             if (params.t_end > 0.0 && t > params.t_end) return 0.0;

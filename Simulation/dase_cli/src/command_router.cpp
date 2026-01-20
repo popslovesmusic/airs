@@ -91,7 +91,7 @@ json CommandRouter::execute(const json& command) {
     }
 }
 
-json CommandRouter::handleGetCapabilities(const json& params) {
+json CommandRouter::handleGetCapabilities(const json& /*params*/) {
     json result = {
         {"version", "1.0.0"},
         {"status", "prototype"},
@@ -331,7 +331,7 @@ json CommandRouter::handleDescribeEngine(const json& params) {
                               "UNKNOWN_ENGINE");
 }
 
-json CommandRouter::handleListEngines(const json& params) {
+json CommandRouter::handleListEngines(const json& /*params*/) {
     auto engine_list = engine_manager->listEngines();
 
     json engines_array = json::array();
@@ -589,7 +589,7 @@ json CommandRouter::handleRunMission(const json& params) {
     }
 
     auto metrics = engine_manager->getMetrics(engine_id);
-    double total_ops = metrics.total_operations;
+    double total_ops = static_cast<double>(metrics.total_operations);
     if (total_ops <= 0.0) {
         // Fallback to legacy estimate only when real metrics are unavailable
         total_ops = static_cast<double>(num_steps) * iterations_per_node * 1024;
@@ -1222,7 +1222,7 @@ json CommandRouter::handleSidGetDiagramJson(const json& params) {
 // ANALYSIS COMMANDS
 // ============================================================================
 
-json CommandRouter::handleCheckAnalysisTools(const json& params) {
+json CommandRouter::handleCheckAnalysisTools(const json& /*params*/) {
     json result = analysis_router_->checkToolAvailability();
     return createSuccessResponse("check_analysis_tools", result, 0);
 }

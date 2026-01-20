@@ -468,7 +468,7 @@ std::string EngineManager::createEngine(const std::string& engine_type,
         // IGSOA Complex - create directly
         try {
             dase::igsoa::IGSOAComplexConfig config;
-            config.num_nodes = num_nodes;
+            config.num_nodes = static_cast<uint32_t>(num_nodes);
             config.R_c_default = R_c;
             config.kappa = kappa;
             config.gamma = gamma;
@@ -505,7 +505,7 @@ std::string EngineManager::createEngine(const std::string& engine_type,
 
         try {
             dase::igsoa::IGSOAComplexConfig config;
-            config.num_nodes = static_cast<size_t>(expected_nodes);
+            config.num_nodes = static_cast<uint32_t>(expected_nodes);
             config.R_c_default = R_c;
             config.kappa = kappa;
             config.gamma = gamma;
@@ -546,7 +546,7 @@ std::string EngineManager::createEngine(const std::string& engine_type,
 
         try {
             dase::igsoa::IGSOAComplexConfig config;
-            config.num_nodes = static_cast<size_t>(expected_nodes);
+            config.num_nodes = static_cast<uint32_t>(expected_nodes);
             config.R_c_default = R_c;
             config.kappa = kappa;
             config.gamma = gamma;
@@ -1257,7 +1257,7 @@ bool EngineManager::getAllNodeStates(const std::string& engine_id,
         auto* engine = static_cast<dase::igsoa::IGSOAComplexEngine*>(instance->engine_handle);
         const auto& nodes = engine->getNodes();
 
-        size_t num_nodes = nodes.size();
+        const size_t num_nodes = nodes.size();
         psi_real.resize(num_nodes);
         psi_imag.resize(num_nodes);
         phi.resize(num_nodes);
@@ -1274,7 +1274,7 @@ bool EngineManager::getAllNodeStates(const std::string& engine_id,
         auto* engine = static_cast<dase::igsoa::IGSOAComplexEngine2D*>(instance->engine_handle);
         const auto& nodes = engine->getNodes();
 
-        size_t num_nodes = nodes.size();
+        const size_t num_nodes = nodes.size();
         psi_real.resize(num_nodes);
         psi_imag.resize(num_nodes);
         phi.resize(num_nodes);
@@ -1291,7 +1291,7 @@ bool EngineManager::getAllNodeStates(const std::string& engine_id,
         auto* engine = static_cast<dase::igsoa::IGSOAComplexEngine3D*>(instance->engine_handle);
         const auto& nodes = engine->getNodes();
 
-        size_t num_nodes = nodes.size();
+        const size_t num_nodes = nodes.size();
         psi_real.resize(num_nodes);
         psi_imag.resize(num_nodes);
         phi.resize(num_nodes);
@@ -1416,14 +1416,15 @@ bool EngineManager::setIgsoaState(const std::string& engine_id,
     try {
         if (instance->engine_type == "igsoa_complex") {
             auto* engine = static_cast<dase::igsoa::IGSOAComplexEngine*>(instance->engine_handle);
-            size_t num_nodes = instance->num_nodes;
+            const size_t num_nodes = static_cast<size_t>(instance->num_nodes);
 
             if (profile_type == "gaussian") {
             // Extract Gaussian profile parameters
-            double amplitude = params.value("amplitude", 1.0);
-            int center_node = params.value("center_node", num_nodes / 2);
-            double width = params.value("width", num_nodes / 16.0);
-            double baseline_phi = params.value("baseline_phi", 0.0);
+            const double amplitude = params.value("amplitude", 1.0);
+            const int default_center = static_cast<int>(num_nodes / 2);
+            const int center_node = params.value<int>("center_node", default_center);
+            const double width = params.value("width", static_cast<double>(num_nodes) / 16.0);
+            const double baseline_phi = params.value("baseline_phi", 0.0);
 
             // Validate parameters
             if (width <= 0.0 || !std::isfinite(width)) {
@@ -1587,8 +1588,10 @@ bool EngineManager::setIgsoaState(const std::string& engine_id,
             } else if (profile_type == "plane_wave_2d" || profile_type == "plane_wave") {
                 dase::igsoa::PlaneWave2DParams wave_params;
                 wave_params.amplitude = params.value("amplitude", 1.0);
-                wave_params.k_x = params.value("k_x", 2.0 * M_PI / std::max<double>(1.0, N_x));
-                wave_params.k_y = params.value("k_y", 2.0 * M_PI / std::max<double>(1.0, N_y));
+                const double kx_default = 2.0 * M_PI / std::max<double>(1.0, static_cast<double>(N_x));
+                const double ky_default = 2.0 * M_PI / std::max<double>(1.0, static_cast<double>(N_y));
+                wave_params.k_x = params.value("k_x", kx_default);
+                wave_params.k_y = params.value("k_y", ky_default);
                 wave_params.phase_offset = params.value("phase_offset", 0.0);
 
                 dase::igsoa::IGSOAStateInit2D::initPlaneWave2D(*engine2d, wave_params);
@@ -1670,9 +1673,12 @@ bool EngineManager::setIgsoaState(const std::string& engine_id,
             } else if (profile_type == "plane_wave_3d" || profile_type == "plane_wave") {
                 dase::igsoa::PlaneWave3DParams wave_params;
                 wave_params.amplitude = params.value("amplitude", 1.0);
-                wave_params.k_x = params.value("k_x", 2.0 * M_PI / std::max<double>(1.0, N_x));
-                wave_params.k_y = params.value("k_y", 2.0 * M_PI / std::max<double>(1.0, N_y));
-                wave_params.k_z = params.value("k_z", 2.0 * M_PI / std::max<double>(1.0, N_z));
+                const double kx_default = 2.0 * M_PI / std::max<double>(1.0, static_cast<double>(N_x));
+                const double ky_default = 2.0 * M_PI / std::max<double>(1.0, static_cast<double>(N_y));
+                const double kz_default = 2.0 * M_PI / std::max<double>(1.0, static_cast<double>(N_z));
+                wave_params.k_x = params.value("k_x", kx_default);
+                wave_params.k_y = params.value("k_y", ky_default);
+                wave_params.k_z = params.value("k_z", kz_default);
                 wave_params.phase_offset = params.value("phase_offset", 0.0);
 
                 dase::igsoa::IGSOAStateInit3D::initPlaneWave3D(*engine3d, wave_params);
