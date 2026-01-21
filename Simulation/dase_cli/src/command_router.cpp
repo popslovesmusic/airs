@@ -47,6 +47,9 @@ CommandRouter::CommandRouter()
     command_handlers["sid_rewrite_events"] = [this](const json& p) { return handleSidRewriteEvents(p); };
     command_handlers["sid_wrapper_apply_motion"] = [this](const json& p) { return handleSidWrapperApplyMotion(p); };
     command_handlers["sid_wrapper_metrics"] = [this](const json& p) { return handleSidWrapperMetrics(p); };
+    command_handlers["sid_rewrite_events"] = [this](const json& p) { return handleSidRewriteEvents(p); };
+    command_handlers["sid_wrapper_apply_motion"] = [this](const json& p) { return handleSidWrapperApplyMotion(p); };
+    command_handlers["sid_wrapper_metrics"] = [this](const json& p) { return handleSidWrapperMetrics(p); };
 
     // Register analysis commands
     command_handlers["check_analysis_tools"] = [this](const json& p) { return handleCheckAnalysisTools(p); };

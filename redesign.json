@@ -1,0 +1,144 @@
+{
+  "spec_name": "sid_semantic_motion_orchestrator",
+  "spec_version": "2.0",
+  "status": "redesigned_to_work_with_existing_cli",
+  "purpose": "Provide executable semantic mass motion (I/N/U) as an external orchestration layer using only existing SID CLI primitives (sid_metrics, sid_rewrite, sid_set_diagram_expr). No new wrapper commands, no rewrite event stream, no per-rule engine metadata.",
+  "core_change_from_v1": {
+    "what_changed": "Semantic motion is now wrapper-local state, driven by the wrapper's own knowledge of which rule it invoked, rather than by engine-emitted rewrite events/metadata.",
+    "why": "Current SID engine rewrites are symbolic-only and do not emit motion hooks; this redesign removes dependency on nonexistent commands and signals."
+  },
+  "assumptions_about_existing_primitives": {
+    "required": [
+      "sid_set_diagram_expr(engine_id, expr) -> status",
+      "sid_metrics(engine_id) -> {I_mass,N_mass,U_mass,is_conserved,...}",
+      "sid_rewrite(engine_id, rule_id) -> {applied:bool,message:string}"
+    ],
+    "not_required": [
+      "rewrite event stream",
+      "per-rule mode fields in engine",
+      "wrapper_apply_motion",
+      "attach_motion_wrapper"
+    ]
+  },
+  "design_constraints": {
+    "sid_engine_unchanged": true,
+    "no_mass_written_into_engine": true,
+    "wrapper_mass_state_authoritative_for_motion": true,
+    "engine_mass_state_authoritative_for_conservation_only": true,
+    "no_implicit_motion": true
+  },
+  "wrapper_state": {
+    "engine_binding": {
+      "engine_id": "string",
+      "engine_type": "sid_ternary"
+    },
+    "mass_state": {
+      "I_mass": "float",
+      "N_mass": "float",
+      "U_mass": "float",
+      "source": "initialized_from_sid_metrics_once_then_wrapper_owned"
+    },
+    "parameters": {
+      "alpha": "float",
+      "epsilon_default": "float"
+    },
+    "counters": {
+      "rewrite_calls": "uint64",
+      "rewrites_applied": "uint64",
+      "motions_applied": "uint64",
+      "motions_refused": "uint64"
+    },
+    "audit": {
+      "last_action": {
+        "rule_id": "string",
+        "requested_motion": "bool",
+        "engine_applied": "bool",
+        "motion_applied": "bool",
+        "reason": "string"
+      }
+    }
+  },
+  "rule_registry": {
+    "default_rule_mode": "symbolic_only",
+    "rules": [
+      {
+        "rule_id": "rw_admit_one_from_U",
+        "mode": "semantic_motion",
+        "epsilon": "use_engine_alpha_or_epsilon_default",
+        "guard": "U_mass >= epsilon",
+        "effects": {
+          "I_mass": "+epsilon",
+          "U_mass": "-epsilon",
+          "N_mass": "+0"
+        }
+      }
+    ]
+  },
+  "execution_semantics": {
+    "initialization": [
+      "Call sid_metrics(engine_id). Require is_conserved == true.",
+      "Initialize wrapper mass_state from returned I_mass/N_mass/U_mass.",
+      "Set epsilon_default = alpha unless explicitly configured."
+    ],
+    "rewrite_call_flow": [
+      "Determine rule.mode from wrapper rule_registry (not engine).",
+      "If rule.mode == symbolic_only: call sid_rewrite(engine_id, rule_id). Update audit; do not change wrapper mass_state.",
+      "If rule.mode == semantic_motion: evaluate guard using wrapper mass_state. If guard fails: do NOT call sid_rewrite; set motion_refused and audit.reason='guard_failed'.",
+      "If guard passes: call sid_rewrite(engine_id, rule_id). If engine reports applied==true: apply wrapper mass_state effects; else do not apply motion and audit.reason='engine_rewrite_not_applied'."
+    ]
+  },
+  "invariants_enforced_by_wrapper": [
+    "I_mass + N_mass + U_mass == 1.0 (within tolerance)",
+    "I_mass >= 0",
+    "N_mass >= 0",
+    "U_mass >= 0"
+  ],
+  "invariants_enforced_by_engine": [
+    "sid_metrics.is_conserved must remain true throughout execution"
+  ],
+  "tolerances": {
+    "mass_abs": 1e-12
+  },
+  "failure_modes": {
+    "engine_not_conserved": {
+      "severity": "fatal",
+      "action": "stop",
+      "reason": "Engine reports conservation violated; wrapper cannot proceed safely."
+    },
+    "engine_rewrite_not_applied": {
+      "severity": "nonfatal",
+      "action": "no_motion",
+      "reason": "Engine refused rewrite; wrapper does not move mass."
+    },
+    "guard_failed": {
+      "severity": "expected",
+      "action": "refuse_without_calling_engine",
+      "reason": "Wrapper U_mass < epsilon"
+    },
+    "wrapper_invariant_violation": {
+      "severity": "fatal",
+      "action": "rollback_last_motion_and_stop",
+      "reason": "Post-motion conservation/nonnegativity violated"
+    }
+  },
+  "outputs": {
+    "wrapper_metrics": {
+      "I_mass": "float",
+      "N_mass": "float",
+      "U_mass": "float",
+      "is_conserved_wrapper": "bool",
+      "rewrite_calls": "uint64",
+      "rewrites_applied": "uint64",
+      "motions_applied": "uint64",
+      "motions_refused": "uint64",
+      "last_action": "object"
+    },
+    "engine_metrics_snapshot": {
+      "I_mass": "float",
+      "N_mass": "float",
+      "U_mass": "float",
+      "is_conserved": "bool"
+    }
+  },
+  "acceptance_criteria": [
+    "Semantic motion occurs in wrapper mass_state for semantic_motion rules when guard passes and engine reports a

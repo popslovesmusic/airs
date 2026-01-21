@@ -265,6 +265,27 @@ if(BUILD_CLI)
     message(STATUS "CLI executable build: ENABLED")
 endif()
 
+# SID-only wrapper CLI (sid_cli)
+add_executable(sid_cli
+    ../wrapper/sid_cli.cpp
+)
+target_include_directories(sid_cli PRIVATE
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/dase_cli/src
+    ${CMAKE_CURRENT_SOURCE_DIR}
+    ${CMAKE_CURRENT_SOURCE_DIR}/../wrapper
+)
+target_link_libraries(sid_cli PRIVATE sid_ssp_capi)
+target_compile_options(sid_cli PRIVATE ${DASE_COMPILE_FLAGS})
+if(ENABLE_AVX2)
+    if(MSVC)
+        target_compile_options(sid_cli PRIVATE /arch:AVX2)
+    else()
+        target_compile_options(sid_cli PRIVATE -mavx2 -mfma)
+    endif()
+endif()
+message(STATUS "SID-only CLI (sid_cli) build: ENABLED")
+
 # ============================================================================
 # TESTS
 # ============================================================================
