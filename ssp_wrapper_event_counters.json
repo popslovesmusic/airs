@@ -1,0 +1,10 @@
+{
+  "timestamp": "ce151b2a-11de-4ed7-b43c-5ef2b248026d",
+  "events": [
+    {
+      "track": "session",
+      "motions": 7,
+      "refused": 3
+    }
+  ]
+}

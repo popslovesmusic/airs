@@ -1,0 +1,99 @@
+{"command":"sid_create","params":{"engine_type":"sid_ssp","engine_id":"ssp_1","num_nodes":8,"capacity":1.0}}
+
+
+{"command":"run_mission","params":{
+  "engine_id":"ssp_1",
+  "num_steps":1,
+  "motion_metadata":{"mode":"semantic_motion","epsilon":0.05},
+  "auto_apply_wrapper_motion":true
+}}
+
+{"command":"run_mission","params":{
+  "engine_id":"ssp_1",
+  "num_steps":1,
+  "motion_metadata":{"mode":"semantic_motion","epsilon":0.05},
+  "auto_apply_wrapper_motion":true
+}}
+
+{"command":"run_mission","params":{
+  "engine_id":"ssp_1",
+  "num_steps":1,
+  "motion_metadata":{"mode":"semantic_motion","epsilon":0.05},
+  "auto_apply_wrapper_motion":true
+}}
+
+{"command":"sid_wrapper_metrics","params":{"engine_id":"ssp_1"}}
+
+{"command":"run_mission","params":{
+  "engine_id":"ssp_1",
+  "num_steps":1,
+  "motion_metadata":{"mode":"semantic_motion","epsilon":0.05},
+  "auto_apply_wrapper_motion":true
+}}
+
+{"command":"run_mission","params":{
+  "engine_id":"ssp_1",
+  "num_steps":1,
+  "motion_metadata":{"mode":"semantic_motion","epsilon":0.05},
+  "auto_apply_wrapper_motion":true
+}}
+
+{"command":"sid_wrapper_metrics","params":{"engine_id":"ssp_1"}}
+
+{"command":"run_mission","params":{
+  "engine_id":"ssp_1",
+  "num_steps":1,
+  "motion_metadata":{"mode":"semantic_motion","epsilon":0.05},
+  "auto_apply_wrapper_motion":true
+}}
+
+{"command":"sid_wrapper_metrics","params":{"engine_id":"ssp_1"}}
+
+{"command":"run_mission","params":{
+  "engine_id":"ssp_1",
+  "num_steps":1,
+  "motion_metadata":{"mode":"symbolic_only"},
+  "auto_apply_wrapper_motion":true
+}}
+
+{"command":"sid_wrapper_metrics","params":{"engine_id":"ssp_1"}}
+
+{"command":"run_mission","params":{
+  "engine_id":"ssp_1",
+  "num_steps":1,
+  "motion_metadata":{"mode":"semantic_motion","epsilon":0.0},
+  "auto_apply_wrapper_motion":true
+}}
+
+{"command":"run_mission","params":{
+  "engine_id":"ssp_1",
+  "num_steps":1,
+  "motion_metadata":{"mode":"semantic_motion","epsilon":-0.1},
+  "auto_apply_wrapper_motion":true
+}}
+
+{"command":"run_mission","params":{
+  "engine_id":"ssp_1",
+  "num_steps":1,
+  "motion_metadata":{"mode":"semantic_motion","epsilon":1.5},
+  "auto_apply_wrapper_motion":true
+}}
+
+{"command":"sid_wrapper_metrics","params":{"engine_id":"ssp_1"}}
+
+{"command":"sid_destroy","params":{"engine_id":"ssp_1"}}
+
+{"command":"sid_create","params":{"engine_type":"sid_ssp","engine_id":"ssp_2","num_nodes":8,"capacity":1.0}}
+
+{"command":"sid_wrapper_metrics","params":{"engine_id":"ssp_2"}}
+
+{"command":"run_mission","params":{
+  "engine_id":"ssp_2",
+  "num_steps":1,
+  "motion_metadata":{"mode":"semantic_motion","epsilon":0.1},
+  "auto_apply_wrapper_motion":true
+}}
+
+{"command":"sid_wrapper_metrics","params":{"engine_id":"ssp_2"}}
+
+{"command":"sid_destroy","params":{"engine_id":"ssp_2"}}

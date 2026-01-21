@@ -1,0 +1,115 @@
+{
+  "timestamp": "ce151b2a-11de-4ed7-b43c-5ef2b248026d",
+  "invariants": [
+    {
+      "I": 0.38333333333333336,
+      "N": 0.33333333333333337,
+      "U": 0.2833333333333334,
+      "is_conserved": true,
+      "last_motion": {
+        "applied": true,
+        "reason": "applied",
+        "rule_id": "sid_ssp_commit"
+      }
+    },
+    {
+      "I": 0.43333333333333335,
+      "N": 0.33333333333333337,
+      "U": 0.2333333333333334,
+      "is_conserved": true,
+      "last_motion": {
+        "applied": true,
+        "reason": "applied",
+        "rule_id": "sid_ssp_commit"
+      }
+    },
+    {
+      "I": 0.48333333333333334,
+      "N": 0.33333333333333337,
+      "U": 0.1833333333333334,
+      "is_conserved": true,
+      "last_motion": {
+        "applied": true,
+        "reason": "applied",
+        "rule_id": "sid_ssp_commit"
+      }
+    },
+    {
+      "I": 0.5333333333333333,
+      "N": 0.33333333333333337,
+      "U": 0.13333333333333341,
+      "is_conserved": true,
+      "last_motion": {
+        "applied": true,
+        "reason": "applied",
+        "rule_id": "sid_ssp_commit"
+      }
+    },
+    {
+      "I": 0.5833333333333333,
+      "N": 0.3333333333333333,
+      "U": 0.0833333333333334,
+      "is_conserved": true,
+      "last_motion": {
+        "applied": true,
+        "reason": "applied",
+        "rule_id": "sid_ssp_commit"
+      }
+    },
+    {
+      "I": 0.6333333333333333,
+      "N": 0.3333333333333333,
+      "U": 0.033333333333333395,
+      "is_conserved": true,
+      "last_motion": {
+        "applied": true,
+        "reason": "applied",
+        "rule_id": "sid_ssp_commit"
+      }
+    },
+    {
+      "I": 0.6333333333333333,
+      "N": 0.3333333333333333,
+      "U": 0.033333333333333395,
+      "is_conserved": true,
+      "last_motion": {
+        "applied": true,
+        "reason": "applied",
+        "rule_id": "sid_ssp_commit"
+      }
+    },
+    {
+      "I": 0.6333333333333333,
+      "N": 0.3333333333333333,
+      "U": 0.033333333333333395,
+      "is_conserved": true,
+      "last_motion": {
+        "applied": false,
+        "reason": "guard_failed",
+        "rule_id": "sid_ssp_commit"
+      }
+    },
+    {
+      "I": 0.6333333333333333,
+      "N": 0.3333333333333333,
+      "U": 0.033333333333333395,
+      "is_conserved": true,
+      "last_motion": {
+        "applied": false,
+        "reason": "guard_failed",
+        "rule_id": "sid_ssp_commit"
+      }
+    },
+    {
+      "I": 0.6333333333333333,
+      "N": 0.3333333333333333,
+      "U": 0.033333333333333395,
+      "is_conserved": true,
+      "last_motion": {
+        "applied": false,
+        "reason": "guard_failed",
+        "rule_id": "sid_ssp_commit"
+      }
+    }
+  ]
+}

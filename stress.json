@@ -1,0 +1,36 @@
+{
+  "task_type": "stress_validation",
+  "authority": "gated-exec",
+  "scope": ["sid_ssp", "sid_semantic_motion_wrapper"],
+  "objective": "Stress-test SSP-driven semantic motion under saturation, load, adversarial inputs, and lifecycle churn.",
+  "tracks": [
+    "motion_exhaustion",
+    "commit_storm",
+    "adversarial_epsilon",
+    "mixed_engine_contention",
+    "lifecycle_reset"
+  ],
+  "global_constraints": [
+    "no engine code modification",
+    "no wrapper logic modification",
+    "fail fast on invariant violation"
+  ],
+  "invariants_checked": [
+    "wrapper_mass_conserved",
+    "no_negative_mass",
+    "motion_only_on_semantic_mode",
+    "ssp_runs_always_complete",
+    "no_cross_engine_state_leak"
+  ],
+  "required_outputs": [
+    "ssp_wrapper_stress_results.json",
+    "ssp_wrapper_invariant_report.json",
+    "ssp_wrapper_event_counters.json"
+  ],
+  "stop_conditions": [
+    "mass_violation",
+    "engine_crash",
+    "wrapper_desync",
+    "event_count_mismatch"
+  ]
+}

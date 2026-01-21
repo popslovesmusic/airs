@@ -831,6 +831,18 @@ std::string EngineManager::createEngine(const std::string& engine_type,
         wrapper.last_motion = nlohmann::json::object();
         wrapper.initialized = true;
         sid_wrapper_state_[instance->engine_id] = wrapper;
+    } else if (instance->engine_type == "sid_ssp") {
+        sid_rewrite_events_[instance->engine_id] = {};
+        SidWrapperState wrapper{};
+        // Seed with uniform masses; SSP does not expose mass metrics
+        wrapper.I_mass = 1.0 / 3.0;
+        wrapper.N_mass = 1.0 / 3.0;
+        wrapper.U_mass = 1.0 / 3.0;
+        wrapper.motion_applied_count = 0;
+        wrapper.event_cursor = 0;
+        wrapper.last_motion = nlohmann::json::object();
+        wrapper.initialized = true;
+        sid_wrapper_state_[instance->engine_id] = wrapper;
     }
 
     std::string id = instance->engine_id;
@@ -2276,7 +2288,7 @@ bool EngineManager::sidWrapperApplyMotion(const std::string& engine_id,
     if (inst == engines.end()) {
         return false;
     }
-    if (inst->second->engine_type != "sid_ternary") {
+    if (inst->second->engine_type != "sid_ternary" && inst->second->engine_type != "sid_ssp") {
         return false;
     }
     auto state_it = sid_wrapper_state_.find(engine_id);

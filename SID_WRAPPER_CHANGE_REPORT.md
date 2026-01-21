@@ -77,3 +77,19 @@ Notes
 -----
 - Base `sid_ternary` behavior is unchanged (diagram-only rewrites). All mass motion is wrapper-owned and must be triggered via `sid_wrapper_apply_motion`.
 - Guards are wrapper-only; engine does not enforce mass thresholds.
+
+SSP integration via run_mission
+-------------------------------
+- `run_mission` accepts optional `motion_metadata` and `auto_apply_wrapper_motion`. For `sid_ssp`, each run records a `sid_ssp_commit` event (rule_id overridable in metadata); if `auto_apply_wrapper_motion=true`, wrapper motion is applied immediately.
+- Example:
+```json
+{"command":"create_engine","params":{"engine_type":"sid_ssp","num_nodes":8,"capacity":1.0}}
+{"command":"run_mission","params":{
+  "engine_id":"engine_001",
+  "num_steps":1,
+  "motion_metadata":{"mode":"semantic_motion","epsilon":0.05},
+  "auto_apply_wrapper_motion":true
+}}
+{"command":"sid_wrapper_metrics","params":{"engine_id":"engine_001"}}
+```
+- Event log remains available via `sid_rewrite_events`; wrapper motion stays opt-in and guarded.
