@@ -1,0 +1,143 @@
+{
+  "spec_name": "sid_ssp_integration_with_semantic_motion_wrapper",
+  "spec_version": "1.0",
+  "status": "tech_spec",
+  "goal": "Integrate SSP commit steps (sid_ssp via sid_run) with the existing SID semantic-motion wrapper so that SSP collapse/motion can be driven by explicit, auditable motion intents while preserving base engine invariants.",
+  "ground_truth_existing_capabilities": {
+    "wrapper_commands_exist": [
+      "sid_rewrite_events",
+      "sid_wrapper_apply_motion",
+      "sid_wrapper_metrics"
+    ],
+    "rewrite_metadata_supported": true,
+    "wrapper_motion_is_external_and_opt_in": true,
+    "sid_run_exists_for_sid_ssp_commit_steps": true
+  },
+  "design_constraints": {
+    "do_not_change_sid_ternary_symbolic_semantics": true,
+    "motion_must_be_opt_in": true,
+    "wrapper_remains_the_audit_source_for_motion": true,
+    "no_silent_mass_drift": true
+  },
+  "integration_model": {
+    "name": "ssp_commit_drives_motion_events",
+    "idea": "Treat each sid_ssp commit (sid_run) as an event that may carry motion intent metadata; wrapper consumes events to update wrapper-owned I/N/U mass_state; SSP uses wrapper deltas as the target for its internal collapse redistribution.",
+    "why_this_model": "It uses only the primitives you already wired: event recording + wrapper apply + wrapper metrics, and it attaches motion to the SSP 'commit' boundary rather than pretending SSP uses sid_rewrite."
+  },
+  "required_engine_manager_extensions": [
+    {
+      "name": "record_ssp_commit_event",
+      "description": "When sid_run is called on a sid_ssp engine, append an event to the same per-engine SID event stream.",
+      "event_shape": {
+        "event_type": "sid_ssp_commit",
+        "event_id": "uint64",
+        "timestamp": "float",
+        "engine_id": "string",
+        "applied": "bool",
+        "message": "string",
+        "metadata": {
+          "mode": "symbolic_only | semantic_motion",
+          "epsilon": "optional<float>",
+          "policy_id": "optional<string>"
+        }
+      }
+    },
+    {
+      "name": "optional_auto_apply_wrapper_motion_on_commit",
+      "description": "If enabled by params, call sidWrapperApplyMotion(engine_id) immediately after a successful sid_run to keep SSP and wrapper in lockstep.",
+      "params": {
+        "auto_apply_wrapper_motion": "bool (default false)"
+      }
+    }
+  ],
+  "required_cli_surface": {
+    "sid_run_extensions": {
+      "engine_type": "sid_ssp",
+      "new_optional_params": {
+        "motion_metadata": {
+          "mode": "symbolic_only | semantic_motion",
+          "epsilon": "optional<float>",
+          "policy_id": "optional<string>"
+        },
+        "auto_apply_wrapper_motion": "bool"
+      },
+      "backward_compatibility": "If motion_metadata is absent, sid_run behavior is unchanged and emits either no event or an event with mode symbolic_only."
+    }
+  },
+  "ssp_to_wrapper_coupling": {
+    "step_order": [
+      "1) sid_run(commit) executes SSP step normally",
+      "2) EngineManager records sid_ssp_commit event with motion_metadata if provided",
+      "3) If auto_apply_wrapper_motion==true: wrapper consumes events and updates wrapper mass_state",
+      "4) SSP collapse/mixer uses wrapper delta (I += epsilon, U -= epsilon) as the target redistribution for that commit boundary"
+    ],
+    "coupling_rule": {
+      "when_mode_semantic_motion": "Use epsilon to compute target delta and apply via SSP mixer collapse redistribution for that step.",
+      "when_mode_symbolic_only": "Do not request motion; SSP proceeds with its normal internal logic."
+    }
+  },
+  "guards_and_invariants": {
+    "guard_location": "wrapper",
+    "guard": "wrapper.U_mass >= epsilon (epsilon from metadata or fallback alpha)",
+    "on_guard_fail": {
+      "motion_effect": "no_op",
+      "ssp_effect": "do not perform motion-driven redistribution for that commit boundary",
+      "audit": "wrapper last_motion.reason = guard_failed"
+    },
+    "conservation": [
+      "wrapper enforces I+N+U==1.0 after motion",
+      "SSP must preserve its own internal conservation rules per existing engine invariants"
+    ]
+  },
+  "observability": {
+    "wrapper_metrics_is_source_of_truth_for_motion": true,
+    "required_queries": [
+      {
+        "command": "sid_wrapper_metrics",
+        "purpose": "Inspect wrapper-owned I/N/U and last_motion for SSP engine_id"
+      },
+      {
+        "command": "sid_rewrite_events",
+        "purpose": "Inspect combined stream of sid_rewrite events (if any) + sid_ssp_commit events with motion metadata"
+      }
+    ]
+  },
+  "acceptance_tests": [
+    {
+      "id": "ssp_commit_symbolic_only_no_motion",
+      "setup": "sid_ssp engine created; initial wrapper_metrics captured",
+      "action": "sid_run with no motion_metadata",
+      "expect": [
+        "wrapper motion_applied_count unchanged",
+        "wrapper masses unchanged",
+        "sid_run succeeds"
+      ]
+    },
+    {
+      "id": "ssp_commit_semantic_motion_applies_when_guard_passes",
+      "setup": "wrapper U_mass >= epsilon",
+      "action": "sid_run with motion_metadata.mode=semantic_motion and epsilon set; auto_apply_wrapper_motion=true",
+      "expect": [
+        "wrapper I increases by epsilon; U decreases by epsilon",
+        "wrapper conserved true",
+        "event log contains sid_ssp_commit with metadata"
+      ]
+    },
+    {
+      "id": "ssp_commit_semantic_motion_refused_when_guard_fails",
+      "setup": "wrapper U_mass < epsilon",
+      "action": "sid_run with motion_metadata.mode=semantic_motion; auto_apply_wrapper_motion=true",
+      "expect": [
+        "wrapper motion not applied; masses unchanged",
+        "wrapper last_motion.reason=guard_failed",
+        "SSP step still completes (but no motion-driven redistribution occurs)"
+      ]
+    }
+  ],
+  "explicit_non_features": [
+    "SSP reading engine-side sid_ternary masses (wrapper-owned state remains authoritative for motion decisions)",
+    "Implicitly motion-enabling all SSP commits",
+    "Writing wrapper mass_state back into sid_ternary",
+    "Assuming SSP uses sid_rewrite as its primary control path"
+  ]
+}

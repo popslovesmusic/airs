@@ -588,6 +588,8 @@ json CommandRouter::handleRunMission(const json& params) {
     std::string engine_id = params.value("engine_id", "");
     int num_steps = params.value("num_steps", 0);
     int iterations_per_node = params.value("iterations_per_node", 30);
+    json motion_metadata = params.value("motion_metadata", json::object());
+    bool auto_apply_wrapper_motion = params.value("auto_apply_wrapper_motion", false);
 
     bool success = engine_manager->runMission(engine_id, num_steps, iterations_per_node);
 
@@ -595,6 +597,18 @@ json CommandRouter::handleRunMission(const json& params) {
         return createErrorResponse("run_mission",
                                    "Mission execution failed.",
                                    "EXECUTION_FAILED");
+    }
+
+    // If sid_ssp: record commit event and optionally apply wrapper motion
+    if (auto* inst = engine_manager->getEngine(engine_id)) {
+        if (inst->engine_type == "sid_ssp") {
+            std::string rule_id = motion_metadata.value("rule_id", std::string("sid_ssp_commit"));
+            engine_manager->recordSidRewriteEvent(engine_id, rule_id, true, "sid_ssp_commit", motion_metadata);
+            if (auto_apply_wrapper_motion) {
+                EngineManager::SidWrapperState state{};
+                engine_manager->sidWrapperApplyMotion(engine_id, 0, state);
+            }
+        }
     }
 
     auto metrics = engine_manager->getMetrics(engine_id);
