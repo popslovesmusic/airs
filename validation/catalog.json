@@ -1,0 +1,32 @@
+{
+  "scenarios": [
+    {
+      "id": "diffusion_1d_fixed",
+      "description": "1D diffusion/heat equation with fixed boundaries; check mass conservation and error scaling",
+      "invariants": ["mass_conservation"],
+      "metrics": ["l1_error", "drift_rate"],
+      "status": "implemented"
+    },
+    {
+      "id": "random_walk_to_diffusion",
+      "description": "Discrete random walk converging to diffusion; validate variance growth and distribution shape",
+      "invariants": ["variance_growth_rate"],
+      "metrics": ["variance_slope", "distribution_fit"],
+      "status": "implemented"
+    },
+    {
+      "id": "graph_flow_conservation",
+      "description": "Flow on small graphs with capacities; enforce conservation and known cut outcomes",
+      "invariants": ["flow_conservation"],
+      "metrics": ["imbalance", "cut_correctness"],
+      "status": "implemented"
+    },
+    {
+      "id": "lorenz_invariant_measure",
+      "description": "Chaos sanity: boundedness and invariant measure shape for Lorenz-like system",
+      "invariants": ["bounded_state"],
+      "metrics": ["attractor_shape", "boundedness"],
+      "status": "implemented"
+    }
+  ]
+}

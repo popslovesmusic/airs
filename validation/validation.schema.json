@@ -1,0 +1,37 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "AIRS Validation Result",
+  "type": "object",
+  "required": ["problem_id", "timestamp_utc", "verdict", "observations"],
+  "properties": {
+    "problem_id": { "type": "string" },
+    "timestamp_utc": { "type": "string", "format": "date-time" },
+    "runner": { "type": "string", "description": "Who/what produced this result" },
+    "known_invariants": {
+      "type": "array",
+      "items": { "type": "string" },
+      "description": "Invariants expected for the scenario (e.g., mass_conservation)"
+    },
+    "expected_behavior": {
+      "type": "object",
+      "description": "High-level expected behaviors for the scenario",
+      "additionalProperties": true
+    },
+    "run_config": {
+      "type": "object",
+      "description": "Inputs, seeds, and knobs used for this run",
+      "additionalProperties": true
+    },
+    "observations": {
+      "type": "object",
+      "description": "Measured metrics and notes",
+      "additionalProperties": true
+    },
+    "verdict": {
+      "type": "string",
+      "enum": ["pass", "fail", "passes_within_tolerance", "not_run", "not_implemented"],
+      "description": "Outcome for this scenario"
+    },
+    "notes": { "type": "string" }
+  }
+}

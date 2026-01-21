@@ -1,0 +1,29 @@
+{
+  "problem_id": "random_walk_to_diffusion",
+  "timestamp_utc": "2026-01-21T19:44:08.033062+00:00",
+  "runner": "validation/run_validation.py",
+  "known_invariants": [
+    "variance_growth_rate"
+  ],
+  "expected_behavior": {
+    "variance_growth_rate": "linear",
+    "slope_expected": 1.0
+  },
+  "run_config": {
+    "walkers": 5000,
+    "steps": 200,
+    "seed": 42
+  },
+  "observations": {
+    "variance_slope": 0.9946128616684659,
+    "relative_error": 0.005387138331534147,
+    "variance_at_steps": {
+      "1": 0.9998745600000508,
+      "50": 50.587824000000566,
+      "100": 101.40117744000152,
+      "200": 197.07824384000048
+    }
+  },
+  "verdict": "passes_within_tolerance",
+  "notes": "Pure random walk reference; compare engine diffusion once integrated."
+}

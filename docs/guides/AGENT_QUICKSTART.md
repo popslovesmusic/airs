@@ -28,7 +28,7 @@ echo '{"query":"test","mode":"full_text","limit":5}' | python ssot/api/search_ap
 ### Test Simulation:
 ```bash
 cd D:/airs
-echo '{"command":"list_engines"}' | sim/bin/dase_cli.exe
+echo '{"command":"list_engines"}' | Simulation/bin/dase_cli.exe
 ```
 
 ---
@@ -203,7 +203,7 @@ cat > mission.json << 'EOF'
 EOF
 
 # Run simulation (processes all commands)
-sim/bin/dase_cli.exe < mission.json > results.json
+Simulation/bin/dase_cli.exe < mission.json > results.json
 
 # Extract state
 cat results.json | jq 'select(.command == "get_state") | .result'
@@ -241,7 +241,7 @@ echo '{
 {"command":"get_state","params":{"format":"json"}}' > workspace/input/mission_001.json
 
 # 4. Run simulation
-sim/bin/dase_cli.exe < workspace/input/mission_001.json > workspace/output/simulation_results/run_001.json
+Simulation/bin/dase_cli.exe < workspace/input/mission_001.json > workspace/output/simulation_results/run_001.json
 
 # 5. Analyze results
 cat workspace/output/simulation_results/run_001.json | jq '.result'
@@ -258,9 +258,9 @@ cat workspace/output/simulation_results/run_001.json | jq '.result'
 - **Data:** `ssot/data/ssot_parallel.db` (1.5GB)
 
 ### Simulation:
-- **CLI:** `sim/bin/dase_cli.exe`
-- **Schemas:** `sim/cli/schemas/*.schema.json`
-- **Config:** `sim/config.json`
+- **CLI:** `Simulation/bin/dase_cli.exe`
+- **Reference:** `Simulation/docs/api-reference/`
+- **Config:** `Simulation/context.json`
 
 ### Workspace:
 - **Input:** `workspace/input/` (stage requests)
@@ -361,10 +361,13 @@ Both components return errors in consistent format:
 - Default sensitivity
 - Audit settings
 
-### Simulation: `sim/config.json`
+### Simulation: `Simulation/context.json`
 - Default engine
 - Cache settings
 - Output format
+
+### Central config set: `config/`
+- Phase sets, stress/wrapper configs, harness configs, and quarantine lists now live under `config/`.
 
 ---
 
@@ -376,6 +379,15 @@ python scripts/validate_structure.py
 ```
 
 Expected: All 46 checks pass
+
+### Validation Suite (Phase 5)
+Run scenario-based validation (outputs JSON evidence to `artifacts/validation/`):
+```bash
+python validation/run_validation.py --problem_id diffusion_1d_fixed
+# or
+python validation/run_validation.py --all
+```
+Rollup summary: `validation/reports/summary.json`
 
 ---
 
@@ -412,7 +424,7 @@ Query SSOT → Extract docs → Process → Store results → Index new knowledg
 
 **Simulation command fails:**
 - Validate JSON syntax
-- Check schema: `sim/cli/schemas/command.schema.json`
+- Check reference: `Simulation/docs/api-reference/`
 - Verify engine name in `list_engines` output
 
 **Performance slow:**
@@ -428,10 +440,11 @@ Query SSOT → Extract docs → Process → Store results → Index new knowledg
 
 ## Resources
 
-- **System Analysis:** `AIRS_SYSTEM_ANALYSIS_REPORT.md`
-- **Migration Details:** `MIGRATION_COMPLETE.md`
-- **Architecture:** `PROPOSED_DIRECTORY_STRUCTURE.md`
-- **Component READMEs:** `ssot/README.md`, `sim/README.md`
+- **Product/System Doc:** `docs/guides/PRODUCT_DOCUMENTATION.md`
+- **CRF Reference:** `crf/summary.md` (HTML at `crf/Constraint_Resolution_Framework.html`)
+- **Component READMEs:** `ssot/README.md`, `Simulation/README.md`
+- **Config Sets:** `config/`
+- **Reports/Reviews:** `docs/reports/`, `docs/reviews/`
 
 ---
 

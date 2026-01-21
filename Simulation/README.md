@@ -7,15 +7,17 @@ High-performance CLI-based simulation framework for DASE, IGSOA, and SATP comput
 ## Quick Start
 
 ```bash
-# Build the CLI
+# Use shipped binaries (Windows)
+Simulation/bin/dase_cli.exe < commands.json
+
+# Or build from source
 cmake -B build -DBUILD_CLI=ON
 cmake --build build --config Release
+# Binaries after build: build/dase_cli/Release/dase_cli.exe (Windows)
+#                      build/dase_cli/dase_cli           (Linux/macOS)
 
-# Run simulations via JSON commands
-./dase_cli/dase_cli.exe < commands.json
-
-# Or use interactive mode
-./dase_cli/dase_cli.exe
+# Interactive mode
+Simulation/bin/dase_cli.exe
 ```
 
 📚 **[Documentation Index](docs/INDEX.md)** - Browse all documentation
@@ -45,7 +47,7 @@ All documentation is in the `docs/` folder, organized by category:
 ### 🔧 For Developers
 - **[Project Structure](docs/architecture-design/STRUCTURAL_ANALYSIS.md)** - Full analysis
 - **[Architecture Design](docs/architecture-design/)** - System design docs
-- **[API Reference](docs/api-reference/)** - API documentation
+- **[API Reference](docs/api-reference/)** - JSON CLI commands/responses
 - **[Component Docs](docs/components/)** - Backend, CLI, web components
 
 ### 📊 For Project Managers
@@ -72,6 +74,10 @@ All documentation is in the `docs/` folder, organized by category:
 - **Real-time metrics**: Performance profiling and telemetry
 - **FFT analysis**: Built-in spectral analysis capabilities
 - **Cross-platform**: Windows, Linux, macOS support
+
+### Configuration
+- `Simulation/context.json` - default context/config for CLI engines
+- `config/` (repo root) - shared config sets for workflows (phases, stress, wrapper, harness)
 
 ### Python Cache Tools (Optional)
 - Fractional kernel caching (2.2x speedup)

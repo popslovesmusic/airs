@@ -68,3 +68,22 @@ Current snapshot of the project after recent changes. Historical reports in `doc
 - Keep API examples in sync with schemas and CLI command sets.
 - Record design decisions (why) alongside changes; link to change reports in `docs/reports/`.
 - Refresh testing plans when new fixtures, benchmarks, or integration workflows are added.
+
+## 5) Additional References
+- Constraint Resolution Framework (CRF) notes: see `crf/summary.md` and chapters in `crf/` (build scripts `build_book*.ps1` regenerate `crf/Constraint_Resolution_Framework.html`). Treat as historical guidance; align with current architecture before implementation.
+
+## 6) Constraint Resolution Framework (CRF) Snapshot
+- Purpose: conceptual framework for resolving system constraints (performance, correctness, governance). Use it to vet new designs.
+- Sources: `crf/summary.md` for an overview; detailed rationale across `crf/chapter_1.md` ... `chapter_28.md`; compiled HTML in `crf/Constraint_Resolution_Framework.html`.
+- Regeneration: run `pwsh crf/build_book_v2.ps1` (or `build_book.ps1`) from repo root to rebuild the HTML from chapters.
+- Usage guidance:
+- Map CRF constraints to current components (SSOT data immutability, Simulation engine safety, JSON contract enforcement).
+- When introducing changes, note which CRF constraints are touched and record decisions in `docs/reports/` or an architecture note.
+- Prefer lightweight adaptations over wholesale adoption; the CRF is historical and may pre-date recent refactors.
+
+## 7) Validation Suite (Phase 5)
+- Location: `validation/` (schema, catalog, harness) with outputs in `artifacts/validation/`.
+- Scenarios (see `validation/catalog.json`): `diffusion_1d_fixed`, `random_walk_to_diffusion`, `graph_flow_conservation`, optional `lorenz_invariant_measure`.
+- Schema: `validation/validation.schema.json`; required fields include `problem_id`, `timestamp_utc`, `verdict`, `observations`.
+- Harness: `python validation/run_validation.py --problem_id <id>` or `--all`; writes JSON evidence to `artifacts/validation/`.
+- Status: runners implemented in Python references; integrate Simulation engine outputs as desired. Summary rollup at `validation/reports/summary.json`.

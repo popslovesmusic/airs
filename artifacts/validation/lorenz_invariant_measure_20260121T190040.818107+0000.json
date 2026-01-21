@@ -1,0 +1,15 @@
+{
+  "problem_id": "lorenz_invariant_measure",
+  "timestamp_utc": "2026-01-21T19:00:40.818107+00:00",
+  "runner": "validation/run_validation.py",
+  "known_invariants": [
+    "bounded_state"
+  ],
+  "expected_behavior": {},
+  "run_config": {},
+  "observations": {
+    "note": "runner not implemented"
+  },
+  "verdict": "not_implemented",
+  "notes": "Fill in scenario-specific runner to compute metrics and verdict."
+}
