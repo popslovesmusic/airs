@@ -1,0 +1,35 @@
+{
+  "problem_id": "diffusion_1d_fixed",
+  "timestamp_utc": "2026-01-22T03:50:39.205204+00:00",
+  "runner": "validation/run_validation.py",
+  "known_invariants": [
+    "mass_conservation"
+  ],
+  "expected_behavior": {
+    "long_term": "smooths to zero with fixed boundaries",
+    "mass_conservation": true,
+    "error_scaling": "O(dx^2) expected for FTCS"
+  },
+  "run_config": {
+    "n": 101,
+    "dx": 0.01,
+    "dt": 0.00025,
+    "steps": 400,
+    "alpha": 0.1
+  },
+  "observations": {
+    "mass_start": 0.01,
+    "mass_end": 0.009991923509547179,
+    "drift_rate": 2.0191226132054188e-08,
+    "l1_error": 0.0,
+    "engine": {
+      "mass_start": 88.62269254523623,
+      "phi_max": 69.25418357244118,
+      "mass_drift": 423.37730745476375,
+      "mass_end": 512.0,
+      "phi_min": 69.24796425335117
+    }
+  },
+  "verdict": "fail",
+  "notes": "Pure reference FTCS; integrate engine output when available."
+}

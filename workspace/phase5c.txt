@@ -1,0 +1,34 @@
+random_walk_to_diffusion — engine-backed
+Goal
+
+Verify variance grows linearly
+
+Check that stochasticity is preserved
+
+No conservation semantics assumed yet
+
+Mission file
+
+json
+Copy code
+{"command":"create_engine","params":{"engine_type":"igsoa_complex","num_nodes":2048,"R_c":1.0}}
+{"command":"evolve","params":{"timesteps":1000,"dt":0.01,"stochastic":true}}
+{"command":"get_state","params":{"format":"json"}}
+Run
+
+bash
+Copy code
+Simulation/bin/dase_cli.exe < mission_random_walk.jsonl > artifacts/validation/random_walk_to_diffusion.raw.jsonl
+Agent must extract
+
+variance vs time
+
+variance slope (expect ~linear)
+
+bounded = true
+
+Emit
+
+bash
+Copy code
+validation/engine_outputs/random_walk_to_diffusion.json

@@ -1,0 +1,125 @@
+{
+  "document_type": "engine_intent_determination",
+  "engine_family": "igsoa_complex",
+  "engine_ids": [
+    "igsoa_complex_engine",
+    "igsoa_complex_engine_2d",
+    "igsoa_complex_engine_3d"
+  ],
+  "core_components": [
+    "igsoa_complex_node"
+  ],
+  "source_files": [
+    "igsoa_complex_engine.h",
+    "igsoa_complex_engine_2d.h",
+    "igsoa_complex_engine_3d.h",
+    "igsoa_complex_node.h"
+  ],
+  "engine_classification_level": "ontological_engine",
+  "status": "characterized",
+  "summary": {
+    "intended_function": "resolution of informational ground states via relaxational collapse under constraint",
+    "role_in_stack": "ontological stabilization and admissibility filter",
+    "primary_investigation": "Informational Ground State Ontological Asymmetry (IGSOA)"
+  },
+  "implementation_properties": {
+    "compiled_engine": true,
+    "header_only": true,
+    "dimensional_variants": [
+      "1d",
+      "2d",
+      "3d"
+    ],
+    "dimension_changes_intent": false,
+    "semantic_awareness": true
+  },
+  "evolution_semantics": {
+    "dynamics_class": "relaxational / attractor-seeking",
+    "update_mode": "node-local semantic field update",
+    "transport_terms": false,
+    "flux_conservation": false,
+    "primary_driver": "constraint pressure and admissibility projection",
+    "collapse_mechanism": "variance suppression toward stable attractors"
+  },
+  "state_semantics": {
+    "field_based": true,
+    "node_based": true,
+    "semantic_state": true,
+    "physical_interpretation": "none intrinsic",
+    "ontological_interpretation": "informational ground state"
+  },
+  "variance_policy": {
+    "variance_preserved": false,
+    "variance_damped": true,
+    "variance_eliminated": true,
+    "notes": "Variance represents inadmissible informational freedom and is intentionally collapsed."
+  },
+  "stochasticity": {
+    "stochastic_terms": false,
+    "noise_role": "treated as instability, not signal"
+  },
+  "conservation_model": {
+    "mass": "not conserved",
+    "energy": "not conserved",
+    "probability": "not conserved",
+    "reason": "collapse enforces admissibility rather than conservation"
+  },
+  "intended_use": [
+    "investigation of informational ground states",
+    "study of ontological asymmetry emergence",
+    "semantic collapse under constraint",
+    "admissibility filtering",
+    "post-physics stabilization"
+  ],
+  "explicit_non_uses": [
+    "diffusion modeling",
+    "transport simulation",
+    "random walk dynamics",
+    "stochastic exploration",
+    "physical flow conservation"
+  ],
+  "correct_validation_tests": [
+    "convergence to stable attractors",
+    "constraint satisfaction",
+    "robustness to perturbation",
+    "collapse consistency across dimensional variants",
+    "admissibility boundary behavior"
+  ],
+  "incorrect_validation_tests": [
+    "diffusion accuracy",
+    "variance growth",
+    "mass conservation",
+    "random walk statistics",
+    "transport fidelity"
+  ],
+  "pipeline_placement": {
+    "phase": "post-domain / ontological resolution",
+    "runs_after": [
+      "SATP Higgs engines",
+      "other domain physics engines"
+    ],
+    "runs_before": [
+      "SID semantic adjudication",
+      "semantic labeling and interpretation layers"
+    ]
+  },
+  "relationship_to_satp": {
+    "dependency": "consumes structured fields produced by SATP engines",
+    "function": "collapse and stabilize domain fields into admissible ontological states"
+  },
+  "relationship_to_sid": {
+    "dependency": "provides stabilized semantic fields for SID adjudication",
+    "function": "prevents SID from operating on unstable or non-admissible states"
+  },
+  "confidence_level": "very_high",
+  "notes": [
+    "Dimensional variants represent resolution and embedding differences only.",
+    "This engine is intentionally asymmetric and non-conservative.",
+    "Observed Phase-5 diffusion failures are expected and diagnostic."
+  ],
+  "conclusion": {
+    "finding": "IGSOA Complex engines are ontological relaxational engines designed to collapse informational degrees of freedom into stable ground states under constraint.",
+    "bug_report": false,
+    "scientific_claims": "ontological and informational, not physical"
+  }
+}

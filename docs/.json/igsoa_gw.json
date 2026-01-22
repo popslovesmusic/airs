@@ -1,0 +1,122 @@
+{
+  "document_type": "engine_intent_determination",
+  "engine_family": "igsoa_gw",
+  "engine_ids": [
+    "igsoa_gw_engine"
+  ],
+  "source_files": [
+    "echo_generator.h",
+    "fractional_solver.h",
+    "projection_operators.h",
+    "source_manager.h",
+    "symmetry_field.h"
+  ],
+  "engine_classification_level": "investigative_physics_engine",
+  "status": "characterized",
+  "summary": {
+    "intended_function": "investigation of wave-like, echo, and symmetry-mediated informational phenomena",
+    "role_in_stack": "exploratory / diagnostic physics-inspired engine",
+    "primary_investigation": "propagation, reflection, and resonance of informational structures"
+  },
+  "implementation_properties": {
+    "compiled_engine": true,
+    "header_only": true,
+    "dimensional_specificity": "abstract / not fixed",
+    "semantic_awareness": false,
+    "ontological_awareness": false
+  },
+  "evolution_semantics": {
+    "dynamics_class": "wave-like / propagative",
+    "update_mode": "operator-driven evolution",
+    "transport_terms": true,
+    "relaxation": false,
+    "collapse": false,
+    "primary_drivers": [
+      "projection operators",
+      "fractional evolution",
+      "symmetry fields",
+      "source injection"
+    ]
+  },
+  "state_semantics": {
+    "field_based": true,
+    "wave_state": true,
+    "node_based": false,
+    "semantic_state": false,
+    "physical_analogy": "gravitational waves / echoes / resonances"
+  },
+  "variance_policy": {
+    "variance_preserved": true,
+    "variance_structured": true,
+    "variance_damped": false,
+    "notes": "Variance is meaningful signal and must propagate."
+  },
+  "stochasticity": {
+    "stochastic_terms": false,
+    "noise_role": "structured perturbation if introduced externally"
+  },
+  "conservation_model": {
+    "mass": "not applicable",
+    "energy": "approximate / model-dependent",
+    "information": "intentionally propagated"
+  },
+  "intended_use": [
+    "gravitational-wave–like propagation studies",
+    "echo and reflection experiments",
+    "symmetry-mediated transmission",
+    "resonance and memory effects",
+    "diagnostic probing of causal or structural domains"
+  ],
+  "explicit_non_uses": [
+    "ontological ground-state collapse",
+    "semantic adjudication",
+    "constraint resolution (CRF)",
+    "relaxational stabilization",
+    "diffusion-as-equilibrium modeling"
+  ],
+  "correct_validation_tests": [
+    "signal propagation fidelity",
+    "echo timing and structure",
+    "resonance behavior",
+    "symmetry response",
+    "operator stability"
+  ],
+  "incorrect_validation_tests": [
+    "diffusion steady-state tests",
+    "random walk statistics",
+    "mass conservation benchmarks",
+    "semantic consistency tests"
+  ],
+  "pipeline_placement": {
+    "phase": "exploratory / diagnostic physics",
+    "runs_after": [
+      "basic compute substrate"
+    ],
+    "runs_before": [
+      "IGSOA Complex (optional analysis)",
+      "SSP semantic processing (optional interpretation)"
+    ]
+  },
+  "relationship_to_igsoa_complex": {
+    "distinction": "GW explores propagation; IGSOA Complex enforces collapse",
+    "interaction": "GW outputs may be analyzed post hoc by IGSOA Complex but must not be coupled directly"
+  },
+  "relationship_to_satp": {
+    "distinction": "SATP studies phase structure; GW studies propagation and echo phenomena",
+    "shared_concepts": [
+      "fields",
+      "symmetry"
+    ]
+  },
+  "confidence_level": "high",
+  "notes": [
+    "This engine is intentionally exploratory and diagnostic.",
+    "It models propagation and memory, not equilibrium.",
+    "Misclassifying it as relaxational or semantic would be a category error."
+  ],
+  "conclusion": {
+    "finding": "IGSOA-GW is a wave-propagation and echo investigation engine intended to study transmission, resonance, and symmetry effects, not collapse or semantic meaning.",
+    "bug_report": false,
+    "scientific_claims": "exploratory, physics-inspired"
+  }
+}

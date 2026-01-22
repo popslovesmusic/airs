@@ -1,0 +1,134 @@
+{
+  "document_type": "engine_intent_determination",
+  "engine_family": "sid_ssp",
+  "engine_ids": [
+    "sid_semantic_processor",
+    "sid_mixer",
+    "sid_stability",
+    "sid_crf"
+  ],
+  "supporting_components": [
+    "sid_ast",
+    "sid_parser",
+    "sid_diagram",
+    "sid_diagram_builder",
+    "sid_ast_to_diagram",
+    "sid_rewrite",
+    "sid_validator",
+    "sid_package_validator"
+  ],
+  "source_files": [
+    "sid_semantic_processor.hpp",
+    "sid_mixer.hpp",
+    "sid_stability.hpp",
+    "sid_crf.hpp",
+    "sid_ast.hpp",
+    "sid_parser.hpp",
+    "sid_diagram.hpp"
+  ],
+  "engine_classification_level": "semantic_processing_family",
+  "status": "characterized",
+  "summary": {
+    "intended_function": "semantic signal processing, transformation, and stability analysis prior to adjudication",
+    "role_in_stack": "semantic dynamics and preprocessing layer",
+    "primary_investigation": "semantic structure, coherence, and constraint resolution (CRF)"
+  },
+  "implementation_properties": {
+    "compiled_engine": true,
+    "header_only": false,
+    "semantic_awareness": true,
+    "numerical_dynamics": false,
+    "graph_semantics": true
+  },
+  "processing_semantics": {
+    "processing_class": "semantic signal processing",
+    "update_mode": "graph and rule-based transformation",
+    "time_evolution": "iterative but non-physical",
+    "transport_terms": false,
+    "relaxation": "semantic, not numerical"
+  },
+  "state_semantics": {
+    "representation": [
+      "AST",
+      "semantic graphs",
+      "interaction diagrams (SID)"
+    ],
+    "semantic_state": true,
+    "node_labels": "meaning-bearing",
+    "edges": "semantic relations"
+  },
+  "variance_policy": {
+    "variance_preserved": "selective",
+    "variance_damped": "semantic incoherence",
+    "variance_eliminated": "invalid constructions",
+    "notes": "Variance corresponds to semantic ambiguity, not numerical noise."
+  },
+  "stochasticity": {
+    "stochastic_terms": false,
+    "ambiguity_representation": "explicit (structure-level, not noise)"
+  },
+  "conservation_model": {
+    "semantic_tokens": "tracked",
+    "logical_invariants": "enforced",
+    "numerical_conservation": "not applicable"
+  },
+  "intended_use": [
+    "semantic signal processing (SSP)",
+    "semantic structure normalization",
+    "constraint resolution framework (CRF)",
+    "semantic stability analysis",
+    "diagram rewriting and transformation",
+    "pre-adjudication semantic preparation"
+  ],
+  "explicit_non_uses": [
+    "numerical simulation",
+    "physical field evolution",
+    "diffusion or transport",
+    "ontological ground-state collapse",
+    "final semantic adjudication"
+  ],
+  "correct_validation_tests": [
+    "semantic consistency",
+    "constraint satisfaction",
+    "diagram invariants",
+    "rewrite determinism",
+    "stability under semantic perturbation"
+  ],
+  "incorrect_validation_tests": [
+    "numerical benchmarks",
+    "diffusion tests",
+    "mass or energy conservation",
+    "stochastic variance tests"
+  ],
+  "pipeline_placement": {
+    "phase": "semantic preprocessing and dynamics",
+    "runs_after": [
+      "SID Ternary (optional seeding)",
+      "IGSOA Complex engines"
+    ],
+    "runs_before": [
+      "SID Ternary adjudication",
+      "semantic labeling",
+      "downstream reasoning agents"
+    ]
+  },
+  "relationship_to_sid_ternary": {
+    "distinction": "SSP processes meaning; Ternary decides admissibility",
+    "dependency": "SID Ternary consumes SSP-processed semantic structures"
+  },
+  "relationship_to_igsoa": {
+    "dependency": "SSP operates on stabilized ontological states",
+    "function": "translates ontological structure into semantic form"
+  },
+  "confidence_level": "very_high",
+  "notes": [
+    "SSP is not an engine in the numerical sense; it is a semantic dynamics system.",
+    "CRF lives here, not in SID Ternary.",
+    "SSP must never be evaluated with physical or numerical tests."
+  ],
+  "conclusion": {
+    "finding": "SID-SSP is the semantic dynamics and constraint-resolution layer responsible for transforming, stabilizing, and validating semantic structures prior to final adjudication.",
+    "bug_report": false,
+    "scientific_claims": "semantic and logical only"
+  }
+}

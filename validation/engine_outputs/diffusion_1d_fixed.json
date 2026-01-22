@@ -1,0 +1,11 @@
+{
+  "mass_start_norm": 0.17309119637741452,
+  "mass_drift": 423.37730745476375,
+  "mass_drift_norm": 0.8269088036225855,
+  "mass_start": 88.62269254523623,
+  "phi_max": 138.27223105442147,
+  "normalization": "per_node",
+  "phi_min": 138.27164370871034,
+  "mass_end": 512.0,
+  "mass_end_norm": 1.0
+}

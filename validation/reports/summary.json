@@ -1,14 +1,15 @@
 {
-  "generated_at": "2026-01-21T23:16:28.967416Z",
-  "artifact_count": 8,
+  "generated_at": "2026-01-22T05:19:11.423727Z",
+  "artifact_count": 23,
   "problems": 4,
   "verdict_counts": {
-    "passes_within_tolerance": 4
+    "fail": 2,
+    "passes_within_tolerance": 2
   },
   "latest": {
     "diffusion_1d_fixed": {
       "problem_id": "diffusion_1d_fixed",
-      "timestamp_utc": "2026-01-21T19:44:07.845549+00:00",
+      "timestamp_utc": "2026-01-22T05:19:04.860731+00:00",
       "runner": "validation/run_validation.py",
       "known_invariants": [
         "mass_conservation"
@@ -29,15 +30,26 @@
         "mass_start": 0.01,
         "mass_end": 0.009991923509547179,
         "drift_rate": 2.0191226132054188e-08,
-        "l1_error": 0.0
+        "l1_error": 0.0,
+        "engine": {
+          "mass_start_norm": 0.17309119637741452,
+          "mass_drift": 423.37730745476375,
+          "mass_drift_norm": 0.8269088036225855,
+          "mass_start": 88.62269254523623,
+          "phi_max": 138.27223105442147,
+          "normalization": "per_node",
+          "phi_min": 138.27164370871034,
+          "mass_end": 512.0,
+          "mass_end_norm": 1.0
+        }
       },
-      "verdict": "passes_within_tolerance",
+      "verdict": "fail",
       "notes": "Pure reference FTCS; integrate engine output when available.",
-      "_path": "artifacts\\validation\\diffusion_1d_fixed_20260121T194407.845549+0000.json"
+      "_path": "artifacts\\validation\\diffusion_1d_fixed_20260122T051904.860731+0000.json"
     },
     "graph_flow_conservation": {
       "problem_id": "graph_flow_conservation",
-      "timestamp_utc": "2026-01-21T19:44:08.033062+00:00",
+      "timestamp_utc": "2026-01-22T05:19:05.048901+00:00",
       "runner": "validation/run_validation.py",
       "known_invariants": [
         "flow_conservation"
@@ -57,15 +69,16 @@
           "v": 0,
           "u": 0
         },
-        "max_imbalance": 0
+        "max_imbalance": 0,
+        "engine": null
       },
       "verdict": "passes_within_tolerance",
       "notes": "Pure Python Edmonds-Karp on a small graph; replace with engine-backed flow if available.",
-      "_path": "artifacts\\validation\\graph_flow_conservation_20260121T194408.033062+0000.json"
+      "_path": "artifacts\\validation\\graph_flow_conservation_20260122T051905.048901+0000.json"
     },
     "lorenz_invariant_measure": {
       "problem_id": "lorenz_invariant_measure",
-      "timestamp_utc": "2026-01-21T19:44:08.048685+00:00",
+      "timestamp_utc": "2026-01-22T05:19:05.064527+00:00",
       "runner": "validation/run_validation.py",
       "known_invariants": [
         "bounded_state"
@@ -94,15 +107,16 @@
           0.7357020514634592,
           10.659565937310285
         ],
-        "bounded": true
+        "bounded": true,
+        "engine": null
       },
       "verdict": "passes_within_tolerance",
       "notes": "RK4 Lorenz reference; integrate engine-backed chaos checks if available.",
-      "_path": "artifacts\\validation\\lorenz_invariant_measure_20260121T194408.048685+0000.json"
+      "_path": "artifacts\\validation\\lorenz_invariant_measure_20260122T051905.064527+0000.json"
     },
     "random_walk_to_diffusion": {
       "problem_id": "random_walk_to_diffusion",
-      "timestamp_utc": "2026-01-21T19:44:08.033062+00:00",
+      "timestamp_utc": "2026-01-22T05:19:05.048901+00:00",
       "runner": "validation/run_validation.py",
       "known_invariants": [
         "variance_growth_rate"
@@ -124,11 +138,21 @@
           "50": 50.587824000000566,
           "100": 101.40117744000152,
           "200": 197.07824384000048
+        },
+        "engine": {
+          "mean_end": 1.0,
+          "variance_slope": -9.243339645885219e-09,
+          "mag_min": 1.0,
+          "variance_start": 9.243339645885218e-06,
+          "bounded": true,
+          "mean_start": 0.0017309119637741476,
+          "mag_max": 1.0,
+          "variance_end": 2.8762560013208125e-32
         }
       },
-      "verdict": "passes_within_tolerance",
+      "verdict": "fail",
       "notes": "Pure random walk reference; compare engine diffusion once integrated.",
-      "_path": "artifacts\\validation\\random_walk_to_diffusion_20260121T194408.033062+0000.json"
+      "_path": "artifacts\\validation\\random_walk_to_diffusion_20260122T051905.048901+0000.json"
     }
   }
 }

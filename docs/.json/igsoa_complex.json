@@ -1,0 +1,99 @@
+{
+  "document_type": "engine_characterization",
+  "engine_id": "igsoa_complex",
+  "engine_header": "igsoa_complex_engine.h",
+  "investigation_context": "IGSOA (Informational Ground State Ontological Asymmetry)",
+  "phase": "Phase-5 validation (characterization)",
+  "status": "characterized",
+  "summary": {
+    "intended_function": "semantic ground-state relaxation under constraint",
+    "not_intended_for": [
+      "diffusion",
+      "transport",
+      "random_walks",
+      "mass_conservation",
+      "stochastic propagation"
+    ],
+    "core_behavior": "attractor-seeking stabilization"
+  },
+  "implementation_properties": {
+    "header_only": true,
+    "isolated": true,
+    "requires_compilation_unit": false,
+    "shared_global_state": false,
+    "engine_backed": true
+  },
+  "evolution_semantics": {
+    "dynamics_class": "relaxational",
+    "update_mode": "field-wise / local",
+    "transport_terms_present": false,
+    "flux_conservation": false,
+    "stochastic_terms": false,
+    "normalization_enforcement": true,
+    "bounded_state_projection": true,
+    "variance_suppression": true
+  },
+  "phase5_results": {
+    "diffusion_1d_fixed": {
+      "result": "fail",
+      "observed_behavior": "uniform saturation",
+      "interpretation": "expected for relaxational dynamics"
+    },
+    "random_walk_to_diffusion": {
+      "result": "fail",
+      "observed_behavior": "variance collapse, mean saturation",
+      "interpretation": "intentional suppression of stochastic spread"
+    },
+    "graph_flow_conservation": {
+      "result": "pass (reference-only)",
+      "engine_involved": false
+    },
+    "lorenz_invariant_measure": {
+      "result": "pass (reference-only)",
+      "engine_involved": false
+    }
+  },
+  "igsoa_alignment": {
+    "supports_ontological_asymmetry": true,
+    "reveals_admissible_states": true,
+    "breaks_symmetry_by_collapse": true,
+    "computes_ground_state": true,
+    "models_motion": false
+  },
+  "correct_evaluation_metrics": [
+    "convergence stability",
+    "attractor structure",
+    "constraint satisfaction",
+    "invariant enforcement",
+    "response to perturbation"
+  ],
+  "misapplied_metrics": [
+    "diffusion accuracy",
+    "variance growth",
+    "mass conservation",
+    "transport fidelity"
+  ],
+  "recommended_actions": {
+    "reclassification": {
+      "recommended": true,
+      "new_class": "semantic_relaxation_engine"
+    },
+    "testing_policy": {
+      "exclude": [
+        "diffusion tests",
+        "random walk tests"
+      ],
+      "include": [
+        "stability tests",
+        "collapse behavior tests",
+        "constraint resolution tests"
+      ]
+    },
+    "architecture_note": "Pair with a separate transport/diffusion engine if dynamics are required prior to collapse."
+  },
+  "conclusion": {
+    "finding": "Engine behavior is correct and consistent with IGSOA investigation goals.",
+    "bug_report": false,
+    "scientific_value": "high (ground-state and asymmetry investigation)"
+  }
+}

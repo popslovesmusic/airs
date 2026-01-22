@@ -1,0 +1,33 @@
+Scenario 1 — diffusion_1d_fixed
+Purpose
+Validate:
+
+conservation
+
+smoothing
+
+long-term uniformity
+
+Engine
+igsoa_complex (1D)
+
+Invocation (agent-safe)
+mission_diffusion_1d.jsonl
+
+json
+Copy code
+{"command":"create_engine","params":{"engine_type":"igsoa_complex","num_nodes":1024,"R_c":1.0}}
+{"command":"evolve","params":{"timesteps":500,"dt":0.01}}
+{"command":"get_state","params":{"format":"json"}}
+Run
+
+bash
+Copy code
+Simulation/bin/dase_cli.exe < mission_diffusion_1d.jsonl > artifacts/validation/diffusion_1d_fixed.raw.jsonl
+Agent extracts
+
+total mass
+
+variance over time
+
+max/min field values

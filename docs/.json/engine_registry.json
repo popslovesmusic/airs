@@ -1,0 +1,126 @@
+{
+  "artifact": "AIRS_ENGINE_REGISTRY",
+  "version": "1.0",
+  "scope": "all_current_engines",
+  "engines": [
+    {
+      "engine_family": "basic_compute_substrate",
+      "engine_ids": ["analog_universal_node_engine_avx2"],
+      "classification": "compute_substrate",
+      "primary_role": "numerical state update and performance baseline",
+      "semantics": "none",
+      "dynamics": "generic numerical update",
+      "intended_use": [
+        "fast node-wise updates",
+        "kernel benchmarking",
+        "substrate for higher engines"
+      ],
+      "never_use_for": [
+        "physics claims",
+        "semantic interpretation",
+        "ontological inference"
+      ]
+    },
+    {
+      "engine_family": "satp_higgs",
+      "engine_ids": [
+        "satp_higgs_engine_1d",
+        "satp_higgs_engine_2d",
+        "satp_higgs_engine_3d"
+      ],
+      "classification": "domain_physics_engine",
+      "primary_role": "scalar field phase structure and symmetry breaking",
+      "semantics": "none intrinsic",
+      "dynamics": "potential-driven field evolution",
+      "intended_use": [
+        "symmetry breaking",
+        "phase transition studies",
+        "field condensation"
+      ],
+      "never_use_for": [
+        "diffusion benchmarks",
+        "random walks",
+        "semantic adjudication"
+      ]
+    },
+    {
+      "engine_family": "igsoa_gw",
+      "engine_ids": ["igsoa_gw_engine"],
+      "classification": "exploratory_propagation_engine",
+      "primary_role": "wave, echo, resonance, and symmetry-mediated propagation",
+      "semantics": "none intrinsic",
+      "dynamics": "operator-driven propagation",
+      "intended_use": [
+        "echo studies",
+        "resonance and memory",
+        "propagation diagnostics"
+      ],
+      "never_use_for": [
+        "relaxational collapse",
+        "semantic classification",
+        "equilibrium enforcement"
+      ]
+    },
+    {
+      "engine_family": "igsoa_complex",
+      "engine_ids": [
+        "igsoa_complex_engine",
+        "igsoa_complex_engine_2d",
+        "igsoa_complex_engine_3d"
+      ],
+      "classification": "ontological_engine",
+      "primary_role": "informational ground-state collapse under constraint",
+      "semantics": "ontological (pre-semantic)",
+      "dynamics": "relaxational / attractor-seeking",
+      "intended_use": [
+        "ontological asymmetry investigation",
+        "admissibility filtering",
+        "ground-state resolution"
+      ],
+      "never_use_for": [
+        "transport",
+        "diffusion",
+        "stochastic exploration"
+      ]
+    },
+    {
+      "engine_family": "sid_ssp",
+      "engine_ids": [
+        "sid_semantic_processor",
+        "sid_mixer",
+        "sid_stability",
+        "sid_crf"
+      ],
+      "classification": "semantic_processing_family",
+      "primary_role": "semantic signal processing and constraint resolution",
+      "semantics": "semantic",
+      "dynamics": "structural / rule-based",
+      "intended_use": [
+        "semantic normalization",
+        "CRF execution",
+        "diagram rewriting"
+      ],
+      "never_use_for": [
+        "numerical simulation",
+        "physical dynamics"
+      ]
+    },
+    {
+      "engine_family": "sid_ternary",
+      "engine_ids": ["sid_ternary_engine"],
+      "classification": "semantic_adjudication_engine",
+      "primary_role": "final semantic admissibility decision (I/N/U)",
+      "semantics": "semantic",
+      "dynamics": "non-dynamical",
+      "intended_use": [
+        "semantic adjudication",
+        "final classification"
+      ],
+      "never_use_for": [
+        "evolution",
+        "simulation",
+        "exploration"
+      ]
+    }
+  ]
+}

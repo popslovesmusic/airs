@@ -390,6 +390,13 @@ python validation/run_validation.py --all
 Rollup summary: `validation/reports/summary.json`
 Optional engine comparison: place engine metrics in `validation/engine_outputs/<problem_id>.json` (e.g., `mass_end`, `variance_slope`, `max_flow`, `max_imbalance`, `max_radius`, `bounded`) to have the harness judge them against reference tolerances.
 
+### CLI Usage Notes (observed)
+- PowerShell piping: `Get-Content mission.jsonl | .\Simulation\bin\dase_cli.exe > output.jsonl` (one JSON command per line).
+- Working commands: `create_engine` → `set_igsoa_state` (`profile_type` such as `gaussian`) → `run_mission` → `get_state` → `destroy_engine`.
+- `evolve` command is not recognized in current CLI (returns `UNKNOWN_COMMAND`).
+- `engine_id` must be present in `get_state`, `run_mission`, `destroy_engine`.
+- Mission pattern that ran cleanly: create_engine (igsoa_complex, e.g., num_nodes=512, R_c=1.0, dt optional) → set_igsoa_state gaussian → get_state (baseline) → run_mission (num_steps, iterations_per_node) → get_state (final) → destroy_engine.
+
 ---
 
 ## Common Agent Patterns

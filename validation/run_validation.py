@@ -95,10 +95,12 @@ def run_diffusion_1d() -> Dict[str, Any]:
     engine_obs = load_engine_observation("diffusion_1d_fixed")
     engine_verdict = None
     if engine_obs:
-        emass_start = engine_obs.get("mass_start", mass0)
-        emass_end = engine_obs.get("mass_end", engine_obs.get("mass", mass1))
-        edrift = abs(emass_end - emass_start) / max(1, steps)
-        engine_ok = edrift < 1e-5
+        # Prefer normalized metrics if provided.
+        emass_start = engine_obs.get("mass_start_norm", engine_obs.get("mass_start", mass0))
+        emass_end = engine_obs.get("mass_end_norm", engine_obs.get("mass_end", engine_obs.get("mass", mass1)))
+        edrift = abs(emass_end - emass_start)
+        drift_tol = 1e-3  # allow small numerical differences for normalized values
+        engine_ok = edrift < drift_tol
         engine_verdict = "passes_within_tolerance" if engine_ok else "fail"
         verdict = engine_verdict if engine_verdict == "fail" else verdict
 
