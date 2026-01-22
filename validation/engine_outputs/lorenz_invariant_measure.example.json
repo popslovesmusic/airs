@@ -1,0 +1,5 @@
+{
+  "//": "Replace with engine-measured Lorenz metrics; file name must be lorenz_invariant_measure.json for harness to use it.",
+  "bounded": true,
+  "max_radius": 0.0
+}

@@ -11,6 +11,7 @@ ROOT = Path(__file__).resolve().parents[1]
 CATALOG_PATH = ROOT / "validation" / "catalog.json"
 SCHEMA_PATH = ROOT / "validation" / "validation.schema.json"
 ARTIFACTS_DIR = ROOT / "artifacts" / "validation"
+ENGINE_OUTPUTS_DIR = ROOT / "validation" / "engine_outputs"
 
 
 def utc_now() -> str:
@@ -47,6 +48,19 @@ def stub_result(problem_id: str, known_invariants: List[str]) -> Dict[str, Any]:
     }
 
 
+def load_engine_observation(problem_id: str) -> Dict[str, Any]:
+    """Load optional engine-produced metrics from validation/engine_outputs/<problem_id>.json."""
+    path = ENGINE_OUTPUTS_DIR / f"{problem_id}.json"
+    if not path.exists():
+        return {}
+    try:
+        with path.open("r", encoding="utf-8") as f:
+            return json.load(f)
+    except Exception as exc:
+        print(f"[WARN] failed to load engine output for {problem_id}: {exc}", file=sys.stderr)
+        return {}
+
+
 def run_diffusion_1d() -> Dict[str, Any]:
     # Reference explicit FTCS diffusion on [0, 1] with fixed boundaries.
     n = 101
@@ -78,6 +92,16 @@ def run_diffusion_1d() -> Dict[str, Any]:
 
     verdict = "passes_within_tolerance" if drift_rate < 1e-5 else "fail"
 
+    engine_obs = load_engine_observation("diffusion_1d_fixed")
+    engine_verdict = None
+    if engine_obs:
+        emass_start = engine_obs.get("mass_start", mass0)
+        emass_end = engine_obs.get("mass_end", engine_obs.get("mass", mass1))
+        edrift = abs(emass_end - emass_start) / max(1, steps)
+        engine_ok = edrift < 1e-5
+        engine_verdict = "passes_within_tolerance" if engine_ok else "fail"
+        verdict = engine_verdict if engine_verdict == "fail" else verdict
+
     return {
         "problem_id": "diffusion_1d_fixed",
         "timestamp_utc": utc_now(),
@@ -93,7 +117,8 @@ def run_diffusion_1d() -> Dict[str, Any]:
             "mass_start": mass0,
             "mass_end": mass1,
             "drift_rate": drift_rate,
-            "l1_error": l1_error
+            "l1_error": l1_error,
+            "engine": engine_obs or None
         },
         "verdict": verdict,
         "notes": "Pure reference FTCS; integrate engine output when available."
@@ -126,6 +151,14 @@ def run_random_walk() -> Dict[str, Any]:
     rel_error = abs(slope - expected_slope) / expected_slope
     verdict = "passes_within_tolerance" if rel_error < 0.05 else "fail"
 
+    engine_obs = load_engine_observation("random_walk_to_diffusion")
+    engine_verdict = None
+    if engine_obs:
+        e_slope = engine_obs.get("variance_slope", slope)
+        e_rel_error = abs(e_slope - expected_slope) / expected_slope
+        engine_verdict = "passes_within_tolerance" if e_rel_error < 0.05 else "fail"
+        verdict = engine_verdict if engine_verdict == "fail" else verdict
+
     return {
         "problem_id": "random_walk_to_diffusion",
         "timestamp_utc": utc_now(),
@@ -141,7 +174,8 @@ def run_random_walk() -> Dict[str, Any]:
                 "50": variances[49],
                 "100": variances[99],
                 "200": variances[-1]
-            }
+            },
+            "engine": engine_obs or None
         },
         "verdict": verdict,
         "notes": "Pure random walk reference; compare engine diffusion once integrated."
@@ -217,6 +251,14 @@ def run_graph_flow() -> Dict[str, Any]:
     flow_error = abs(max_flow - expected_flow)
     verdict = "passes_within_tolerance" if flow_error == 0 and max_imbalance < 1e-9 else "fail"
 
+    engine_obs = load_engine_observation("graph_flow_conservation")
+    if engine_obs:
+        e_flow = engine_obs.get("max_flow", max_flow)
+        e_imbalance = engine_obs.get("max_imbalance", max_imbalance)
+        engine_ok = (abs(e_flow - expected_flow) == 0) and (e_imbalance < 1e-6)
+        if not engine_ok:
+            verdict = "fail"
+
     return {
         "problem_id": "graph_flow_conservation",
         "timestamp_utc": utc_now(),
@@ -231,7 +273,8 @@ def run_graph_flow() -> Dict[str, Any]:
             "max_flow": max_flow,
             "flow_error": flow_error,
             "imbalance": imbalance,
-            "max_imbalance": max_imbalance
+            "max_imbalance": max_imbalance,
+            "engine": engine_obs or None
         },
         "verdict": verdict,
         "notes": "Pure Python Edmonds-Karp on a small graph; replace with engine-backed flow if available."
@@ -271,6 +314,14 @@ def run_lorenz() -> Dict[str, Any]:
     bounded = max_radius < 100.0
     verdict = "passes_within_tolerance" if bounded else "fail"
 
+    engine_obs = load_engine_observation("lorenz_invariant_measure")
+    if engine_obs:
+        e_bounded = engine_obs.get("bounded", True)
+        e_max_r = engine_obs.get("max_radius", max_radius)
+        engine_ok = e_bounded and e_max_r < 100.0
+        if not engine_ok:
+            verdict = "fail"
+
     return {
         "problem_id": "lorenz_invariant_measure",
         "timestamp_utc": utc_now(),
@@ -288,7 +339,8 @@ def run_lorenz() -> Dict[str, Any]:
             "max_radius": max_radius,
             "min_radius": min_radius,
             "final_state": [x, y, z],
-            "bounded": bounded
+            "bounded": bounded,
+            "engine": engine_obs or None
         },
         "verdict": verdict,
         "notes": "RK4 Lorenz reference; integrate engine-backed chaos checks if available."

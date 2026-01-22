@@ -20,6 +20,7 @@ See `validation/catalog.json` for the authoritative list.
   - `--all` runs every scenario in the catalog.
   - Outputs JSON to `artifacts/validation/<problem_id>_<timestamp>.json`.
 - Runners are implemented in pure Python reference form (no engine calls yet); integrate engine outputs as needed.
+- Optional engine comparison: drop engine-produced metrics at `validation/engine_outputs/<problem_id>.json` (e.g., `mass_end`, `variance_slope`, `max_flow`, `max_imbalance`, `max_radius`, `bounded`). The harness will compare them against reference expectations and fail the verdict if they exceed tolerances.
 
 ## Implementation notes
 - Reference implementations:

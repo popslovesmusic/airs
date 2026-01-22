@@ -87,3 +87,4 @@ Current snapshot of the project after recent changes. Historical reports in `doc
 - Schema: `validation/validation.schema.json`; required fields include `problem_id`, `timestamp_utc`, `verdict`, `observations`.
 - Harness: `python validation/run_validation.py --problem_id <id>` or `--all`; writes JSON evidence to `artifacts/validation/`.
 - Status: runners implemented in Python references; integrate Simulation engine outputs as desired. Summary rollup at `validation/reports/summary.json`.
+- Engine comparison (optional): drop engine-produced metrics at `validation/engine_outputs/<problem_id>.json` (e.g., `mass_end`, `variance_slope`, `max_flow`, `max_imbalance`, `max_radius`, `bounded`) to have the harness evaluate them against reference tolerances.

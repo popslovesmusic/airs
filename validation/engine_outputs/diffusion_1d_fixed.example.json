@@ -1,0 +1,5 @@
+{
+  "//": "Replace with engine-measured mass; file name must be diffusion_1d_fixed.json for harness to use it.",
+  "mass_start": 0.0,
+  "mass_end": 0.0
+}

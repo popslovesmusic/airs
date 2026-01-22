@@ -1,0 +1,5 @@
+{
+  "//": "Replace with engine-measured flow metrics; file name must be graph_flow_conservation.json for harness to use it.",
+  "max_flow": 0.0,
+  "max_imbalance": 0.0
+}

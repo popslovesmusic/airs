@@ -388,6 +388,7 @@ python validation/run_validation.py --problem_id diffusion_1d_fixed
 python validation/run_validation.py --all
 ```
 Rollup summary: `validation/reports/summary.json`
+Optional engine comparison: place engine metrics in `validation/engine_outputs/<problem_id>.json` (e.g., `mass_end`, `variance_slope`, `max_flow`, `max_imbalance`, `max_radius`, `bounded`) to have the harness judge them against reference tolerances.
 
 ---
 

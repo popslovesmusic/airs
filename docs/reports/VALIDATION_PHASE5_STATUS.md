@@ -31,6 +31,6 @@ Outputs land in `artifacts/validation/`.
 - `artifacts/validation/lorenz_invariant_measure_20260121T194408.048685+0000.json`
 
 ## Next steps
-1) Integrate Simulation engine calls into runners and compare engine outputs to reference metrics (mass drift, variance slope, flow imbalance, Lorenz boundedness).
+1) Integrate Simulation engine outputs by emitting metrics into `validation/engine_outputs/<problem_id>.json` and letting the harness compare to references (mass drift, variance slope, flow imbalance, Lorenz boundedness).
 2) Wire a lightweight CI run (diffusion + random_walk) and keep `validation/reports/summary.json` updated.
 3) Record any design decisions/constraints in `docs/reports/` and keep catalog/schema in sync with scenario changes.

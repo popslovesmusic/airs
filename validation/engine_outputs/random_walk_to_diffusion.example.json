@@ -1,0 +1,4 @@
+{
+  "//": "Replace with engine-measured variance slope; file name must be random_walk_to_diffusion.json for harness to use it.",
+  "variance_slope": 1.0
+}
