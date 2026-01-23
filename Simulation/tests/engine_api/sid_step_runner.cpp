@@ -8,6 +8,8 @@
 #include <sstream>
 #include <string>
 #include <regex>
+#include <cctype>
+#include <cstdlib>
 #ifdef _WIN32
 #include <windows.h>
 #endif
@@ -39,12 +41,27 @@ std::string normalize_stdout(const std::string& raw) {
     return normalized;
 }
 
+double extract_metric(const std::string& raw, const std::string& key) {
+    const std::string pattern = "\"" + key + "\"";
+    auto pos = raw.rfind(pattern);
+    if (pos == std::string::npos) return 0.0;
+    pos = raw.find(':', pos);
+    if (pos == std::string::npos) return 0.0;
+    ++pos;
+    while (pos < raw.size() && std::isspace(static_cast<unsigned char>(raw[pos]))) ++pos;
+    const char* start = raw.c_str() + pos;
+    char* endptr = nullptr;
+    double val = std::strtod(start, &endptr);
+    if (endptr == start) return 0.0;
+    return val;
+}
+
 int run_cli(const std::filesystem::path& exe_path,
             const std::filesystem::path& input,
             std::string& stdout_out) {
     auto exe_dir = exe_path.parent_path();                // .../build/Debug
     auto repo_root = exe_dir.parent_path().parent_path(); // .../airs
-    std::filesystem::path cli = repo_root / "Simulation" / "dase_cli" / "sid_cli.exe";
+    std::filesystem::path cli = repo_root / "Simulation" / "dase_cli" / "dase_cli.exe";
     if (!std::filesystem::exists(cli)) {
         std::cerr << "missing cli: " << cli << "\n";
         return 1;
@@ -169,6 +186,7 @@ int main(int argc, char** argv) {
 
     std::string normalized = normalize_stdout(stdout_capture);
     std::string hash = fnv1a_64(normalized);
+    double active_nodes = extract_metric(stdout_capture, "active_nodes");
 
     std::ofstream out(output_path, std::ios::trunc);
     if (!out.is_open()) {
@@ -178,7 +196,7 @@ int main(int argc, char** argv) {
     out << "{\n";
     out << "  \"status\": \"ok\",\n";
     out << "  \"hash\": \"" << hash << "\",\n";
-    out << "  \"metrics\": {}\n";
+    out << "  \"metrics\": {\"active_nodes\": " << active_nodes << "}\n";
     out << "}\n";
     return 0;
 }

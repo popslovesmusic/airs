@@ -9,6 +9,8 @@
 #include <string>
 #include <vector>
 #include <regex>
+#include <cctype>
+#include <cstdlib>
 #ifdef _WIN32
 #include <windows.h>
 #endif
@@ -41,6 +43,22 @@ std::string normalize_stdout(const std::string& raw) {
         normalized.push_back('\n');
     }
     return normalized;
+}
+
+double extract_metric(const std::string& raw, const std::string& key) {
+    const std::string pattern = "\"" + key + "\"";
+    auto pos = raw.rfind(pattern);
+    if (pos == std::string::npos) return 0.0;
+    pos = raw.find(':', pos);
+    if (pos == std::string::npos) return 0.0;
+    ++pos;
+    while (pos < raw.size() && std::isspace(static_cast<unsigned char>(raw[pos]))) ++pos;
+    // Handle optional quotes (not expected for numbers)
+    const char* start = raw.c_str() + pos;
+    char* endptr = nullptr;
+    double val = std::strtod(start, &endptr);
+    if (endptr == start) return 0.0;
+    return val;
 }
 
 int run_cli(const std::filesystem::path& exe_path,
@@ -181,6 +199,7 @@ int main(int argc, char** argv) {
     // Normalize volatile fields before hashing for stability.
     std::string normalized = normalize_stdout(stdout_capture);
     std::string hash = fnv1a_64(normalized);
+    double state_norm = extract_metric(stdout_capture, "state_norm");
 
     // Emit minimal output JSON.
     std::ofstream out(output_path, std::ios::trunc);
@@ -191,7 +210,7 @@ int main(int argc, char** argv) {
     out << "{\n";
     out << "  \"status\": \"ok\",\n";
     out << "  \"hash\": \"" << hash << "\",\n";
-    out << "  \"metrics\": {}\n";
+    out << "  \"metrics\": {\"state_norm\": " << state_norm << "}\n";
     out << "}\n";
     return 0;
 }

@@ -24,9 +24,12 @@ TEST(IgsoaGw, StepHashMatchesGolden) {
     auto runner = root / "build/Debug/dase_step_runner.exe";
     auto input = root / "Simulation/tests/fixtures/inputs/gw_step.jsonl";
     auto output = root / "artifacts/validation/gw/out.json";
-    auto hash = harness::run_step_runner_and_hash(runner, input, output);
-    ASSERT_FALSE(hash.empty());
-    EXPECT_EQ(hash, "268030760406aaac");
+    auto result = harness::run_step_runner(runner, input, output);
+    ASSERT_FALSE(result.hash.empty());
+    ASSERT_NE(result.metrics.count("state_norm"), 0u);
+    const double norm = result.metrics.at("state_norm");
+    EXPECT_EQ(result.hash, "f8813f85bb44d6ef");
+    EXPECT_DOUBLE_EQ(norm, 1.45005e-87);
 }
 
 TEST(IgsoaGw, EchoStructurePlaceholder) {

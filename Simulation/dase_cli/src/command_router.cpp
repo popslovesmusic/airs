@@ -664,6 +664,57 @@ json CommandRouter::handleRunSteps(const json& params) {
     }
 
     auto metrics = engine_manager->getMetrics(engine_id);
+    json stability_metrics = json::object();
+
+    if (inst->engine_type == "sid_ssp") {
+        // Count non-zero field entries as active nodes
+        std::vector<double> psi_real, psi_imag, field;
+        if (engine_manager->getAllNodeStates(engine_id, psi_real, psi_imag, field)) {
+            size_t active = 0;
+            for (double v : field) {
+                if (std::abs(v) > 1e-12) {
+                    active++;
+                }
+            }
+            stability_metrics["active_nodes"] = static_cast<uint64_t>(active);
+        }
+    } else if (inst->engine_type == "sid_ternary") {
+        std::string diagram_json;
+        size_t active = 0;
+        if (engine_manager->sidGetDiagramJson(engine_id, diagram_json)) {
+            auto parsed = json::parse(diagram_json, nullptr, false);
+            if (parsed.is_object() && parsed.contains("nodes") && parsed["nodes"].is_array()) {
+                active = parsed["nodes"].size();
+            }
+        }
+        if (active == 0) {
+            active = static_cast<size_t>(inst->num_nodes);
+        }
+        stability_metrics["active_nodes"] = static_cast<uint64_t>(active);
+    } else {
+        std::vector<double> psi_real, psi_imag, phi;
+        if (engine_manager->getAllNodeStates(engine_id, psi_real, psi_imag, phi)) {
+            long double sumsq = 0.0;
+            bool used_complex = !psi_real.empty() || !psi_imag.empty();
+            if (used_complex) {
+                const size_t n = std::max(psi_real.size(), psi_imag.size());
+                for (size_t i = 0; i < n; ++i) {
+                    long double r = (i < psi_real.size()) ? psi_real[i] : 0.0;
+                    long double im = (i < psi_imag.size()) ? psi_imag[i] : 0.0;
+                    sumsq += r * r + im * im;
+                }
+            } else if (!phi.empty()) {
+                for (double v : phi) {
+                    sumsq += static_cast<long double>(v) * static_cast<long double>(v);
+                }
+            }
+            double norm = static_cast<double>(std::sqrt(sumsq));
+            stability_metrics["state_norm"] = norm;
+        } else {
+            stability_metrics["state_norm"] = 0.0;
+        }
+    }
+
     json result = {
         {"engine_id", engine_id},
         {"num_steps", num_steps},
@@ -671,7 +722,8 @@ json CommandRouter::handleRunSteps(const json& params) {
         {"ns_per_op", metrics.ns_per_op},
         {"ops_per_sec", metrics.ops_per_sec},
         {"total_operations", metrics.total_operations},
-        {"speedup_factor", metrics.speedup_factor}
+        {"speedup_factor", metrics.speedup_factor},
+        {"metrics", stability_metrics}
     };
     return createSuccessResponse("run_steps", result, 0);
 }

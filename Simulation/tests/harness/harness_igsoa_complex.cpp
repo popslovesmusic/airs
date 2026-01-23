@@ -23,9 +23,12 @@ TEST(IgsoaComplex, StepHashMatchesGolden) {
     auto runner = root / "build/Debug/dase_step_runner.exe";
     auto input = root / "Simulation/tests/fixtures/inputs/igsoa_complex_step.jsonl";
     auto output = root / "artifacts/validation/igsoa_complex/out.json";
-    auto hash = harness::run_step_runner_and_hash(runner, input, output);
-    ASSERT_FALSE(hash.empty());
-    EXPECT_EQ(hash, "bc2b53c7df81da87");
+    auto result = harness::run_step_runner(runner, input, output);
+    ASSERT_FALSE(result.hash.empty());
+    ASSERT_NE(result.metrics.count("state_norm"), 0u);
+    const double norm = result.metrics.at("state_norm");
+    EXPECT_EQ(result.hash, "f1ecbfa6e26f8fff");
+    EXPECT_DOUBLE_EQ(norm, 32.0);
 }
 
 TEST(IgsoaComplex, AttractorPlaceholder) {

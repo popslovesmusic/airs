@@ -5,6 +5,8 @@
 #include <fstream>
 #include <iostream>
 #include <sstream>
+#include <regex>
+#include <cstdlib>
 #ifdef _WIN32
 #include <Windows.h>
 #include <process.h>
@@ -130,9 +132,9 @@ void write_metrics_json(const std::string& engine_family,
     out << "}\n";
 }
 
-std::string run_step_runner_and_hash(const std::filesystem::path& runner,
-                                     const std::filesystem::path& input_jsonl,
-                                     const std::filesystem::path& output_json) {
+StepRunOutput run_step_runner(const std::filesystem::path& runner,
+                              const std::filesystem::path& input_jsonl,
+                              const std::filesystem::path& output_json) {
     ensure_directory(output_json.parent_path());
     auto rpath = std::filesystem::weakly_canonical(runner);
     auto ipath = std::filesystem::weakly_canonical(input_jsonl);
@@ -161,24 +163,50 @@ std::string run_step_runner_and_hash(const std::filesystem::path& runner,
         std::cerr << " last_error=" << GetLastError();
 #endif
         std::cerr << " cmd=" << rpath.string() << " " << ipath.string() << " " << opath.string() << "\n";
-        return "";
+        return {};
     }
     std::ifstream in(output_json);
     if (!in.is_open()) {
         std::cerr << "output missing: " << output_json << "\n";
-        return "";
+        return {};
     }
     std::string content((std::istreambuf_iterator<char>(in)), {});
-    // naive parse: look for "hash": "....."
+    StepRunOutput out{};
+    // Extract hash
     auto pos = content.find("\"hash\"");
-    if (pos == std::string::npos) return "";
-    pos = content.find(':', pos);
-    if (pos == std::string::npos) return "";
-    pos = content.find('"', pos);
-    if (pos == std::string::npos) return "";
-    auto end = content.find('"', pos + 1);
-    if (end == std::string::npos) return "";
-    return content.substr(pos + 1, end - pos - 1);
+    if (pos != std::string::npos) {
+        pos = content.find(':', pos);
+        if (pos != std::string::npos) {
+            pos = content.find('"', pos);
+            if (pos != std::string::npos) {
+                auto end = content.find('"', pos + 1);
+                if (end != std::string::npos) {
+                    out.hash = content.substr(pos + 1, end - pos - 1);
+                }
+            }
+        }
+    }
+    // Extract metrics as simple key:value pairs
+    auto mpos = content.find("\"metrics\"");
+    if (mpos != std::string::npos) {
+        mpos = content.find('{', mpos);
+        auto mend = content.find('}', mpos);
+        if (mpos != std::string::npos && mend != std::string::npos && mend > mpos) {
+            std::string block = content.substr(mpos, mend - mpos);
+            std::regex kv_re("\"([^\"]+)\"\\s*:\\s*([-0-9eE\\.]+)");
+            std::smatch match;
+            std::string::const_iterator search_start(block.cbegin());
+            while (std::regex_search(search_start, block.cend(), match, kv_re)) {
+                if (match.size() == 3) {
+                    const std::string key = match[1].str();
+                    const double val = std::strtod(match[2].str().c_str(), nullptr);
+                    out.metrics[key] = val;
+                }
+                search_start = match.suffix().first;
+            }
+        }
+    }
+    return out;
 }
 
 }  // namespace harness

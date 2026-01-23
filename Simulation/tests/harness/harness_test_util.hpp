@@ -6,7 +6,6 @@
 #include <random>
 #include <string>
 #include <vector>
-
 namespace harness {
 
 std::mt19937 seeded_rng(uint64_t seed = 1337);
@@ -25,9 +24,14 @@ void write_metrics_json(const std::string& engine_family,
                         const std::map<std::string, double>& numeric_metrics,
                         const std::map<std::string, std::string>& string_metrics = {});
 
-// Run a step runner and return the hash from its output JSON.
-std::string run_step_runner_and_hash(const std::filesystem::path& runner,
-                                     const std::filesystem::path& input_jsonl,
-                                     const std::filesystem::path& output_json);
+struct StepRunOutput {
+    std::string hash;
+    std::map<std::string, double> metrics;
+};
+
+// Run a step runner and return hash + metrics parsed from its output JSON.
+StepRunOutput run_step_runner(const std::filesystem::path& runner,
+                              const std::filesystem::path& input_jsonl,
+                              const std::filesystem::path& output_json);
 
 }  // namespace harness

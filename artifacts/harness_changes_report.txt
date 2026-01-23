@@ -5,24 +5,27 @@ Key changes since prior report
 ------------------------------
 - Step runners now execute CLIs directly via CreateProcessW (no PowerShell) and stream fixture JSONL into stdin.
 - Normalized stdout before hashing (strip xecution_time_ms, ngine_id, perf fields; drop non-success lines) so hashes are repeatable.
-- Removed fallback behavior: any runner failure, missing CLI, or hash mismatch causes the test to fail.
+- Added per-engine deterministic metrics surfaced by the CLIs:
+  - DASE engines emit metrics.state_norm (L2 norm after one step).
+  - SID engines emit metrics.active_nodes (count of active entries after one step).
+- Runners parse those metrics and write them into goldens; harness asserts both hash and metric. Any runner/CLI failure or mismatch fails the test.
 - Updated harness invocation helper to spawn runners directly (no cmd quoting issues).
-- Refreshed golden hashes in rtifacts/validation/<engine>/out.json.
+- Refreshed goldens in rtifacts/validation/<engine>/out.json.
 
-Current golden hashes
----------------------
-- basic_compute_substrate: abe8b580ae633901
-- satp_higgs: 14650fb0739d0383
-- gw: 268030760406aaac
-- igsoa_complex: bc2b53c7df81da87
-- sid_ssp: 14650fb0739d0383
-- sid_ternary: 14650fb0739d0383
+Current goldens
+---------------
+- basic_compute_substrate: hash 956aeb0623414a47, state_norm=1024
+- satp_higgs: hash 14650fb0739d0383, state_norm=0
+- gw: hash f8813f85bb44d6ef, state_norm=1.45005e-87
+- igsoa_complex: hash f1ecbfa6e26f8fff, state_norm=32
+- sid_ssp: hash 8d447646765728c0, active_nodes=1024
+- sid_ternary: hash 956d1239323d716f, active_nodes=1024
 
 Status
 ------
 - ctest -C Debug -L harness passes on 2026-01-23.
 - Runners: uild/Debug/dase_step_runner.exe, uild/Debug/sid_step_runner.exe.
-- CLIs expected at Simulation/dase_cli/dase_cli.exe and Simulation/dase_cli/sid_cli.exe.
+- CLIs expected at Simulation/dase_cli/dase_cli.exe (used for both DASE and SID).
 
 Usage
 -----

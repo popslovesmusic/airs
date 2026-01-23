@@ -24,9 +24,12 @@ TEST(SidSsp, StepHashMatchesGolden) {
     auto runner = root / "build/Debug/sid_step_runner.exe";
     auto input = root / "Simulation/tests/fixtures/inputs/sid_ssp_step.jsonl";
     auto output = root / "artifacts/validation/sid_ssp/out.json";
-    auto hash = harness::run_step_runner_and_hash(runner, input, output);
-    ASSERT_FALSE(hash.empty());
-    EXPECT_EQ(hash, "14650fb0739d0383");
+    auto result = harness::run_step_runner(runner, input, output);
+    ASSERT_FALSE(result.hash.empty());
+    ASSERT_NE(result.metrics.count("active_nodes"), 0u);
+    const double active = result.metrics.at("active_nodes");
+    EXPECT_EQ(result.hash, "8d447646765728c0");
+    EXPECT_DOUBLE_EQ(active, 1024.0);
 }
 
 TEST(SidSsp, RewriteDeterminismPlaceholder) {
