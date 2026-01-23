@@ -27,7 +27,7 @@ int run_cli(const std::filesystem::path& input, std::string& stdout_out) {
         std::cerr << "missing cli: " << cli << "\n";
         return 1;
     }
-    std::string cmd = "\"" + cli.string() + "\" --mode step < \"" + input.string() + "\"";
+    std::string cmd = "type \"" + input.string() + "\" | \"" + cli.string() + "\"";
     FILE* pipe = _popen(cmd.c_str(), "r");
     if (!pipe) return 2;
     char buffer[4096];
