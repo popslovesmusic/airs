@@ -1,0 +1,11 @@
+time=0.00 phi=0.10
+time=0.10 phi=0.11
+time=0.20 phi=0.13
+time=0.30 phi=0.18
+time=0.40 phi=0.22
+time=0.50 phi=0.25
+time=0.60 phi=0.26
+time=0.70 phi=0.27
+time=0.80 phi=0.27
+time=0.90 phi=0.28
+time=1.00 phi=0.28

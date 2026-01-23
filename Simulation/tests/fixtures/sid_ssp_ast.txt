@@ -1,0 +1,5 @@
+(root
+  (sentence
+    (subject "agent")
+    (verb "rewrite")
+    (object "expression")))

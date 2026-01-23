@@ -1,0 +1,9 @@
+{
+  "engine": "satp_higgs",
+  "test_case": "vacuum_stability_trend",
+  "timestamp": "2026-01-23T01-49-58Z",
+  "metrics": {
+    "samples": 11,
+    "status": "monotonic_non_decreasing"
+  }
+}

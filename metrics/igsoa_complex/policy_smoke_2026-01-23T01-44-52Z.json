@@ -1,0 +1,9 @@
+{
+  "engine": "igsoa_complex",
+  "test_case": "policy_smoke",
+  "timestamp": "2026-01-23T01-44-52Z",
+  "metrics": {
+    "policy_loaded": 1,
+    "status": "pass"
+  }
+}

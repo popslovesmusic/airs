@@ -428,6 +428,12 @@ if(BUILD_TESTS)
             add_executable(harness_tests
                 tests/harness/harness_main.cpp
                 tests/harness/harness_example.cpp
+                tests/harness/harness_basic_compute.cpp
+                tests/harness/harness_satp_higgs.cpp
+                tests/harness/harness_igsoa_gw.cpp
+                tests/harness/harness_igsoa_complex.cpp
+                tests/harness/harness_sid_ssp.cpp
+                tests/harness/harness_sid_ternary.cpp
             )
             target_link_libraries(harness_tests PRIVATE
                 harness_support

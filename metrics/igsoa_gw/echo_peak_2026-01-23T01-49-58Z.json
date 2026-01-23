@@ -1,0 +1,9 @@
+{
+  "engine": "igsoa_gw",
+  "test_case": "echo_peak",
+  "timestamp": "2026-01-23T01-49-58Z",
+  "metrics": {
+    "peak_amplitude": 0.6,
+    "peak_time": 0.5
+  }
+}

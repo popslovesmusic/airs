@@ -1,0 +1,11 @@
+{
+  "engine": "sid_ternary",
+  "test_case": "case_distribution",
+  "timestamp": "2026-01-23T01-48-55Z",
+  "metrics": {
+    "I": 3,
+    "N": 3,
+    "U": 2,
+    "rows": 8
+  }
+}

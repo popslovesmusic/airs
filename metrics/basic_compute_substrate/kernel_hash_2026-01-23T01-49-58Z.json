@@ -1,0 +1,9 @@
+{
+  "engine": "basic_compute_substrate",
+  "test_case": "kernel_hash",
+  "timestamp": "2026-01-23T01-49-58Z",
+  "metrics": {
+    "hash_match": 1,
+    "hash": "ae84256407f5f343"
+  }
+}

@@ -1,0 +1,10 @@
+{
+  "engine": "igsoa_complex",
+  "test_case": "residual_drop",
+  "timestamp": "2026-01-23T01-49-58Z",
+  "metrics": {
+    "final_residual": 0.02,
+    "initial_residual": 1,
+    "iterations": 7
+  }
+}
