@@ -1,0 +1,137 @@
+Alright — here is **Step 5a scoped** as a **testable spec** (not theory prose), with **clear pass/fail**, **what to implement**, and **how to run it**.
+
+---
+
+# Step 5a — SID Rewrite-Path Determinism (Spec + Harness)
+
+| Track                        | Definition / Requirement                                                                                                                |
+| ---------------------------- | --------------------------------------------------------------------------------------------------------------------------------------- |
+| **[5a-0] Objective**         | Prove that **final semantic outcome** is invariant under **admissible rewrite orderings**.                                              |
+| **[5a-1] Input**             | Same **initial diagram D₀**, same **rewrite rule set R**, same **engine params P**. Only the **rewrite scheduling / ordering** changes. |
+| **[5a-2] Output**            | A **canonical equivalence witness**: canonical hash + invariant vector, identical across paths.                                         |
+| **[5a-3] Success criterion** | For every admissible ordering ( \pi_i ): `Witness(D_final(πi)) == Witness(D_final(πj))` for all i,j.                                    |
+| **[5a-4] Non-goal**          | This does **not** prove “physics truth.” It proves **semantic objectivity under rewriting**.                                            |
+
+---
+
+## [5a-A] What counts as “the same final outcome”?
+
+| Track                         | Definition / Requirement                                                                                                                              |
+| ----------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **[5a-A1] Canonical Form**    | Define `Canon(D)` such that equivalent diagrams normalize to identical structure (node/edge ordering, label normalization, deterministic tie-breaks). |
+| **[5a-A2] Witness**           | `Witness(D) = { canon_hash, invariants_hash, invariants_vector }`                                                                                     |
+| **[5a-A3] Invariants Vector** | Minimal recommended vector: `{ mass_I, mass_N, mass_U, total_mass, node_count, edge_count }` (extend later, but keep stable).                         |
+| **[5a-A4] Hash Rules**        | Hash must be computed from **canonical serialization** only. No pointers, no iteration-order artifacts.                                               |
+
+**Pass/Fail uses Witness equality.** If you later decide canon is too strict/loose, you keep the witness contract stable and adjust canon.
+
+---
+
+## [5a-B] Define “admissible reorderings” (the key to avoiding fake failures)
+
+| Track                                      | Definition / Requirement                                                                                                                                                                                              |
+| ------------------------------------------ | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **[5a-B1] Eligibility**                    | A rewrite step is eligible if it matches a rule in R on the current diagram state.                                                                                                                                    |
+| **[5a-B2] Admissible Schedules**           | Any schedule that selects among eligible steps using a deterministic policy variant (below).                                                                                                                          |
+| **[5a-B3] Policies to test (minimum set)** | **P1:** lexicographic earliest match; **P2:** reverse-lexicographic latest match; **P3:** random-but-seeded stable permutation; **P4:** “maximize-local-change” heuristic; **P5:** “minimize-local-change” heuristic. |
+| **[5a-B4] Termination**                    | All policies must share a common termination condition: “no eligible rewrites remain” OR “reached fixed-point invariant conditions.”                                                                                  |
+
+This is how you generate many paths *without* changing rules or meaning.
+
+---
+
+## [5a-C] Test harness structure (what you actually build/run)
+
+| Track                              | Definition / Requirement                                                                             |
+| ---------------------------------- | ---------------------------------------------------------------------------------------------------- |
+| **[5a-C1] Scenario Bundle**        | A scenario = `{D₀, R, P, horizon_cap, termination_mode}`                                             |
+| **[5a-C2] Run Matrix**             | For each scenario, run all policies P1..P5 with multiple seeds (for P3) and compare witnesses.       |
+| **[5a-C3] Minimal run size**       | Start with: `policies=5`, `seeds=10` (only affects P3), `scenarios=3`. That’s already a strong test. |
+| **[5a-C4] Artifact outputs**       | For each run: `{policy_id, seed, steps, witness, metrics, fail_reason?}`                             |
+| **[5a-C5] Failure classification** | See failure matrix below.                                                                            |
+
+---
+
+## [5a-D] Failure-mode matrix (so you know what a failure *means*)
+
+| Failure                                  | Symptom                              | Likely Cause                                           | Action                                                                  |
+| ---------------------------------------- | ------------------------------------ | ------------------------------------------------------ | ----------------------------------------------------------------------- |
+| **F1: Canon mismatch only**              | invariants match, canon_hash differs | Canonicalization too strict or unstable                | Fix serialization / sorting / tie-breaks                                |
+| **F2: Invariants drift**                 | mass totals differ across paths      | Conservation enforcement missing in rewrite or mixer   | Add invariant checks at each rewrite step                               |
+| **F3: Different fixed points**           | both canon + invariants differ       | Rewrite system not confluent under given admissibility | Define/limit admissible class, or add critical-pair resolution in Mixer |
+| **F4: Non-termination in some policies** | hits horizon_cap                     | Cycles or oscillations                                 | Add cycle detection (state hash set), or enforce decreasing measure     |
+| **F5: Order-dependent eligibility**      | eligible set differs “too much”      | Matching logic depends on iteration order              | Stabilize match enumeration deterministically                           |
+
+This is the main value of 5a: failures become *diagnostics*, not confusion.
+
+---
+
+## [5a-E] Acceptance gates (hard pass criteria)
+
+A scenario passes Step 5a iff:
+
+1. **Termination**: All policies terminate before `horizon_cap` (or report the same detected cycle class).
+2. **Conservation**: Invariant vector matches across all paths (within exact equality, since SID conservation is exact).
+3. **Canonical equality**: Canon hashes match across all paths (after canon fixups).
+
+If you need a staged acceptance:
+
+* Gate 1: invariants match (semantic “mass” objectivity)
+* Gate 2: canon matches (structural objectivity)
+
+---
+
+## [5a-F] Deliverables (what “done” looks like)
+
+* `sid_rewrite_determinism_harness` that emits a single summary:
+
+  * per scenario: `PASS/FAIL`, and if fail: `F1..F5`
+* A “witness ledger” file for each run set:
+
+  * list of runs + witnesses + step counts (for regression)
+* A **golden witness** per scenario (not per path) once passing
+
+---
+
+## Optional: ready-to-paste JSON5 “handoff spec” artifact
+
+```json5
+{
+  "step": "5a",
+  "name": "SID rewrite-path determinism",
+  "objective": "Witness invariance under admissible rewrite scheduling",
+  "witness": {
+    "fields": ["canon_hash", "invariants_hash", "invariants_vector"],
+    "invariants_vector": ["mass_I", "mass_N", "mass_U", "total_mass", "node_count", "edge_count"]
+  },
+  "policies": [
+    {"id":"P1","name":"earliest_match_lex"},
+    {"id":"P2","name":"latest_match_revlex"},
+    {"id":"P3","name":"seeded_shuffle"},
+    {"id":"P4","name":"maximize_local_change"},
+    {"id":"P5","name":"minimize_local_change"}
+  ],
+  "run_plan": {
+    "scenarios_min": 3,
+    "seeds_for_P3": 10,
+    "horizon_cap": 100000,
+    "termination": "no_eligible_rewrites_or_fixed_point"
+  },
+  "acceptance": [
+    {"gate":"termination","rule":"all_policies_terminate_or_same_cycle_class"},
+    {"gate":"conservation","rule":"invariants_vector_equal_across_paths"},
+    {"gate":"canonical","rule":"canon_hash_equal_across_paths"}
+  ],
+  "failure_modes": ["F1_canon_only","F2_invariants_drift","F3_different_fixed_points","F4_nontermination","F5_order_dependent_matching"]
+}
+```
+
+---
+
+If you want the next message to be **implementation-facing**, tell me which surface you’re using for the harness:
+
+* **A)** via `sid_cli` / DASE JSON step API
+* **B)** direct C++ harness calling `sid_rewrite` / `sid_validator`
+* **C)** hybrid (CLI-runner + C++ canon/witness library)
+
+I can then output the exact **command schema**, **expected JSON outputs**, and the **minimal scenario set** to start with.

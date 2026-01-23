@@ -1,0 +1,41 @@
+Missing SID rewrite fixtures (Step 5a)
+====================================
+
+What we need
+------------
+- Initial diagram(s) D0 for SID ternary/SSP rewrites.
+- Corresponding rewrite rule sets R (JSON or CLI-friendly) that can be applied via sid_cli/dase_cli.
+- Engine params P (node count/capacity, role, any knobs needed).
+- Horizon cap for each scenario (max steps before declaring non-termination).
+
+Why needed
+----------
+The Step 5a harness is ready to run multiple rewrite scheduling policies and compare canonical witnesses, but it cannot proceed without concrete fixtures:
+- No diagram -> no admissible rewrites to exercise.
+- No rule set -> policies P1..P5 have nothing to schedule.
+- No params -> cannot instantiate engines consistently.
+
+Proposed minimal fixture set (to unblock)
+-----------------------------------------
+1) Tiny deterministic diagram (e.g., 6–12 nodes) with 2–3 non-overlapping rewrite rules that commute.
+2) A slightly larger diagram with overlapping matches to expose ordering effects.
+3) A cycle-prone diagram to validate termination/cycle detection.
+
+Format expectation (preferred)
+------------------------------
+- JSONL for runner/CLI: commands create_engine, sid_set_diagram_json (or expr), sid_rewrite / un_steps with rewrite triggers.
+- Rules: JSON array of rewrite patterns and replacements, each with stable IDs.
+- Optionally a horizon_cap field per scenario.
+
+Next steps once fixtures are provided
+-------------------------------------
+- Implement policy drivers P1..P5 inside harness (or CLI wrapper) using seeded scheduling.
+- Compute canonical witness (canon hash + invariants vector {mass_I, mass_N, mass_U, total_mass, node_count, edge_count}).
+- Add per-scenario tests asserting witness equality across policies and seeds.
+
+Status
+------
+- Harness file added: Simulation/tests/harness/harness_sid_rewrite.cpp (currently skipped).
+- Build/test pass: ctest -C Debug -L harness.
+
+Please drop the fixtures/rules at the root (or point me to existing ones), and I’ll wire them in immediately.
