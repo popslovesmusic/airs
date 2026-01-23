@@ -1,0 +1,13 @@
+Changes (Jan 23, 2026)
+- Added `json_gate.py`: combined validator + minifier enforcing single JSON object with `command`, one-line JSONL framing, and deterministic errors; modes validate/minify/gate.
+- Added `docs/json_ingress_gate.md`: beginner-friendly usage and rationale for the ingress gate boundary.
+- Updated `test_harness.md`: note to run commands through `json_gate.py` before feeding the harness/CLI.
+
+Usage quick start
+- Validate existing JSONL: `python json_gate.py --mode validate -i cmd.jsonl`
+- Gate (validate + minify) stdin to stdout: `Get-Content pretty.json -Raw | python json_gate.py --mode gate > cmd.jsonl`
+- Minify only: `python json_gate.py --mode minify -i pretty.json -o cmd.jsonl`
+
+Next steps
+- Wire gate into harness runners or CI so every CLI invocation is pre-validated.
+- Optional: add unit tests around `json_gate.py` for malformed cases (extra content, missing command, multi-line).

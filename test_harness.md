@@ -34,6 +34,13 @@
   - SID: metrics.active_nodes (count of active nodes/entries)
 - Runner missing, CLI errors, non-zero exit codes, or hash/metric mismatches now fail the test (no auto-pass or fallback).
 
+## JSON ingress gate (new)
+- Before any harness runner feeds commands into `dase_cli.exe`, run them through `json_gate.py` to enforce single-object JSONL framing.
+- Usage example:
+  - `Get-Content fixtures/step5a/scenario_01/command.json -Raw | python json_gate.py --mode gate > command.jsonl`
+  - The gate validates one JSON object, ensures a `command` field, rejects trailing junk, and minifies to one line.
+  - Non-zero exit → stop; do not run the CLI.
+
 ## Adding a new engine family
 1) Put CLI in Simulation/dase_cli/<your_cli>.exe or add a new runner if protocol differs.
 2) Add a fixture JSONL under Simulation/tests/fixtures/inputs/ with create_engine + un_steps commands.

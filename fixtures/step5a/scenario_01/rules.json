@@ -1,25 +1,12 @@
 [
   {
     "rule_id": "R1_promote_U_to_I",
-    "match": {
-      "node_role": "U",
-      "connected_to_role": "I",
-      "min_weight": 0.7
-    },
-    "rewrite": {
-      "set_role": "I"
-    }
+    "pattern": "(and (node ?u role=U) (node ?i role=I) (edge ?u ?i type=similarity weight>=0.7))",
+    "replacement": "(set (node ?u) role=I)"
   },
   {
     "rule_id": "R2_merge_similar_U",
-    "match": {
-      "pair_roles": ["U", "U"],
-      "edge_type": "similarity",
-      "min_weight": 0.85
-    },
-    "rewrite": {
-      "action": "merge_nodes",
-      "mass_conservation": true
-    }
+    "pattern": "(and (node ?a role=U) (node ?b role=U) (edge ?a ?b type=similarity weight>=0.85))",
+    "replacement": "(merge ?a ?b)"
   }
 ]

@@ -1,0 +1,225 @@
+
+
+# SID Rewrite Syntax (Executable Contract)
+
+This defines the **exact shape** a rewrite rule must have to be **accepted and applied** by the engine.
+
+If your existing parser differs in names, the *structure* still holds — only token names change.
+
+---
+
+## 1. Rewrite Rule = Pattern → Replacement
+
+A rewrite rule consists of **two SID expressions**:
+
+```
+pattern_expr  ==>  replacement_expr
+```
+
+Both sides are parsed by the **same SID expression parser** already used to build diagrams.
+
+There is **no separate “match language”**.
+
+---
+
+## 2. Core SID Expression Grammar (Minimal)
+
+### 2.1 Atoms
+
+```
+(node <id> <attributes…>)
+(edge <src> <dst> <attributes…>)
+```
+
+Attributes are **key=value pairs**.
+
+Example:
+
+```
+(node n1 role=U mass=1.0)
+(edge n1 n2 type=similarity weight=0.9)
+```
+
+---
+
+### 2.2 Variables (for matching)
+
+Variables are **prefixed with ?** and bind during pattern matching.
+
+```
+(node ?u role=U)
+(edge ?u ?v type=similarity)
+```
+
+Bindings must be **consistent across the pattern**.
+
+---
+
+### 2.3 Pattern Expression
+
+A pattern is a **conjunction** of atoms:
+
+```
+(and
+  (node ?a role=U)
+  (node ?b role=U)
+  (edge ?a ?b type=similarity weight>=0.85)
+)
+```
+
+Shorthand (usually allowed):
+
+```
+(node ?a role=U)
+(node ?b role=U)
+(edge ?a ?b type=similarity weight>=0.85)
+```
+
+---
+
+### 2.4 Replacement Expression
+
+A replacement is a **sequence of rewrite actions**, expressed in SID terms.
+
+Supported minimal actions:
+
+#### Attribute update
+
+```
+(set (node ?u) role=I)
+```
+
+#### Merge nodes
+
+```
+(merge ?a ?b)
+```
+
+#### Delete edge
+
+```
+(delete (edge ?a ?b))
+```
+
+#### Add edge
+
+```
+(add (edge ?a ?i type=similarity weight=0.5))
+```
+
+---
+
+## 3. Full Rewrite Rule Object (JSON)
+
+This is the **exact JSON structure** `sid_run_rewrites` should pass to `sidApplyRewrite`.
+
+```json5
+{
+  "rule_id": "R1_promote_U_to_I",
+  "pattern": "(and (node ?u role=U) (node ?i role=I) (edge ?u ?i type=similarity weight>=0.7))",
+  "replacement": "(set (node ?u) role=I)"
+}
+```
+
+That’s it.
+No `match` objects. No meta schema.
+
+---
+
+## 4. Your Step 5a Rules — Correctly Encoded
+
+### Rule R1 — Promote U → I
+
+```json5
+{
+  "rule_id": "R1_promote_U_to_I",
+  "pattern": "(and (node ?u role=U) (node ?i role=I) (edge ?u ?i type=similarity weight>=0.7))",
+  "replacement": "(set (node ?u) role=I)"
+}
+```
+
+---
+
+### Rule R2 — Merge Similar U Nodes
+
+```json5
+{
+  "rule_id": "R2_merge_similar_U",
+  "pattern": "(and (node ?a role=U) (node ?b role=U) (edge ?a ?b type=similarity weight>=0.85))",
+  "replacement": "(merge ?a ?b)"
+}
+```
+
+These two rules:
+
+* are **executable**
+* overlap in applicability
+* create ordering ambiguity
+* preserve mass (merge is conservation-aware)
+
+---
+
+## 5. How `sid_run_rewrites` Applies Them (Algorithm)
+
+At each step:
+
+1. Parse all rule `pattern` strings
+2. Enumerate all matches against current diagram
+3. Build eligible rewrite list:
+
+   ```
+   [(rule_id, bindings, replacement)]
+   ```
+4. Order list according to policy:
+
+   * P1: lexicographic
+   * P2: reverse lex
+   * P3: seeded shuffle
+5. Apply **one rewrite**
+6. Repeat until:
+
+   * no eligible rewrites
+   * horizon_cap reached
+
+---
+
+## 6. Acceptance Criteria (Phase 5a-A)
+
+After rerun with correct syntax:
+
+* `steps > 0`
+* `rules_applied > 0`
+* `termination = fixed_point`
+* `total_mass` identical across P1 / P2 / P3
+
+If any differ → **real semantic defect**, not plumbing.
+
+---
+
+## 7. Important Constraint (Do Not Skip)
+
+> **Rewrite syntax must be the same language used to build diagrams.**
+
+If you already have:
+
+* `sid_parse_expr`
+* `sid_diagram_from_expr`
+
+Then rewrite patterns **must use that exact syntax**.
+
+No dual languages.
+
+---
+
+## Immediate next action
+
+1. Encode `rules.json` using the syntax above
+2. Re-run Phase 5a-A
+3. Paste:
+
+   * steps
+   * applied_trace
+   * total_mass per policy
+
+Once that works, **Phase 5a-C unblocks immediately**.
+
