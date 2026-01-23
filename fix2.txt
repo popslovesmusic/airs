@@ -1,0 +1,125 @@
+
+
+---
+
+# 🔧 Agent Task: Fix JSON Ingress Validation (AIRS)
+
+## Objective
+
+Fix `json_gate.py` so JSON ingress is **deterministic, explainable, and governance-tight**, matching the intended flow:
+
+```
+MINIFIER → VALIDATOR → CLI
+(on failure → return diagnostics to agent → agent fixes input → retry)
+```
+
+No other parts of AIRS may be changed.
+
+---
+
+## Governance Decision (locked)
+
+* **Ingress accepts ONE command per invocation**
+* **NO JSONL streams**
+* **NO piped multi-command execution**
+* **Sequencing is the agent’s responsibility**
+* `json_gate.py` is the **only ingress point**
+
+This intentionally returns AIRS to its original, simpler execution model.
+
+---
+
+## What to Implement (exactly)
+
+### 1. Minifier (first stage)
+
+* Accept **pretty JSON / JSON5-style formatting**
+* Parse **exactly one JSON object**
+* Output:
+
+  * a **single-line JSON string**
+  * no trailing whitespace
+  * newline at end is OK
+* If input is not valid JSON → fail with parse error
+
+✅ This is equivalent in spirit to `minify_json.py`, but lives inside `json_gate.py`.
+
+---
+
+### 2. Validator (second stage)
+
+Validator runs **only on minified output**.
+
+It must:
+
+* Reject if input is empty
+* Reject if JSON root is not an object
+* Reject if required fields missing (at minimum: `"command"`)
+* Reject if **multiple JSON objects** are detected
+* Reject if extra content exists after the JSON object
+
+❌ Validator must NOT:
+
+* auto-fix input
+* drop lines
+* guess intent
+* retry
+
+---
+
+### 3. Diagnostics (mandatory)
+
+On validation failure, return **actionable diagnostics**.
+
+Minimum required information:
+
+* where it failed (line/column if applicable)
+* why it failed (error class)
+* how to fix it (hint)
+
+Example (shape, not exact text):
+
+```json
+{
+  "status": "rejected",
+  "stage": "json_ingress_validation",
+  "error_class": "MISSING_REQUIRED_FIELD",
+  "message": "Missing required field: command",
+  "hint": "Add a top-level \"command\" field to the JSON object."
+}
+```
+
+Human- and agent-readable.
+
+---
+
+## Explicit Non-Goals (do NOT do these)
+
+* ❌ Do not support JSONL streams
+* ❌ Do not support piped multi-command input
+* ❌ Do not modify `dase_cli.exe`
+* ❌ Do not touch SID / SSP / engines
+* ❌ Do not auto-correct malformed JSON
+
+---
+
+## Completion Criteria (agent checklist)
+
+Agent is **done** when:
+
+* [ ] `json_gate.py` accepts one pretty JSON command and emits one minified line
+* [ ] Invalid JSON fails early with clear error
+* [ ] Missing/extra content is rejected with explanation
+* [ ] Multiple commands are explicitly rejected
+* [ ] CLI only ever sees validated, canonical JSON
+* [ ] No other files or subsystems were changed
+
+---
+
+## One-line invariant (must hold)
+
+> **AIRS ingress accepts exactly one validated JSON command per invocation.
+> All sequencing and retries happen outside the system.**
+
+---
+

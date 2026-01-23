@@ -1,26 +1,21 @@
 #!/usr/bin/env python3
 """
-json_gate.py - JSONL validator and minifier for AIRS ingress
+json_gate.py - Single-command JSON ingress gate for AIRS
 
-Features:
-  - Parse one or more JSON objects from stdin/file
-  - Minify to canonical JSONL (one object per line, no trailing newline)
-  - Validate the entire JSONL stream (line-level diagnostics)
-
-Usage examples:
-  python json_gate.py --mode validate -i cmd.jsonl
-  python json_gate.py --mode minify   -i pretty.json -o cmd.jsonl
-  Get-Content cmd.json | python json_gate.py --mode gate > clean.jsonl
-
-Exit codes:
-  0 on success; 1 on validation error; 2 on IO errors
+Governance (fixed):
+  - Exactly ONE JSON command per invocation
+  - No JSONL streams, no multi-command piping
+  - Sequencing is the agent's responsibility
+  - Gate = Minifier (1 object) -> Validator (same object) -> stdout
 """
 
 import argparse
 import json
 import sys
-from typing import Any, List, Optional, Tuple
+from typing import Any, Tuple, Optional
 
+
+# ---------- I/O helpers ----------
 
 def read_text(path: str) -> str:
     try:
@@ -45,12 +40,14 @@ def write_text(path: str | None, data: str) -> None:
         sys.exit(2)
 
 
-def format_error(error_class: str,
-                 line: int,
-                 column: int,
-                 message: str,
-                 hint: str,
-                 stage: str = "json_ingress_validation") -> dict:
+# ---------- Error formatting ----------
+
+def error_payload(error_class: str,
+                  message: str,
+                  hint: str,
+                  stage: str,
+                  line: int = 1,
+                  column: int = 1) -> dict:
     return {
         "status": "rejected",
         "stage": stage,
@@ -62,177 +59,115 @@ def format_error(error_class: str,
     }
 
 
-def parse_objects(raw: str, allow_blank_lines: bool = False) -> Tuple[Optional[List[Any]], Optional[dict]]:
-    """
-    Parse one or more JSON objects from arbitrary whitespace-separated input.
-    Returns (objects, error_dict).
-    """
+# ---------- Core logic ----------
+
+def parse_single_object(raw: str) -> Tuple[Optional[Any], Optional[dict]]:
+    """Parse exactly one JSON value from raw text, rejecting extras."""
     decoder = json.JSONDecoder()
-    idx = 0
-    n = len(raw)
-
-    objects: List[Any] = []
-
-    while True:
-        # Skip whitespace between objects, but optionally detect blank lines
-        whitespace_start = idx
-        newline_count = 0
-        while idx < n and raw[idx].isspace():
-            if raw[idx] == "\n":
-                newline_count += 1
-            idx += 1
-        if idx >= n:
-            break
-
-        if objects and newline_count > 1 and not allow_blank_lines:
-            line_no = raw.count("\n", 0, whitespace_start) + 1
-            return None, format_error(
-                "EMPTY_LINE",
-                line_no,
-                1,
-                "Blank line detected between JSON objects",
-                "Remove empty lines; JSONL requires exactly one JSON object per line.",
-                stage="json_ingress_minify",
-            )
-
-        try:
-            obj, next_idx = decoder.raw_decode(raw, idx)
-        except json.JSONDecodeError as e:
-            return None, format_error(
-                "INVALID_JSON_SYNTAX",
-                e.lineno or 1,
-                e.colno or 1,
-                f"JSON parse error: {e.msg}",
-                "Fix the JSON syntax at the reported line/column.",
-                stage="json_ingress_minify",
-            )
-
-        objects.append(obj)
-        idx = next_idx
-
-    if not objects:
-        return None, format_error(
-            "EMPTY_INPUT",
-            1,
-            1,
-            "No JSON objects found",
-            "Provide at least one JSON object.",
+    try:
+        obj, idx = decoder.raw_decode(raw)
+    except json.JSONDecodeError as e:
+        return None, error_payload(
+            "INVALID_JSON_SYNTAX",
+            f"JSON parse error: {e.msg}",
+            "Fix the JSON syntax at the reported position.",
             stage="json_ingress_minify",
+            line=e.lineno or 1,
+            column=e.colno or 1,
         )
 
-    return objects, None
+    # Reject trailing non-whitespace content (second object or garbage)
+    remainder = raw[idx:].strip()
+    if remainder:
+        # Crude line/col for remainder start
+        line = raw.count("\n", 0, idx) + 1
+        col = idx - raw.rfind("\n", 0, idx) if "\n" in raw[:idx] else idx + 1
+        return None, error_payload(
+            "EXTRA_CONTENT",
+            "Extra content found after the first JSON object",
+            "Provide exactly one JSON object per invocation.",
+            stage="json_ingress_validation",
+            line=line,
+            column=col,
+        )
+
+    return obj, None
 
 
-def to_canonical_jsonl(objs: List[Any]) -> str:
-    """Serialize a list of JSON-serializable objects to canonical JSONL (no trailing newline)."""
-    return "\n".join(json.dumps(obj, separators=(",", ":"), ensure_ascii=True) for obj in objs)
-
-
-def validate_jsonl_stream(canonical: str) -> Optional[dict]:
-    """Validate canonical JSONL string; return error dict if invalid."""
-    lines = canonical.splitlines()
-    if not lines:
-        return format_error(
+def validate_object(obj: Any) -> Optional[dict]:
+    if obj is None:
+        return error_payload(
             "EMPTY_INPUT",
-            1,
-            1,
-            "No JSON objects found",
-            "Provide at least one JSON object."
+            "No JSON object provided",
+            "Provide exactly one JSON object.",
+            stage="json_ingress_validation",
         )
-
-    for i, line in enumerate(lines, 1):
-        if line.strip() == "":
-            return format_error(
-                "EMPTY_LINE",
-                i,
-                1,
-                "Blank line in JSONL stream",
-                "Remove empty lines; JSONL requires exactly one JSON object per line."
-            )
-        try:
-            obj = json.loads(line)
-        except json.JSONDecodeError as e:
-            return format_error(
-                "INVALID_JSON_SYNTAX",
-                i,
-                e.colno or 1,
-                f"Line {i} JSON parse error: {e.msg}",
-                "Fix the JSON syntax on this line."
-            )
-
-        if not isinstance(obj, dict):
-            return format_error(
-                "INVALID_ROOT_TYPE",
-                i,
-                1,
-                "Top-level value must be a JSON object",
-                "Make each line an object with a 'command' field."
-            )
-        if "command" not in obj:
-            return format_error(
-                "MISSING_REQUIRED_FIELD",
-                i,
-                1,
-                "Missing 'command' field",
-                "Add a non-empty string 'command' field."
-            )
-        if not isinstance(obj["command"], str) or not obj["command"].strip():
-            return format_error(
-                "INVALID_COMMAND_FIELD",
-                i,
-                1,
-                "'command' must be a non-empty string",
-                "Ensure 'command' is a non-empty string."
-            )
-
+    if not isinstance(obj, dict):
+        return error_payload(
+            "INVALID_ROOT_TYPE",
+            "Top-level value must be a JSON object",
+            "Wrap the command fields in a JSON object.",
+            stage="json_ingress_validation",
+        )
+    if "command" not in obj:
+        return error_payload(
+            "MISSING_REQUIRED_FIELD",
+            "Missing required field: command",
+            "Add a top-level \"command\" field (non-empty string).",
+            stage="json_ingress_validation",
+        )
+    if not isinstance(obj["command"], str) or not obj["command"].strip():
+        return error_payload(
+            "INVALID_COMMAND_FIELD",
+            "\"command\" must be a non-empty string",
+            "Set \"command\" to a non-empty string.",
+            stage="json_ingress_validation",
+        )
     return None
 
 
+def minify_object(obj: Any) -> str:
+    return json.dumps(obj, separators=(",", ":"), ensure_ascii=True)
+
+
 def main() -> None:
-    parser = argparse.ArgumentParser(description="Validate/minify JSON ingress for AIRS CLI")
+    parser = argparse.ArgumentParser(description="Validate/minify single JSON command for AIRS CLI")
     parser.add_argument("--mode", choices=["validate", "minify", "gate"], default="gate",
-                        help="validate: check only; minify: emit canonical JSONL; gate: minify then validate, emit JSONL")
+                        help="validate: check only; minify: emit single-line JSON; gate: validate then minify")
     parser.add_argument("-i", "--input", default="-", help="input file (default: stdin)")
     parser.add_argument("-o", "--output", default=None, help="output file (default: stdout)")
     args = parser.parse_args()
 
     raw = read_text(args.input)
-    if raw == "":
-        sys.stdout.write(json.dumps(format_error(
-            "EMPTY_INPUT",
-            1,
-            1,
-            "Empty input",
-            "Provide at least one JSON object.",
-            stage="json_ingress_minify"
-        ), ensure_ascii=True) + "\n")
+    if raw.strip() == "":
+        write_text(args.output if args.mode == "minify" else None,
+                   json.dumps(error_payload(
+                       "EMPTY_INPUT",
+                       "Empty input",
+                       "Provide exactly one JSON object.",
+                       stage="json_ingress_minify"
+                   ), ensure_ascii=True) + "\n")
         sys.exit(1)
 
-    # Step A: parse and minify to canonical JSONL
-    allow_blank = args.mode == "minify"
-    objs, parse_err = parse_objects(raw, allow_blank_lines=allow_blank)
+    obj, parse_err = parse_single_object(raw)
     if parse_err:
-        sys.stdout.write(json.dumps(parse_err, ensure_ascii=True) + "\n")
+        write_text(args.output if args.mode == "minify" else None,
+                   json.dumps(parse_err, ensure_ascii=True) + "\n")
         sys.exit(1)
 
-    canonical = to_canonical_jsonl(objs)
-
-    if args.mode == "minify":
-        write_text(args.output, canonical + ("\n" if not canonical.endswith("\n") else ""))
-        sys.exit(0)
-
-    # Step B: validate canonical JSONL
-    validation_err = validate_jsonl_stream(canonical)
+    validation_err = validate_object(obj)
     if validation_err:
-        sys.stdout.write(json.dumps(validation_err, ensure_ascii=True) + "\n")
+        write_text(args.output if args.mode == "minify" else None,
+                   json.dumps(validation_err, ensure_ascii=True) + "\n")
         sys.exit(1)
 
+    # Successful parse + validation
     if args.mode == "validate":
-        sys.stderr.write("OK: valid JSONL stream\n")
+        sys.stderr.write("OK: valid single JSON command\n")
         sys.exit(0)
 
-    # gate mode: emit canonical JSONL
-    write_text(args.output, canonical + ("\n" if not canonical.endswith("\n") else ""))
+    minified = minify_object(obj)
+    write_text(args.output, minified + ("\n" if not minified.endswith("\n") else ""))
 
 
 if __name__ == "__main__":
