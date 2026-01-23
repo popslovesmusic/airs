@@ -1,0 +1,99 @@
+Understood. **Back to Step 5.**
+Ingress is now closed and trusted, so we resume **exactly where we paused**, with no scope drift.
+
+---
+
+## Step 5 (resume point): **5a-A — Rewrite Ordering Validation**
+
+### Preconditions (now satisfied)
+
+* ✅ **JSONL strict** (single-line, no pretty)
+* ✅ **Validator is the only ingress**
+* ✅ **Agents constrained**
+* ✅ **CLI unchanged**
+
+Nothing else is in play.
+
+---
+
+## Step 5a-A: What must happen now
+
+### Objective
+
+Verify that **rewrite ordering differences** (P1 / P2 / P3) do **not** change the final conserved outcome.
+
+This step is **about execution**, not grammar discovery or tooling.
+
+---
+
+## Inputs (locked)
+
+* **Engine**: existing SID engine (unchanged)
+* **Diagram**: scenario_01 diagram (unchanged)
+* **Rules**: **engine-native executable rules** (no abstraction)
+* **Policies**:
+
+  * `P1` = lexical
+  * `P2` = reverse
+  * `P3` = seeded shuffle
+
+---
+
+## Execution (JSONL only)
+
+Run the same command sequence you already have, but now through the gate:
+
+```json
+{"command":"sid_run_rewrites","params":{"engine_id":"sid_001","rules_path":"fixtures/step5a/scenario_01/rules.json","policy":"P1"}}
+{"command":"sid_run_rewrites","params":{"engine_id":"sid_001","rules_path":"fixtures/step5a/scenario_01/rules.json","policy":"P2"}}
+{"command":"sid_run_rewrites","params":{"engine_id":"sid_001","rules_path":"fixtures/step5a/scenario_01/rules.json","policy":"P3"}}
+```
+
+(Exact fields as your CLI already expects; no changes.)
+
+---
+
+## Acceptance gates (non-negotiable)
+
+For **each policy run**:
+
+* `steps > 0`
+* `rules_applied > 0`
+* `termination == "fixed_point"`
+
+Across **all three runs**:
+
+* `metrics.total_mass` **identical**
+* Final semantic state **equivalent** (history may differ)
+
+---
+
+## How results are interpreted
+
+| Outcome                            | Meaning                          |
+| ---------------------------------- | -------------------------------- |
+| Same final state, different traces | ✅ **PASS** (ordering irrelevant) |
+| Different final states, same mass  | ❌ **Ordering bug**               |
+| Mass differs                       | ❌ **Conservation bug**           |
+| steps == 0                         | ❌ **Rules still not executable** |
+
+No other interpretations are valid.
+
+---
+
+## What we do *not* do
+
+* ❌ No grammar invention
+* ❌ No CLI changes
+* ❌ No validator changes
+* ❌ No new abstractions
+
+If it fails, we diagnose **rewrite execution only**.
+
+---
+
+### One-line state marker
+
+> **Step 5a-A resumed with trusted ingress; results now mean something.**
+
+When you have the outputs, paste **only the JSONL result lines**, and we evaluate Step 5 properly.

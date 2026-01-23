@@ -1,54 +1,12 @@
 {
+  "id": "scenario_01_ternary_min",
   "nodes": [
-    {
-      "id": "n1",
-      "role": "U",
-      "mass": 1.0
-    },
-    {
-      "id": "n2",
-      "role": "U",
-      "mass": 1.0
-    },
-    {
-      "id": "n3",
-      "role": "I",
-      "mass": 1.0
-    },
-    {
-      "id": "n4",
-      "role": "N",
-      "mass": 1.0
-    }
+    { "id": "n1", "op": "P", "inputs": [], "dof_refs": ["a"] },
+    { "id": "n2", "op": "P", "inputs": [], "dof_refs": ["b"] },
+    { "id": "n3", "op": "S+", "inputs": ["n1", "n2"], "dof_refs": [] }
   ],
   "edges": [
-    {
-      "src": "n1",
-      "dst": "n3",
-      "type": "similarity",
-      "weight": 0.8,
-      "id": "e",
-      "from": "n1",
-      "to": "n3"
-    },
-    {
-      "src": "n2",
-      "dst": "n3",
-      "type": "similarity",
-      "weight": 0.8,
-      "id": "e",
-      "from": "n2",
-      "to": "n3"
-    },
-    {
-      "src": "n1",
-      "dst": "n2",
-      "type": "similarity",
-      "weight": 0.9,
-      "id": "e",
-      "from": "n1",
-      "to": "n2"
-    }
-  ],
-  "id": "scenario_01"
+    { "id": "e1", "from": "n1", "to": "n3", "label": "arg" },
+    { "id": "e2", "from": "n2", "to": "n3", "label": "arg" }
+  ]
 }

@@ -1,0 +1,229 @@
+Great — thanks for pasting `json_gate.py`. This makes the situation very clear.
+Below is an **agent-friendly, concrete explanation of what needs to be fixed**, *why*, and *how*, strictly scoped to validation (no redesign, no semantics).
+
+I’ll reference the current file behavior directly .
+
+---
+
+# What needs fixing in `json_gate.py` (agent instructions)
+
+## High-level diagnosis
+
+Your **intent is correct**, but the **implementation order is wrong for JSONL streams**.
+
+Right now, `json_gate.py`:
+
+* Treats input as **a single JSON object**, not a **JSONL stream**
+* Enforces “single line” **before** minification
+* Cannot safely handle **multiple sequential commands**
+* Emits **generic errors**, not actionable diagnostics
+
+This is why Step 5 agents still hit parse errors even after “passing the gate”.
+
+---
+
+## Core mistake (the root cause)
+
+### ❌ Current mental model
+
+> “Validate one JSON object → minify → done”
+
+### ✅ Required mental model
+
+> **“Normalize everything into canonical JSONL → then validate the entire stream”**
+
+Right now, `parse_single_json_object()` and `enforce_single_line()` make it **impossible** to validate multi-command JSONL streams.
+
+That is the bug.
+
+---
+
+## What must change (exactly)
+
+### 1. Stop assuming a single JSON object
+
+This function is the main blocker:
+
+```python
+def parse_single_json_object(raw: str) -> Any:
+```
+
+It **must not exist** in a JSONL gate.
+
+Instead, the gate must operate on **N lines**, where each line is a JSON object.
+
+---
+
+### 2. Minifier must run before validator (stream-wide)
+
+Currently:
+
+```python
+if args.mode in {"validate", "gate"}:
+    enforce_single_line(raw)
+```
+
+This is backwards.
+
+**Fix**:
+
+* The minifier should accept *pretty, multiline JSON*
+* The validator should only ever see **canonical JSONL**
+
+---
+
+### 3. Validator must be stream-level, not object-level
+
+Instead of:
+
+* “Is this a single JSON object?”
+
+You must check:
+
+* “Is this a valid JSONL stream?”
+
+That means:
+
+1. Split on `\n`
+2. Reject **any empty or whitespace-only line**
+3. Parse **each line independently**
+4. Validate required fields (`command`)
+5. Reject entire stream if *any* line fails
+
+---
+
+## Concrete changes agents must implement
+
+### Replace this logic (current)
+
+```python
+enforce_single_line(raw)
+obj = parse_single_json_object(raw)
+output = minify(obj)
+```
+
+---
+
+### With this logic (required)
+
+#### Step A — normalize (minify stage)
+
+* Input may be:
+
+  * pretty JSON
+  * JSONL
+  * multiple pretty JSON blocks
+
+Rules:
+
+* Parse JSON objects one by one
+* Serialize **each object** to one line
+* Join with `\n`
+* **No trailing newline**
+
+Output of this step = canonical JSONL string
+
+---
+
+#### Step B — validate (validator stage)
+
+Given canonical JSONL:
+
+For each line `i`:
+
+* If empty → `EMPTY_LINE`
+* If not valid JSON → `INVALID_JSON_SYNTAX`
+* If root is not object → `INVALID_ROOT_TYPE`
+* If missing `"command"` → `MISSING_REQUIRED_FIELD`
+
+If any line fails → reject stream
+
+---
+
+## Diagnostics (must be added)
+
+Right now errors look like:
+
+```text
+Validation error: Extra content found after first JSON value
+```
+
+That’s not sufficient.
+
+The validator must report **where / why / how**.
+
+### Required error shape (example)
+
+```json
+{
+  "status": "rejected",
+  "stage": "json_ingress_validation",
+  "error_class": "EMPTY_LINE",
+  "line": 3,
+  "column": 1,
+  "message": "Blank line in JSONL stream",
+  "hint": "Remove empty lines; JSONL requires exactly one JSON object per line."
+}
+```
+
+This does **not** fix input — it explains it.
+
+---
+
+## What must NOT change
+
+Agents must **not**:
+
+* Touch `dase_cli.exe`
+* Touch SID / SSP / ternary engines
+* Add auto-correction
+* Drop bad lines silently
+* Guess intent
+
+This is ingress only.
+
+---
+
+## Why this fixes Step 5 failures
+
+Your Step 5 failures happened because:
+
+* Agents assembled multiple commands
+* An empty line slipped in
+* CLI tried to parse it as JSON
+* Parse error surfaced *after* the gate
+
+With stream-level validation:
+
+* Empty lines are rejected **before CLI**
+* Error points to exact line
+* Agents know exactly what to fix
+
+---
+
+## One sentence agents must internalize
+
+> **The gate validates JSONL streams, not JSON objects.
+> Minify first, then validate the entire stream.**
+
+---
+
+## Completion checklist for agents
+
+An agent is done when:
+
+* [ ] Gate accepts multiple JSONL commands in one run
+* [ ] Empty lines are explicitly rejected
+* [ ] Validator reports line + reason + hint
+* [ ] Minifier runs before validation
+* [ ] No CLI or engine code changed
+
+---
+
+If you want, next I can:
+
+* rewrite `json_gate.py` in-place (minimal diff)
+* provide a reference implementation pseudocode
+* or help you define the frozen validation error taxonomy
+
+Just say the word.

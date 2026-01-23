@@ -1,12 +1,12 @@
 [
   {
-    "rule_id": "R1_promote_U_to_I",
-    "pattern": "(and (node ?u role=U) (node ?i role=I) (edge ?u ?i type=similarity weight>=0.7))",
-    "replacement": "(set (node ?u) role=I)"
+    "rule_id": "R1_sim_to_compose",
+    "pattern": "S+($a,$b)",
+    "replacement": "C($a,$b)"
   },
   {
-    "rule_id": "R2_merge_similar_U",
-    "pattern": "(and (node ?a role=U) (node ?b role=U) (edge ?a ?b type=similarity weight>=0.85))",
-    "replacement": "(merge ?a ?b)"
+    "rule_id": "R2_compose_to_transport",
+    "pattern": "C($a,$b)",
+    "replacement": "T($a)"
   }
 ]

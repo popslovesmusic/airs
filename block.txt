@@ -1,0 +1,106 @@
+Got it — **Option 1**: compile the fixtures down to what **sid_ternary** actually accepts (diagram schema + operator rewrite grammar), then re-run P1/P2/P3.
+
+Below is a **minimal, engine-native “Step 5a smoke fixture”** whose sole job is to unblock execution and prove:
+
+* `sid_set_diagram_json` succeeds
+* `sid_run_rewrites` applies at least one rule
+* termination reaches a fixed point
+
+Once this runs, we can immediately iterate the fixture to introduce **true overlap/ambiguity** (ordering sensitivity) if needed.
+
+---
+
+## A. Replace `fixtures/step5a/scenario_01/diagram.json` (sid_ternary schema)
+
+```json
+{
+  "id": "scenario_01_ternary_min",
+  "nodes": [
+    { "id": "n1", "op": "P", "inputs": [], "dof_refs": ["d0"] },
+    { "id": "n2", "op": "P", "inputs": [], "dof_refs": ["d0"] }
+  ],
+  "edges": [
+    { "id": "e1", "from": "n1", "to": "n2", "label": "S+" }
+  ]
+}
+```
+
+Why this matches what you reported:
+
+* Uses only `{id, nodes[{id,op,inputs,dof_refs}], edges[{id,from,to,label,port}]}`.
+* Avoids role/mass/type/weight/etc.
+* Ensures `op/inputs/dof_refs` are present.
+
+---
+
+## B. Replace `fixtures/step5a/scenario_01/rules.json` (operator-pattern grammar)
+
+```json
+[
+  {
+    "rule_id": "R1_sim_to_compose",
+    "pattern": "S+($a,$b)",
+    "replacement": "C($a,$b)"
+  },
+  {
+    "rule_id": "R2_compose_to_transport",
+    "pattern": "C($a,$b)",
+    "replacement": "T($a,$b)"
+  }
+]
+```
+
+Design intent:
+
+* Guaranteed progression: `S+` → `C` → `T`
+* Should yield `steps > 0` and `rules_applied > 0`
+* Should reach a fixed point (no rule matches after `T`)
+
+(If your engine’s exact tokenization requires spaces like `S+($a, $b)`, adjust *only* whitespace.)
+
+---
+
+## C. JSONL command stream to run Step 5a-A (through the gate)
+
+Put this into a `.jsonl` file (each line must be a single JSON object):
+
+```json
+{"command":"create_engine","params":{"engine_type":"sid_ternary","num_nodes":2}}
+{"command":"sid_set_diagram_json","params":{"engine_id":"sid_001","diagram_json_path":"fixtures/step5a/scenario_01/diagram.json"}}
+{"command":"sid_run_rewrites","params":{"engine_id":"sid_001","rules_path":"fixtures/step5a/scenario_01/rules.json","policy":"P1","termination":"fixed_point"}}
+{"command":"sid_run_rewrites","params":{"engine_id":"sid_001","rules_path":"fixtures/step5a/scenario_01/rules.json","policy":"P2","termination":"fixed_point"}}
+{"command":"sid_run_rewrites","params":{"engine_id":"sid_001","rules_path":"fixtures/step5a/scenario_01/rules.json","policy":"P3","termination":"fixed_point"}}
+{"command":"get_metrics","params":{"engine_id":"sid_001"}}
+```
+
+Notes:
+
+* If `create_engine` returns a different `engine_id`, update subsequent lines accordingly.
+* Keep this **strict JSONL** (no pretty).
+
+---
+
+## D. What you should see if we’re unblocked
+
+Minimum pass signals (per policy):
+
+* `steps >= 2` (or at least `> 0`)
+* `rules_applied > 0`
+* termination = `fixed_point`
+
+If `sid_set_diagram_json` still fails after this:
+
+* it’s no longer “roles/weights/etc.” — it’s a **schema mismatch** (field names/types) or a **path/engine_id** issue.
+
+---
+
+## Next (immediately after this works): make it a *real* Step 5 ordering test
+
+Once the above runs, we’ll modify the rules so **two rules can both match early** (true overlap), while still converging to the same end state, so P1/P2/P3 produce different traces but the same final invariant.
+
+When you run this, paste the JSONL outputs from:
+
+* the failing `sid_set_diagram_json` (if it still fails), or
+* the three `sid_run_rewrites` results (if it succeeds)
+
+…and we’ll lock Step 5 down.
