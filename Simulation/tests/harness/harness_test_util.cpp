@@ -3,7 +3,12 @@
 
 #include <chrono>
 #include <fstream>
+#include <iostream>
 #include <sstream>
+#ifdef _WIN32
+#include <Windows.h>
+#include <process.h>
+#endif
 
 namespace {
 
@@ -129,13 +134,38 @@ std::string run_step_runner_and_hash(const std::filesystem::path& runner,
                                      const std::filesystem::path& input_jsonl,
                                      const std::filesystem::path& output_json) {
     ensure_directory(output_json.parent_path());
-    std::string cmd = "\"" + runner.string() + "\" \"" + input_jsonl.string() + "\" \"" + output_json.string() + "\"";
-    int rc = std::system(cmd.c_str());
-    if (rc != 0 && !std::filesystem::exists(output_json)) {
+    auto rpath = std::filesystem::weakly_canonical(runner);
+    auto ipath = std::filesystem::weakly_canonical(input_jsonl);
+    auto opath = std::filesystem::weakly_canonical(output_json);
+
+    int rc = 0;
+#ifdef _WIN32
+    // Avoid cmd.exe quoting issues by spawning the runner directly.
+    auto r = rpath.wstring();
+    auto i = ipath.wstring();
+    auto o = opath.wstring();
+    rc = _wspawnl(_P_WAIT,
+                  r.c_str(),
+                  r.c_str(),
+                  i.c_str(),
+                  o.c_str(),
+                  nullptr);
+#else
+    std::string cmd = "\"" + rpath.string() + "\" \"" + ipath.string() + "\" \"" + opath.string() + "\"";
+    rc = std::system(cmd.c_str());
+#endif
+
+    if (rc != 0) {
+        std::cerr << "runner failed rc=" << rc;
+#ifdef _WIN32
+        std::cerr << " last_error=" << GetLastError();
+#endif
+        std::cerr << " cmd=" << rpath.string() << " " << ipath.string() << " " << opath.string() << "\n";
         return "";
     }
     std::ifstream in(output_json);
     if (!in.is_open()) {
+        std::cerr << "output missing: " << output_json << "\n";
         return "";
     }
     std::string content((std::istreambuf_iterator<char>(in)), {});

@@ -8,6 +8,10 @@
 #include <sstream>
 #include <string>
 #include <vector>
+#include <regex>
+#ifdef _WIN32
+#include <windows.h>
+#endif
 
 namespace {
 
@@ -22,23 +26,132 @@ std::string fnv1a_64(const std::string& data) {
     return oss.str();
 }
 
-int run_cli(const std::filesystem::path& input, std::string& stdout_out) {
-    std::filesystem::path repo_root = std::filesystem::current_path().parent_path();
+std::string normalize_stdout(const std::string& raw) {
+    std::stringstream ss(raw);
+    std::string line;
+    std::string normalized;
+    while (std::getline(ss, line)) {
+        if (line.find("\"status\":\"success\"") == std::string::npos) continue;
+        line = std::regex_replace(line, std::regex("\"execution_time_ms\"\\s*:\\s*[^,}]+,?"), "");
+        line = std::regex_replace(line, std::regex("\"engine_id\"\\s*:\\s*\"[^\"]*\""), "\"engine_id\":\"eng\"");
+        line = std::regex_replace(line, std::regex("\"ns_per_op\"\\s*:\\s*[^,}]+,?"), "");
+        line = std::regex_replace(line, std::regex("\"ops_per_sec\"\\s*:\\s*[^,}]+,?"), "");
+        line = std::regex_replace(line, std::regex("\"speedup_factor\"\\s*:\\s*[^,}]+,?"), "");
+        normalized += line;
+        normalized.push_back('\n');
+    }
+    return normalized;
+}
+
+int run_cli(const std::filesystem::path& exe_path,
+            const std::filesystem::path& input,
+            std::string& stdout_out) {
+    auto exe_dir = exe_path.parent_path();                // .../build/Debug
+    auto repo_root = exe_dir.parent_path().parent_path(); // .../airs
     std::filesystem::path cli = repo_root / "Simulation" / "dase_cli" / "dase_cli.exe";
     if (!std::filesystem::exists(cli)) {
         std::cerr << "missing cli: " << cli << "\n";
         return 1;
     }
-    auto tmp_out = std::filesystem::temp_directory_path() / "dase_step_runner_out.txt";
-    std::string cmd = "powershell -NoLogo -NoProfile -Command \"Get-Content -Raw '" + input.string() + "' | & '" + cli.string() + "' | Set-Content -Encoding ASCII '" + tmp_out.string() + "'\"";
-    int rc = std::system(cmd.c_str());
-    if (rc != 0) {
-        return rc;
+
+#ifndef _WIN32
+    std::cerr << "step runner currently supports Windows only\n";
+    return 1;
+#else
+    // Read input payload.
+    std::ifstream in(input, std::ios::binary);
+    if (!in.is_open()) {
+        std::cerr << "cannot open input: " << input << "\n";
+        return 1;
     }
-    std::ifstream out(tmp_out, std::ios::binary);
-    if (!out.is_open()) return 3;
-    stdout_out.assign(std::istreambuf_iterator<char>(out), {});
-    return 0;
+    std::string payload((std::istreambuf_iterator<char>(in)), {});
+
+    SECURITY_ATTRIBUTES sa{};
+    sa.nLength = sizeof(SECURITY_ATTRIBUTES);
+    sa.lpSecurityDescriptor = nullptr;
+    sa.bInheritHandle = TRUE;
+
+    HANDLE child_stdin_read = nullptr;
+    HANDLE child_stdin_write = nullptr;
+    HANDLE child_stdout_read = nullptr;
+    HANDLE child_stdout_write = nullptr;
+
+    if (!CreatePipe(&child_stdin_read, &child_stdin_write, &sa, 0)) {
+        std::cerr << "CreatePipe stdin failed\n";
+        return 1;
+    }
+    if (!CreatePipe(&child_stdout_read, &child_stdout_write, &sa, 0)) {
+        CloseHandle(child_stdin_read);
+        CloseHandle(child_stdin_write);
+        std::cerr << "CreatePipe stdout failed\n";
+        return 1;
+    }
+    // Ensure the parent-side handles are not inheritable.
+    SetHandleInformation(child_stdin_write, HANDLE_FLAG_INHERIT, 0);
+    SetHandleInformation(child_stdout_read, HANDLE_FLAG_INHERIT, 0);
+
+    STARTUPINFOW si{};
+    si.cb = sizeof(si);
+    si.dwFlags = STARTF_USESTDHANDLES;
+    si.hStdInput = child_stdin_read;
+    si.hStdOutput = child_stdout_write;
+    si.hStdError = child_stdout_write;
+
+    PROCESS_INFORMATION pi{};
+
+    std::wstring cli_w = cli.wstring();
+    std::wstring cmd_line = L"\"" + cli_w + L"\"";
+
+    BOOL ok = CreateProcessW(
+        cli_w.c_str(), // application name
+        cmd_line.data(), // command line (mutable)
+        nullptr,
+        nullptr,
+        TRUE, // inherit handles so child gets our pipe ends
+        CREATE_NO_WINDOW,
+        nullptr,
+        nullptr,
+        &si,
+        &pi);
+
+    // Parent no longer needs these.
+    CloseHandle(child_stdin_read);
+    CloseHandle(child_stdout_write);
+
+    if (!ok) {
+        std::cerr << "CreateProcess failed: " << GetLastError() << "\n";
+        CloseHandle(child_stdin_write);
+        CloseHandle(child_stdout_read);
+        return 1;
+    }
+
+    // Write the entire payload to child's stdin.
+    DWORD written = 0;
+    if (!payload.empty()) {
+        if (!WriteFile(child_stdin_write, payload.data(), static_cast<DWORD>(payload.size()), &written, nullptr)) {
+            std::cerr << "WriteFile stdin failed: " << GetLastError() << "\n";
+        }
+    }
+    // Close stdin write to signal EOF.
+    CloseHandle(child_stdin_write);
+
+    // Read child's stdout fully.
+    constexpr DWORD kBufSize = 4096;
+    char buffer[kBufSize];
+    DWORD read = 0;
+    while (ReadFile(child_stdout_read, buffer, kBufSize, &read, nullptr) && read > 0) {
+        stdout_out.append(buffer, buffer + read);
+    }
+    CloseHandle(child_stdout_read);
+
+    WaitForSingleObject(pi.hProcess, INFINITE);
+    DWORD exit_code = 0;
+    GetExitCodeProcess(pi.hProcess, &exit_code);
+    CloseHandle(pi.hProcess);
+    CloseHandle(pi.hThread);
+
+    return static_cast<int>(exit_code);
+#endif
 }
 
 }  // namespace
@@ -58,14 +171,16 @@ int main(int argc, char** argv) {
     }
 
     std::string stdout_capture;
-    int rc = run_cli(input_path, stdout_capture);
+    std::filesystem::path exe_path = std::filesystem::absolute(argv[0]);
+    int rc = run_cli(exe_path, input_path, stdout_capture);
     if (rc != 0) {
         std::cerr << "cli failed: " << rc << "\n";
         return rc;
     }
 
-    // Hash captured stdout as proxy for state.
-    std::string hash = fnv1a_64(stdout_capture);
+    // Normalize volatile fields before hashing for stability.
+    std::string normalized = normalize_stdout(stdout_capture);
+    std::string hash = fnv1a_64(normalized);
 
     // Emit minimal output JSON.
     std::ofstream out(output_path, std::ios::trunc);

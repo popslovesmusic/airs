@@ -1,0 +1,10 @@
+{
+  "engine": "basic_compute_substrate",
+  "test_case": "determinism_smoke",
+  "timestamp": "2026-01-23T03-35-10Z",
+  "metrics": {
+    "hash_match": 1,
+    "runtime_ms": 0,
+    "status": "pass"
+  }
+}

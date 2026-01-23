@@ -1,0 +1,178 @@
+Got it — **Step 1: add one minimal metric per engine**.
+Here is the **exact recommendation**, scoped to what you have *now*, with no overreach.
+
+---
+
+## Goal of Step 1 (do not exceed this)
+
+> Add **one scalar metric per engine family** that is:
+
+* deterministic
+* cheap
+* always defined
+* meaningful as a stability signal
+
+**Nothing more.**
+
+This is *not* physics validation yet — it is **observability**.
+
+---
+
+## The rule (pin this)
+
+> **One engine → one metric → one assertion**
+
+No bundles. No vectors. No interpretations.
+
+---
+
+## Recommended minimal metrics (by family)
+
+### 1. **DASE engines**
+
+(`basic_compute_substrate`, `gw`, `satp_higgs`, `igsoa_complex`)
+
+**Metric name**
+
+```
+state_norm
+```
+
+**Definition (generic)**
+
+* L2 norm (or sum of absolute values) of the engine’s primary state buffer **after one step**
+* Computed *inside the engine*, not the runner
+
+**Why**
+
+* Always defined
+* Sensitive to numerical drift
+* Cheap
+* Comparable across runs
+
+**Output**
+
+```json
+"metrics": {
+  "state_norm": 1.000000
+}
+```
+
+---
+
+### 2. **SID engines**
+
+(`sid_ssp`, `sid_ternary`)
+
+**Metric name**
+
+```
+active_nodes
+```
+
+**Definition**
+
+* Count of nodes participating in the rewrite/adjudication result after one step
+
+**Why**
+
+* Deterministic
+* Semantic, not numeric
+* Stable under refactors
+* Meaningful without interpretation
+
+**Output**
+
+```json
+"metrics": {
+  "active_nodes": 8
+}
+```
+
+---
+
+## Where to compute metrics (important)
+
+* ✅ Compute **inside the CLI**, immediately after `run_steps`
+* ❌ Do NOT compute in:
+
+  * runners
+  * harness
+  * tests
+
+The API must *emit* metrics, not infer them.
+
+---
+
+## How to roll this in safely
+
+### Step-by-step
+
+1. **Extend CLI output** (both `dase_cli`, `sid_cli`)
+
+   * Populate `metrics` object with the single metric
+
+2. **Regenerate goldens**
+
+   * Same fixtures
+   * Same step count
+   * Goldens now include metric value
+
+3. **Update harness assertions**
+
+   * Assert:
+
+     * hash matches
+     * metric exists
+     * metric equals golden
+
+That’s it.
+
+---
+
+## What NOT to add yet
+
+❌ No energy conservation
+❌ No entropy
+❌ No multi-metric bundles
+❌ No thresholds / tolerances
+❌ No floating epsilon logic
+
+Those come **after** this step proves stable.
+
+---
+
+## Why this is the correct next move
+
+You already know:
+
+* execution is deterministic
+* hashes lock state
+
+This step answers:
+
+> “Can we *observe* one stable property of that state?”
+
+Once that’s true, everything else follows cleanly.
+
+---
+
+## Success condition (very clear)
+
+When this step is done:
+
+* goldens include `{hash, metrics}`
+* changing engine code alters:
+
+  * hash **or**
+  * metric
+* harness fails immediately
+
+At that point, you have **observable determinism**, not just opaque determinism.
+
+---
+
+If you want, next I can:
+
+* help you pick the **exact state buffer** to norm per DASE engine, or
+* draft the **CLI output schema change** so it stays backward-safe.

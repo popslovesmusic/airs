@@ -25,7 +25,7 @@ TEST(IgsoaComplex, StepHashMatchesGolden) {
     auto output = root / "artifacts/validation/igsoa_complex/out.json";
     auto hash = harness::run_step_runner_and_hash(runner, input, output);
     ASSERT_FALSE(hash.empty());
-    EXPECT_EQ(hash, "c5e5daed3fd3e269");
+    EXPECT_EQ(hash, "bc2b53c7df81da87");
 }
 
 TEST(IgsoaComplex, AttractorPlaceholder) {

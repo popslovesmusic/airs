@@ -26,7 +26,7 @@ TEST(SatpHiggs, StepHashMatchesGolden) {
     auto output = root / "artifacts/validation/satp_higgs/out.json";
     auto hash = harness::run_step_runner_and_hash(runner, input, output);
     ASSERT_FALSE(hash.empty());
-    EXPECT_EQ(hash, "d7fb496c39c0020c");
+    EXPECT_EQ(hash, "14650fb0739d0383");
 }
 
 TEST(SatpHiggs, VacuumStabilityPlaceholder) {

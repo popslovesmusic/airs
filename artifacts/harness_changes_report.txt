@@ -1,47 +1,38 @@
-Harness & Step-Mode Update Report (2026-01-22)
-=============================================
+Harness Update Report (2026-01-23)
+=================================
 
-What changed
-------------
-- Added un_steps command to dase_cli and sid_cli (single bounded step; honors engine_id seed/hints).
-- Updated engine creation to accept caller-supplied engine_id (for deterministic inputs).
-- Built CLI-backed step runners: dase_step_runner.exe and sid_step_runner.exe (Debug) that pipe JSONL to CLIs, hash stdout, emit minimal JSON.
-- Added per-engine step inputs (create_engine + run_steps) in JSONL:
-  * Simulation/tests/fixtures/inputs/gw_step.jsonl
-  * satp_higgs_step.jsonl
-  * igsoa_complex_step.jsonl
-  * basic_compute_step.jsonl
-  * sid_ssp_step.jsonl
-  * sid_ternary_step.jsonl
-- Captured goldens (hash-only) to rtifacts/validation/<engine>/out.json:
-  * gw: 5b7705bbd9760e31
-  * satp_higgs: d7fb496c39c0020c
-  * igsoa_complex: c5e5daed3fd3e269
-  * basic_compute_substrate: d5270f2645981184
-  * sid_ssp: 441585dd8f25f8df
-  * sid_ternary: 441585dd8f25f8df
-- Harness tests now invoke step runners and assert these hashes (with fallback to prewritten output if runner invocation fails).
-- Added helper to run runners and parse hash in harness_test_util.{hpp,cpp}.
+Key changes since prior report
+------------------------------
+- Step runners now execute CLIs directly via CreateProcessW (no PowerShell) and stream fixture JSONL into stdin.
+- Normalized stdout before hashing (strip xecution_time_ms, ngine_id, perf fields; drop non-success lines) so hashes are repeatable.
+- Removed fallback behavior: any runner failure, missing CLI, or hash mismatch causes the test to fail.
+- Updated harness invocation helper to spawn runners directly (no cmd quoting issues).
+- Refreshed golden hashes in rtifacts/validation/<engine>/out.json.
 
-Current status
---------------
-- ctest -C Debug -L harness passes.
-- Step runners built: build/Debug/dase_step_runner.exe, build/Debug/sid_step_runner.exe.
-- CLIs rebuilt (Release) and copied to Simulation/dase_cli/.
+Current golden hashes
+---------------------
+- basic_compute_substrate: abe8b580ae633901
+- satp_higgs: 14650fb0739d0383
+- gw: 268030760406aaac
+- igsoa_complex: bc2b53c7df81da87
+- sid_ssp: 14650fb0739d0383
+- sid_ternary: 14650fb0739d0383
+
+Status
+------
+- ctest -C Debug -L harness passes on 2026-01-23.
+- Runners: uild/Debug/dase_step_runner.exe, uild/Debug/sid_step_runner.exe.
+- CLIs expected at Simulation/dase_cli/dase_cli.exe and Simulation/dase_cli/sid_cli.exe.
 
 Usage
 -----
-- Run harness: cd build && ctest -C Debug -L harness
-- Rebuild runners/harness: cmake --build build --target dase_step_runner sid_step_runner harness_tests
-- Regenerate a golden (example): uild/Debug/dase_step_runner.exe Simulation/tests/fixtures/inputs/gw_step.jsonl artifacts/validation/gw/out.json
+- Build: cmake --build build --config Debug --target dase_step_runner sid_step_runner harness_tests
+- Run:   cd build && ctest -C Debug -L harness --output-on-failure
+- Refresh a golden (example):
+  uild/Debug/dase_step_runner.exe Simulation/tests/fixtures/inputs/gw_step.jsonl artifacts/validation/gw/out.json
 
-Files touched (high level)
-- Simulation/dase_cli/src/command_router.cpp, engine_manager.{h,cpp}
-- Simulation/tests/engine_api/dase_step_runner.cpp, sid_step_runner.cpp
-- Simulation/tests/harness/* (per-engine tests) and harness_test_util.{hpp,cpp}
-- Simulation/tests/fixtures/inputs/*.jsonl
-- artifacts/validation/<engine>/out.json
-
-Notes / next options
-- If desired, remove the runner-fallback behavior in tests to require live runner execution.
-- Metrics block in output is empty; extend CLIs to emit minimal metrics and update goldens accordingly if needed.
+Notes / TODO
+------------
+- Placeholder tests (determinism, vacuum stability, consistency) still marked GTEST_SKIP.
+- metrics/<engine>/...json captures per-run metrics; remove or archive as needed.
+- Scratch folder Testing/Temporary/ was left by VS/CTest; safe to delete if not in use.

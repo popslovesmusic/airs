@@ -26,7 +26,7 @@ TEST(IgsoaGw, StepHashMatchesGolden) {
     auto output = root / "artifacts/validation/gw/out.json";
     auto hash = harness::run_step_runner_and_hash(runner, input, output);
     ASSERT_FALSE(hash.empty());
-    EXPECT_EQ(hash, "5b7705bbd9760e31");
+    EXPECT_EQ(hash, "268030760406aaac");
 }
 
 TEST(IgsoaGw, EchoStructurePlaceholder) {

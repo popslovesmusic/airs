@@ -27,7 +27,7 @@ TEST(BasicComputeSubstrate, StepHashMatchesGolden) {
     auto output = root / "artifacts/validation/basic_compute_substrate/out.json";
     auto hash = harness::run_step_runner_and_hash(runner, input, output);
     ASSERT_FALSE(hash.empty());
-    EXPECT_EQ(hash, "d5270f2645981184");
+    EXPECT_EQ(hash, "abe8b580ae633901");
 }
 
 TEST(BasicComputeSubstrate, DeterminismPlaceholder) {

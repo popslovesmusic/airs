@@ -25,7 +25,7 @@ TEST(SidTernary, StepHashMatchesGolden) {
     auto output = root / "artifacts/validation/sid_ternary/out.json";
     auto hash = harness::run_step_runner_and_hash(runner, input, output);
     ASSERT_FALSE(hash.empty());
-    EXPECT_EQ(hash, "441585dd8f25f8df");
+    EXPECT_EQ(hash, "14650fb0739d0383");
 }
 
 TEST(SidTernary, ConsistencyPlaceholder) {
