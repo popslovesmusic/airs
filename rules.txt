@@ -1,0 +1,112 @@
+express rules in the existing SID rewrite format that the engine already knows how to apply.
+
+From your description, the executor expects something equivalent to:
+
+json5
+Copy code
+{
+  "rule_id": "...",
+  "pattern": "<SID pattern string>",
+  "replacement": "<SID replacement string>"
+}
+Anything else (like semantic match objects) is meta-level and must be compiled into this form before execution.
+
+Required fields (minimal)
+Field	Required	Purpose
+rule_id	✔	Traceability
+pattern	✔	What to match (engine-native)
+replacement	✔	What to rewrite into
+
+Optional (safe to omit for now):
+
+guards
+
+weights
+
+priorities
+
+3. Drop-in executable rules.json for scenario_01
+Below is a minimal, intentionally simple rule set that will definitely fire and create rewrite-order ambiguity, assuming standard SID semantics.
+
+⚠️ These patterns are syntactic, not philosophical.
+They exist only to exercise rewrite ordering.
+
+rules.json (executable form)
+json5
+Copy code
+[
+  {
+    "rule_id": "R1_promote_U_to_I",
+    "pattern": "(node ?u role U) (edge ?u ?i type similarity weight >=0.7) (node ?i role I)",
+    "replacement": "(node ?u role I)"
+  },
+  {
+    "rule_id": "R2_merge_similar_U",
+    "pattern": "(node ?a role U) (node ?b role U) (edge ?a ?b type similarity weight >=0.85)",
+    "replacement": "(merge ?a ?b)"
+  }
+]
+Why this works
+Both rules are now directly executable
+
+They overlap on n1 / n2
+
+Either rule may fire first
+
+Different orders → different histories
+
+Step 5a checks whether they converge to the same semantic endpoint
+
+This is exactly what we want.
+
+4. What to do next (precise steps)
+Step 5a-A rerun (now meaningful)
+Re-run exactly what you already ran:
+
+P1 (lex)
+
+P2 (reverse)
+
+P3 (seeded shuffle)
+
+Expected outcomes (any of these is acceptable at this stage):
+
+steps > 0
+
+rules_applied > 0
+
+termination = fixed_point
+
+total_mass identical across policies
+
+If:
+
+mass diverges → F2 (real bug)
+
+termination differs → F3/F4
+
+rules differ but final state equal → PASS
+
+5. Important boundary decision (you chose correctly)
+You asked whether to:
+
+retrofit sid_run_rewrites to understand abstract rule objects
+or
+
+supply executable patterns
+
+ Supplying executable patterns is the correct choice.
+
+Why:
+
+keeps CLI semantics aligned with engine truth
+
+avoids introducing a second rewrite language
+
+keeps Step 5a about ordering, not rule compilation
+
+You can always add a compiler later — but not now.
+
+6. Review verdict on your current changes
+Approved.
+Your unblocker is correct, your diagnosis is correct, and the next step is purely providing rules in the right executable form.

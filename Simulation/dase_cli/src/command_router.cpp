@@ -13,6 +13,7 @@
 #include <chrono>
 #include <cstdint>
 #include <cmath>
+#include <fstream>
 #include <random>
 
 CommandRouter::CommandRouter()
@@ -1204,7 +1205,20 @@ json CommandRouter::handleSidRunRewrites(const json& params) {
     if (engine_id.empty()) {
         return createErrorResponse("sid_run_rewrites", "Missing engine_id", "MISSING_PARAMETER");
     }
-    if (!params.contains("rules") || !params["rules"].is_array() || params["rules"].empty()) {
+    nlohmann::json rules_json;
+    if (params.contains("rules") && params["rules"].is_array()) {
+        rules_json = params["rules"];
+    } else if (params.contains("rules_path") && params["rules_path"].is_string()) {
+        std::ifstream rf(params["rules_path"].get<std::string>());
+        if (!rf.is_open()) {
+            return createErrorResponse("sid_run_rewrites", "Unable to read rules_path", "MISSING_PARAMETER");
+        }
+        try {
+            rf >> rules_json;
+        } catch (...) {
+            return createErrorResponse("sid_run_rewrites", "rules_path is not valid JSON", "MISSING_PARAMETER");
+        }
+    } else {
         return createErrorResponse("sid_run_rewrites", "Missing or empty rules array", "MISSING_PARAMETER");
     }
 
@@ -1217,7 +1231,7 @@ json CommandRouter::handleSidRunRewrites(const json& params) {
         return createErrorResponse("sid_run_rewrites", "Engine not found", "INVALID_ENGINE");
     }
 
-    const auto& rules = params["rules"];
+    const auto& rules = rules_json;
     std::mt19937 rng(static_cast<uint32_t>(seed));
     uint64_t steps = 0;
     uint64_t applied_total = 0;
@@ -1235,6 +1249,7 @@ json CommandRouter::handleSidRunRewrites(const json& params) {
         return idx;
     };
 
+    std::vector<std::string> applied_trace;
     while (steps < horizon_cap) {
         auto order = build_order(rules.size(), policy, rng);
         bool applied_pass = false;
@@ -1246,6 +1261,10 @@ json CommandRouter::handleSidRunRewrites(const json& params) {
             std::string rule_id = rule.value("rule_id", "rw_" + std::to_string(rule_idx));
             nlohmann::json rule_metadata = rule.value("rule_metadata", nlohmann::json::object());
 
+            if (pattern.empty() || replacement.empty()) {
+                continue;  // skip ill-formed rule silently
+            }
+
             bool applied = false;
             std::string message;
             if (!engine_manager->sidApplyRewrite(engine_id, pattern, replacement, rule_id, rule_metadata, applied, message)) {
@@ -1256,6 +1275,7 @@ json CommandRouter::handleSidRunRewrites(const json& params) {
             if (applied) {
                 applied_pass = true;
                 applied_total++;
+                applied_trace.push_back(rule_id);
                 steps++;
                 if (steps >= horizon_cap) {
                     horizon_hit = true;
@@ -1290,6 +1310,8 @@ json CommandRouter::handleSidRunRewrites(const json& params) {
         {"steps", steps},
         {"horizon_hit", horizon_hit},
         {"rules_applied", applied_total},
+        {"termination", horizon_hit ? "horizon" : "fixed_point"},
+        {"applied_trace", applied_trace},
         {"metrics", {
             {"active_nodes", active_nodes},
             {"total_mass", total_mass}
@@ -1368,6 +1390,18 @@ json CommandRouter::handleSidSetDiagramJson(const json& params) {
         } catch (const std::exception& e) {
             return createErrorResponse("sid_set_diagram_json",
                                        std::string("Invalid diagram_json: ") + e.what(),
+                                       "INVALID_PARAMETER");
+        }
+    } else if (params.contains("diagram_json_path") && params["diagram_json_path"].is_string()) {
+        std::ifstream df(params["diagram_json_path"].get<std::string>());
+        if (!df.is_open()) {
+            return createErrorResponse("sid_set_diagram_json", "diagram_json_path unreadable", "MISSING_PARAMETER");
+        }
+        try {
+            df >> diagram;
+        } catch (const std::exception& e) {
+            return createErrorResponse("sid_set_diagram_json",
+                                       std::string("Invalid diagram_json_path: ") + e.what(),
                                        "INVALID_PARAMETER");
         }
     } else if (params.contains("package")) {
