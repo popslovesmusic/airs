@@ -1,0 +1,164 @@
+Alright — here is **Step 3: Bounded-Range Invariants**, **exactly scoped**, no extras.
+
+---
+
+# Step 3 — Bounded-Range Invariants
+
+## Purpose (one sentence)
+
+> **Assert that engine evolution stays finite and well-formed over bounded steps.**
+
+This is the first place we say:
+“Nothing explodes, vanishes, or becomes undefined.”
+
+---
+
+## What Step 3 is **not**
+
+* ❌ Not physics correctness
+* ❌ Not conservation laws
+* ❌ Not convergence / attractors
+* ❌ Not interpretation
+
+It is **numerical + structural sanity only**.
+
+---
+
+## The invariant class
+
+> **Bounded, finite, non-NaN, non-infinite metrics**
+
+That’s it.
+
+---
+
+## What to assert (minimal, per family)
+
+### 1. **DASE engines**
+
+(`basic_compute_substrate`, `gw`, `satp_higgs`, `igsoa_complex`)
+
+#### Invariant
+
+```text
+state_norm is finite
+```
+
+#### Concrete assertions
+
+* `state_norm` exists
+* `isfinite(state_norm)` is true
+* `state_norm > 0`
+
+✅ **No upper bound yet**
+(That comes later, after interpretation.)
+
+---
+
+### 2. **SID engines**
+
+(`sid_ssp`, `sid_ternary`)
+
+#### Invariant
+
+```text
+active_nodes is within structural bounds
+```
+
+#### Concrete assertions
+
+* `active_nodes` exists
+* `active_nodes >= 0`
+* `active_nodes <= max_nodes` (known from config)
+
+This is a **hard structural bound**, not a heuristic.
+
+---
+
+## Where this logic belongs
+
+✅ **Harness tests only**
+
+* Do **not** bake this into engines
+* Do **not** bake this into runners
+* Do **not** change goldens
+
+Goldens stay as reference; invariants are **additional assertions**.
+
+---
+
+## How to implement (minimal diff)
+
+### Add one test per engine family
+
+Example (DASE):
+
+```cpp
+TEST(GW_BoundedRange, StateNormFinite) {
+  auto r = RunStep10("gw_step_10.jsonl");
+
+  ASSERT_TRUE(std::isfinite(r.metrics.state_norm));
+  ASSERT_GT(r.metrics.state_norm, 0.0);
+}
+```
+
+Example (SID):
+
+```cpp
+TEST(SID_SSP_BoundedRange, ActiveNodesValid) {
+  auto r = RunStep10("sid_ssp_step_10.jsonl");
+
+  ASSERT_GE(r.metrics.active_nodes, 0);
+  ASSERT_LE(r.metrics.active_nodes, MAX_NODES);
+}
+```
+
+That’s all.
+
+---
+
+## Which placeholders this replaces
+
+You can now **safely un-skip**:
+
+* `VacuumStabilityPlaceholder`
+* `ConsistencyPlaceholder`
+
+These become real tests.
+
+Leave these **skipped** for now:
+
+* `EchoStructurePlaceholder`
+* `AttractorPlaceholder`
+* semantic rewrite path invariants
+
+Those require theory, not plumbing.
+
+---
+
+## Success condition (clear)
+
+Step 3 is complete when:
+
+* Step-1 tests pass
+* Step-10 tests pass
+* New bounded-range tests pass
+* No goldens were modified
+* CI fails immediately on NaN / inf / invalid structure
+
+At that point you have:
+
+> **Deterministic, observable, bounded evolution**
+
+That is a *serious* foundation.
+
+---
+
+## One-line status label
+
+After Step 3, you can honestly say:
+
+> *AIRS engines evolve deterministically and remain numerically and structurally well-formed under bounded execution.*
+
+---
+

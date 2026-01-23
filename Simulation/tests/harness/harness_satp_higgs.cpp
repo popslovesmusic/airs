@@ -45,8 +45,17 @@ TEST(SatpHiggs, Step10HashMatchesGolden) {
     EXPECT_DOUBLE_EQ(norm, 0.0);
 }
 
-TEST(SatpHiggs, VacuumStabilityPlaceholder) {
-    GTEST_SKIP() << "TODO: implement vacuum stability and phase transition tests with fixtures.";
+TEST(SatpHiggs, StateNormFiniteAndPositive) {
+    auto root = harness::project_root();
+    auto runner = root / "build/Debug/dase_step_runner.exe";
+    auto input = root / "Simulation/tests/fixtures/inputs/satp_higgs_step_10.jsonl";
+    auto output = root / "artifacts/validation/satp_higgs/out_step_10.json";
+    auto result = harness::run_step_runner(runner, input, output);
+    ASSERT_FALSE(result.hash.empty());
+    ASSERT_NE(result.metrics.count("state_norm"), 0u);
+    const double norm = result.metrics.at("state_norm");
+    ASSERT_TRUE(std::isfinite(norm));
+    ASSERT_GE(norm, 0.0);
 }
 
 }  // namespace
