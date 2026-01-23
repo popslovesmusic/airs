@@ -1,0 +1,6 @@
+{
+  "engine": "sid_ssp",
+  "horizon_cap": 1000,
+  "termination": "no_eligible_rewrites",
+  "seed": 42
+}

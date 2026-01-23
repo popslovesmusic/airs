@@ -1,0 +1,64 @@
+🔹 Immediate next step — Run Phase 5a-A (CLI only)
+For each rewrite policy:
+
+Load params.json
+
+Load diagram.json
+
+Load rules.json
+
+Execute rewrites until termination
+
+Save:
+
+final diagram
+
+invariant totals
+
+step count
+
+Conceptually (names may vary):
+
+bash
+Copy code
+sid_cli create_engine params.json
+sid_cli load_diagram diagram.json
+sid_cli load_rules rules.json
+sid_cli rewrite --policy P1 --dump final_P1.json
+sid_cli rewrite --policy P2 --dump final_P2.json
+...
+At this stage:
+
+do not canonicalize yet
+
+just confirm termination + conservation across policies
+
+🔹 After that — Phase 5a-C (Hybrid adjudication)
+Then (and only then):
+
+feed each final_*.json into the C++ canonicalizer
+
+compute witnesses
+
+compare witnesses across policies
+
+That comparison produces the actual Step 5a PASS / FAIL.
+
+Why this matters (big picture, one sentence)
+With this scenario, you are testing whether semantic meaning in SID is an equivalence class rather than a procedural artifact.
+
+That’s the heart of your architecture.
+
+Optional (but recommended next)
+Once this scenario passes:
+
+duplicate it
+
+tweak one edge weight
+
+or introduce a mild cycle
+
+That becomes scenario_02 and scenario_03.
+
+
+

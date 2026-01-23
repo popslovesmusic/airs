@@ -1,0 +1,13 @@
+{
+  "nodes": [
+    { "id": "n1", "role": "U", "mass": 1.0 },
+    { "id": "n2", "role": "U", "mass": 1.0 },
+    { "id": "n3", "role": "I", "mass": 1.0 },
+    { "id": "n4", "role": "N", "mass": 1.0 }
+  ],
+  "edges": [
+    { "src": "n1", "dst": "n3", "type": "similarity", "weight": 0.8 },
+    { "src": "n2", "dst": "n3", "type": "similarity", "weight": 0.8 },
+    { "src": "n1", "dst": "n2", "type": "similarity", "weight": 0.9 }
+  ]
+}

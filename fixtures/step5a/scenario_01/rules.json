@@ -1,0 +1,25 @@
+[
+  {
+    "rule_id": "R1_promote_U_to_I",
+    "match": {
+      "node_role": "U",
+      "connected_to_role": "I",
+      "min_weight": 0.7
+    },
+    "rewrite": {
+      "set_role": "I"
+    }
+  },
+  {
+    "rule_id": "R2_merge_similar_U",
+    "match": {
+      "pair_roles": ["U", "U"],
+      "edge_type": "similarity",
+      "min_weight": 0.85
+    },
+    "rewrite": {
+      "action": "merge_nodes",
+      "mass_conservation": true
+    }
+  }
+]

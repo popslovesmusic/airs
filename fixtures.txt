@@ -1,0 +1,466 @@
+
+
+1. **Define what D and R must look like (precisely, not abstractly)**
+2. **Explain how *you* provide them**
+3. **Explain what *the system* does with them in the hybrid setup**
+4. **Show how Step 5a runs end-to-end once they exist**
+
+No guessing, no magic.
+
+---
+
+# Step 5a (Hybrid, Option 3) — What *D* and *R* Are and How They’re Used
+
+You are providing **semantic fixtures**, not code.
+
+Think of this as supplying **axioms + initial conditions** so the machinery can test **semantic objectivity**.
+
+---
+
+## 1. What **D₀ (Initial Diagram)** is — concretely
+
+### D₀ is:
+
+A **fully specified SID diagram**, expressed in a form the CLI already accepts.
+
+It must include:
+
+* nodes
+* edges / relations
+* roles (I / N / U)
+* weights or mass where applicable
+
+### D₀ must satisfy:
+
+| Requirement                                       | Why                               |
+| ------------------------------------------------- | --------------------------------- |
+| Small (6–12 nodes)                                | Makes rewrite paths tractable     |
+| At least **2 simultaneous rewrite opportunities** | Otherwise ordering is meaningless |
+| Valid under current SID invariants                | Otherwise failures are trivial    |
+
+### Typical format (example shape, not literal):
+
+```json5
+{
+  "nodes": [
+    {"id":"n1","role":"U","mass":1.0},
+    {"id":"n2","role":"U","mass":1.0},
+    {"id":"n3","role":"I","mass":1.0}
+  ],
+  "edges": [
+    {"src":"n1","dst":"n2","type":"similarity","weight":0.8},
+    {"src":"n2","dst":"n3","type":"constraint","weight":0.5}
+  ]
+}
+```
+
+⚠️ Important:
+**Do not optimize for realism**.
+Optimize for **rewrite ambiguity**.
+
+---
+
+## 2. What **R (Rewrite Rules)** are — concretely
+
+### R is:
+
+A **set of rewrite patterns**, each with:
+
+* a stable ID
+* a match condition
+* a replacement action
+
+### Rewrite rules must:
+
+| Requirement              | Why                                          |
+| ------------------------ | -------------------------------------------- |
+| Have stable IDs          | Needed to compare paths                      |
+| Overlap in applicability | Creates multiple admissible paths            |
+| Preserve conservation    | Otherwise Step 5a fails for the wrong reason |
+
+### Conceptual structure:
+
+```json5
+[
+  {
+    "rule_id": "R1_promote_U_to_I",
+    "match": {
+      "node_role": "U",
+      "connected_to_role": "I"
+    },
+    "rewrite": {
+      "node_role": "I"
+    }
+  },
+  {
+    "rule_id": "R2_merge_similar_U",
+    "match": {
+      "pair_roles": ["U","U"],
+      "edge_type": "similarity",
+      "min_weight": 0.7
+    },
+    "rewrite": {
+      "action": "merge_nodes"
+    }
+  }
+]
+```
+
+You are **not** defining scheduling.
+You are defining **what is allowed**, not *when* it happens.
+
+---
+
+## 3. How **you provide D and R**
+
+You will provide them as **fixtures**, usually as files.
+
+Recommended layout (simple and explicit):
+
+```
+fixtures/
+  step5a/
+    scenario_01/
+      diagram.json
+      rules.json
+      params.json
+    scenario_02/
+      diagram.json
+      rules.json
+      params.json
+```
+
+Where:
+
+### `params.json`
+
+```json5
+{
+  "engine": "sid_ssp",
+  "horizon_cap": 10000,
+  "termination": "no_eligible_rewrites"
+}
+```
+
+That’s it.
+No harness logic lives here.
+
+---
+
+## 4. What the **Hybrid system does with them**
+
+This is the key clarity point.
+
+### Phase A — CLI execution (unchanged engine truth)
+
+For **each scenario**:
+
+For **each rewrite policy P₁…P₅**:
+
+1. CLI loads `diagram.json`
+2. CLI loads `rules.json`
+3. CLI runs rewrite steps using *policy-specific scheduling*
+4. CLI stops at termination
+5. CLI emits:
+
+   * final diagram
+   * metrics
+   * invariant totals
+
+👉 At this point, **no C++ canon logic has run yet**.
+
+---
+
+### Phase C — C++ canonical & witness adjudication
+
+Now the hybrid part:
+
+For **each CLI result**:
+
+1. C++ loads the **final diagram**
+2. Applies `canonicalize(D)`
+
+   * stable node ordering
+   * stable edge ordering
+   * normalized labels
+3. Computes:
+
+```text
+Witness = {
+  canon_hash,
+  invariants_hash,
+  invariants_vector
+}
+```
+
+4. Witnesses are compared **across rewrite paths**
+
+---
+
+## 5. What Step 5a is *actually asserting*
+
+Given:
+
+```
+(D₀, R, P) fixed
+Policies π₁…πₙ vary
+```
+
+You assert:
+
+> All admissible rewrite histories collapse to the **same semantic equivalence class**.
+
+Formally:
+
+```
+∀ i,j :
+Witness( Rewrite(D₀, R, πᵢ) )
+==
+Witness( Rewrite(D₀, R, πⱼ) )
+```
+
+That’s it.
+
+No metaphysics.
+No physics.
+Pure semantic objectivity.
+
+---
+
+## 6. What you should do **right now**
+
+### Your task (only this):
+
+Provide **one scenario** first:
+
+* `diagram.json`
+* `rules.json`
+* `params.json`
+
+It does **not** have to be perfect.
+
+Once one passes:
+
+* duplicate and perturb for scenario 2 and 3
+
+---
+Good question — this is the **right place to slow down and be explicit**.
+You are not missing anything obscure; these files do **not already exist** in a finished form. For Step 5a, they are **intentionally small, synthetic fixtures** that you either:
+
+* extract from existing SID tooling **or**
+* generate once, by hand, as controlled test cases
+
+
+
+## There are only **three legitimate sources** for Step 5a fixtures
+
+### **Source 1 — Existing SID CLI capabilities (preferred)**
+
+If `sid_cli` can already:
+
+* create an engine
+* accept a diagram definition (JSON or expression)
+* accept rewrite rules
+
+then **diagram.json** and **rules.json** are just **serialized inputs** to commands you already use.
+
+This is ideal because:
+
+* it tests the *real* CLI contract
+* it avoids inventing new formats
+
+You are effectively “recording” a known-good SID setup into files.
+
+---
+
+### **Source 2 — Minimal synthetic fixtures (also valid)**
+
+For Step 5a, realism is not required.
+
+You can define:
+
+* 6–8 nodes
+* 2 rewrite rules
+* overlapping applicability
+
+This is **normal** in rewrite-system validation (term rewriting systems do exactly this).
+
+---
+
+### **Source 3 — Auto-generated via helper (optional later)**
+
+You *could* later add a generator, but **do not start there**.
+Fixtures must be **human-readable and auditable**.
+
+---
+
+# What format should they be in?
+
+**Use whatever `sid_cli` already accepts today.**
+
+Typically that means:
+
+* `diagram.json` → input to `sid_set_diagram` (or equivalent)
+* `rules.json` → input to `sid_load_rules`
+* `params.json` → engine creation + horizon
+
+If your CLI uses slightly different names, that’s fine — the *concept* stays the same.
+
+---
+
+# A complete minimal starter scenario (you can use this verbatim)
+
+Below is a **Step 5a-ready synthetic scenario** whose only purpose is to create **rewrite ambiguity**.
+
+You can paste these into files immediately.
+
+---
+
+## `diagram.json`
+
+> **Purpose:**
+> Two U-nodes both eligible for promotion or merging → ordering matters.
+
+```json5
+{
+  "nodes": [
+    { "id": "n1", "role": "U", "mass": 1.0 },
+    { "id": "n2", "role": "U", "mass": 1.0 },
+    { "id": "n3", "role": "I", "mass": 1.0 },
+    { "id": "n4", "role": "N", "mass": 1.0 }
+  ],
+  "edges": [
+    { "src": "n1", "dst": "n3", "type": "similarity", "weight": 0.8 },
+    { "src": "n2", "dst": "n3", "type": "similarity", "weight": 0.8 },
+    { "src": "n1", "dst": "n2", "type": "similarity", "weight": 0.9 }
+  ]
+}
+```
+
+Why this works:
+
+* `n1` and `n2` are **both eligible** for rewrites
+* They overlap via the `n1–n2` edge
+* Rewrite order *could* matter unless semantics are invariant
+
+---
+
+## `rules.json`
+
+> **Purpose:**
+> Two admissible rewrites that can fire in different orders.
+
+```json5
+[
+  {
+    "rule_id": "R1_promote_U_to_I",
+    "match": {
+      "node_role": "U",
+      "connected_to_role": "I",
+      "min_weight": 0.7
+    },
+    "rewrite": {
+      "set_role": "I"
+    }
+  },
+  {
+    "rule_id": "R2_merge_similar_U",
+    "match": {
+      "pair_roles": ["U", "U"],
+      "edge_type": "similarity",
+      "min_weight": 0.85
+    },
+    "rewrite": {
+      "action": "merge_nodes",
+      "mass_conservation": true
+    }
+  }
+]
+```
+
+Why this works:
+
+* Either promotion or merge can happen first
+* Both are **legal**
+* Only one semantic result should survive if SID is correct
+
+---
+
+## `params.json`
+
+> **Purpose:**
+> Make execution bounded and repeatable.
+
+```json5
+{
+  "engine": "sid_ssp",
+  "horizon_cap": 1000,
+  "termination": "no_eligible_rewrites",
+  "seed": 42
+}
+```
+
+---
+
+# What you do with these files (step-by-step)
+
+### 1️⃣ Put them somewhere obvious
+
+```
+fixtures/step5a/scenario_01/
+  diagram.json
+  rules.json
+  params.json
+```
+
+---
+
+### 2️⃣ Load them via `sid_cli`
+
+Conceptually (exact command names may differ):
+
+```bash
+sid_cli create_engine params.json
+sid_cli load_diagram diagram.json
+sid_cli load_rules rules.json
+sid_cli rewrite --policy P1
+```
+
+Repeat with policies `P2…P5`.
+
+---
+
+### 3️⃣ Capture final outputs
+
+For each policy:
+
+* final diagram dump
+* invariant metrics
+* hash (if CLI emits one)
+
+These are fed into the **C++ canonical/witness layer**.
+
+---
+
+### 4️⃣ Step 5a verdict
+
+If all witnesses match → **PASS**
+If not → classified failure (F1–F5)
+
+---
+
+# Key reassurance (important)
+
+You are **not** expected to guess physics, meaning, or ontology here.
+
+For Step 5a:
+
+* diagrams are *test objects*
+* rules are *rewrite mechanics*
+* correctness = *path independence*
+
+This is **formal validation**, not theory.
+
+---
+
+ 

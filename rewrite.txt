@@ -1,0 +1,71 @@
+Got it — the **“?”** makes sense. Nothing is wrong with the plan.
+You’re simply **blocked on fixtures**, not on design.
+
+Here’s the precise situation, grounded in the file you just surfaced.
+
+---
+
+## What’s actually blocking Step 5a (one thing)
+
+Your **Step 5a harness already exists and builds**, but it **cannot run** because it has **no concrete rewrite fixtures** to exercise. That’s it.
+
+From the report you uploaded :
+
+> *“The Step 5a harness is ready to run multiple rewrite scheduling policies and compare canonical witnesses, but it cannot proceed without concrete fixtures.”*
+
+So the “?” resolves to:
+
+> **We need to define the test inputs, not the machinery.**
+
+---
+
+## What is missing (explicit checklist)
+
+You need to provide **at least three**, preferably **five**, SID rewrite scenarios, each consisting of:
+
+1. **Initial diagram `D₀`**
+
+   * Small (6–12 nodes)
+   * Valid SID SSP / ternary diagram
+2. **Rewrite rule set `R`**
+
+   * JSON / CLI-friendly
+   * Stable rule IDs
+3. **Engine params `P`**
+
+   * node count
+   * role
+   * any required knobs
+4. **Horizon cap**
+
+   * max rewrite steps before declaring non-termination
+
+Without these, policies P1–P5 literally have nothing to schedule.
+
+---
+
+## Minimal unblocking set (recommended)
+
+The report already tells you the *right* minimal set :
+
+### Fixture 1 — Commuting rewrites
+
+* Non-overlapping matches
+* Should trivially converge
+* Proves baseline path-independence
+
+### Fixture 2 — Overlapping rewrites
+
+* Same nodes eligible for multiple rules
+* This is the **real Step 5a test**
+
+### Fixture 3 — Cycle-prone diagram
+
+* Forces termination / cycle detection logic
+* Confirms failure mode F4 is handled cleanly
+
+You do **not** need physics.
+You do **not** need new theory.
+You just need *rewrite-exercising structure*.
+
+---

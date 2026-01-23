@@ -13,6 +13,7 @@
 #include <chrono>
 #include <cstdint>
 #include <cmath>
+#include <random>
 
 CommandRouter::CommandRouter()
     : engine_manager(std::make_unique<EngineManager>()) {
@@ -46,6 +47,7 @@ CommandRouter::CommandRouter()
     command_handlers["sid_set_diagram_json"] = [this](const json& p) { return handleSidSetDiagramJson(p); };
     command_handlers["sid_get_diagram_json"] = [this](const json& p) { return handleSidGetDiagramJson(p); };
     command_handlers["sid_rewrite_events"] = [this](const json& p) { return handleSidRewriteEvents(p); };
+    command_handlers["sid_run_rewrites"] = [this](const json& p) { return handleSidRunRewrites(p); };
     command_handlers["sid_wrapper_apply_motion"] = [this](const json& p) { return handleSidWrapperApplyMotion(p); };
     command_handlers["sid_wrapper_metrics"] = [this](const json& p) { return handleSidWrapperMetrics(p); };
     command_handlers["sid_rewrite_events"] = [this](const json& p) { return handleSidRewriteEvents(p); };
@@ -1195,6 +1197,105 @@ json CommandRouter::handleSidRewrite(const json& params) {
     }
 
     return createSuccessResponse("sid_rewrite", result, 0);
+}
+
+json CommandRouter::handleSidRunRewrites(const json& params) {
+    std::string engine_id = params.value("engine_id", "");
+    if (engine_id.empty()) {
+        return createErrorResponse("sid_run_rewrites", "Missing engine_id", "MISSING_PARAMETER");
+    }
+    if (!params.contains("rules") || !params["rules"].is_array() || params["rules"].empty()) {
+        return createErrorResponse("sid_run_rewrites", "Missing or empty rules array", "MISSING_PARAMETER");
+    }
+
+    std::string policy = params.value("policy", "P1");
+    uint64_t horizon_cap = params.value("horizon_cap", static_cast<uint64_t>(1000));
+    uint64_t seed = params.value("seed", static_cast<uint64_t>(42));
+
+    auto* inst = engine_manager->getEngine(engine_id);
+    if (!inst) {
+        return createErrorResponse("sid_run_rewrites", "Engine not found", "INVALID_ENGINE");
+    }
+
+    const auto& rules = params["rules"];
+    std::mt19937 rng(static_cast<uint32_t>(seed));
+    uint64_t steps = 0;
+    uint64_t applied_total = 0;
+    bool horizon_hit = false;
+
+    auto build_order = [&](size_t n, const std::string& pol, std::mt19937& gen) {
+        std::vector<size_t> idx(n);
+        std::iota(idx.begin(), idx.end(), 0);
+        if (pol == "P2") {
+            std::reverse(idx.begin(), idx.end());
+        } else if (pol == "P3") {
+            std::shuffle(idx.begin(), idx.end(), gen);
+        }
+        // P4/P5 placeholders map to lex for now
+        return idx;
+    };
+
+    while (steps < horizon_cap) {
+        auto order = build_order(rules.size(), policy, rng);
+        bool applied_pass = false;
+
+        for (size_t rule_idx : order) {
+            const auto& rule = rules[rule_idx];
+            std::string pattern = rule.value("pattern", "");
+            std::string replacement = rule.value("replacement", "");
+            std::string rule_id = rule.value("rule_id", "rw_" + std::to_string(rule_idx));
+            nlohmann::json rule_metadata = rule.value("rule_metadata", nlohmann::json::object());
+
+            bool applied = false;
+            std::string message;
+            if (!engine_manager->sidApplyRewrite(engine_id, pattern, replacement, rule_id, rule_metadata, applied, message)) {
+                return createErrorResponse("sid_run_rewrites", "Rewrite application failed (engine/rule invalid)", "EXECUTION_FAILED");
+            }
+            engine_manager->recordSidRewriteEvent(engine_id, rule_id, applied, message, rule_metadata);
+
+            if (applied) {
+                applied_pass = true;
+                applied_total++;
+                steps++;
+                if (steps >= horizon_cap) {
+                    horizon_hit = true;
+                    break;
+                }
+            }
+        }
+
+        if (!applied_pass) {
+            break;  // reached fixed point
+        }
+    }
+
+    // Compute simple metrics (active nodes + total mass) from state.
+    std::vector<double> psi_r, psi_i, field;
+    double active_nodes = 0.0;
+    double total_mass = 0.0;
+    if (engine_manager->getAllNodeStates(engine_id, psi_r, psi_i, field)) {
+        for (double v : field) {
+            if (std::abs(v) > 1e-12) active_nodes += 1.0;
+            total_mass += v;
+        }
+        if (field.empty()) {
+            active_nodes = static_cast<double>(inst->num_nodes);
+            total_mass = active_nodes;
+        }
+    }
+
+    json result = {
+        {"engine_id", engine_id},
+        {"policy", policy},
+        {"steps", steps},
+        {"horizon_hit", horizon_hit},
+        {"rules_applied", applied_total},
+        {"metrics", {
+            {"active_nodes", active_nodes},
+            {"total_mass", total_mass}
+        }}
+    };
+    return createSuccessResponse("sid_run_rewrites", result, 0);
 }
 
 json CommandRouter::handleSidMetrics(const json& params) {
