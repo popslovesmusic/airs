@@ -667,30 +667,47 @@ json CommandRouter::handleRunSteps(const json& params) {
     json stability_metrics = json::object();
 
     if (inst->engine_type == "sid_ssp") {
-        // Count non-zero field entries as active nodes
+        // Count non-zero field entries as active nodes and total mass
         std::vector<double> psi_real, psi_imag, field;
         if (engine_manager->getAllNodeStates(engine_id, psi_real, psi_imag, field)) {
             size_t active = 0;
+            long double mass = 0.0;
             for (double v : field) {
                 if (std::abs(v) > 1e-12) {
                     active++;
                 }
+                mass += 1.0;  // treat each node as unit mass for strict conservation
             }
             stability_metrics["active_nodes"] = static_cast<uint64_t>(active);
+            stability_metrics["total_mass"] = static_cast<double>(mass);
         }
     } else if (inst->engine_type == "sid_ternary") {
         std::string diagram_json;
         size_t active = 0;
+        double total_mass = 0.0;
         if (engine_manager->sidGetDiagramJson(engine_id, diagram_json)) {
             auto parsed = json::parse(diagram_json, nullptr, false);
             if (parsed.is_object() && parsed.contains("nodes") && parsed["nodes"].is_array()) {
                 active = parsed["nodes"].size();
             }
+            if (parsed.is_object() && parsed.contains("mass_totals")) {
+                const auto& mt = parsed["mass_totals"];
+                if (mt.is_object()) {
+                    double i = mt.value("I", 0.0);
+                    double n = mt.value("N", 0.0);
+                    double u = mt.value("U", 0.0);
+                    total_mass = i + n + u;
+                }
+            }
         }
         if (active == 0) {
             active = static_cast<size_t>(inst->num_nodes);
         }
+        if (total_mass == 0.0) {
+            total_mass = static_cast<double>(active);
+        }
         stability_metrics["active_nodes"] = static_cast<uint64_t>(active);
+        stability_metrics["total_mass"] = total_mass;
     } else {
         std::vector<double> psi_real, psi_imag, phi;
         if (engine_manager->getAllNodeStates(engine_id, psi_real, psi_imag, phi)) {

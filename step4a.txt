@@ -1,0 +1,181 @@
+Good. **Step 4a: Conservation checks** is the right next move.
+
+Below is the **minimal, correct version** of Step 4a — nothing speculative, nothing over-assertive.
+
+---
+
+# Step 4a — Conservation Checks (Minimal)
+
+## Purpose (one sentence)
+
+> **Assert that a conserved quantity remains invariant under bounded evolution.**
+
+This is the *first* physics/semantics claim — keep it narrow.
+
+---
+
+## Rule (pin this)
+
+> **One family → one conserved scalar → exact equality**
+
+No tolerances. No trends. No theory beyond what the engine already guarantees.
+
+---
+
+## What to conserve (by family)
+
+### 1. **SID family** (`sid_ssp`, `sid_ternary`) — do this first
+
+This is the cleanest and safest place to start.
+
+#### Conserved quantity
+
+```
+I + N + U
+```
+
+(or whatever your internal equivalent is for total semantic mass / node count)
+
+#### Invariant
+
+```
+(I + N + U)_after == (I + N + U)_before
+```
+
+This should already be true by design.
+
+---
+
+### 2. **DASE families** — defer slightly
+
+For now, **do not** assert physical energy conservation yet.
+
+Why:
+
+* growth is already observed (`state_norm ~ 1e30`)
+* meaning of “energy” is not locked
+* premature conservation here would be misleading
+
+So for Step 4a:
+
+* **SID only**
+* DASE stays at bounded-range (Step 3)
+
+This is intentional and correct.
+
+---
+
+## Where this logic belongs
+
+✅ **CLI emits the conserved scalar**
+✅ **Harness compares before/after**
+
+❌ Not in runners
+❌ Not inferred from hash
+❌ Not approximate
+
+---
+
+## Minimal implementation plan (SID)
+
+### 1. Extend SID CLI output
+
+Add **one metric**:
+
+```json
+"metrics": {
+  "active_nodes": 1024,
+  "total_mass": 1024
+}
+```
+
+(`total_mass = I + N + U`)
+
+---
+
+### 2. Capture baseline (step-0 or creation)
+
+You already have this implicitly at creation.
+
+Either:
+
+* emit `total_mass` on `sid_create`, or
+* treat step-1 as baseline
+
+Choose whichever is already easiest.
+
+---
+
+### 3. Harness assertion (example)
+
+```cpp
+TEST(SID_SSP_Conservation, TotalMassInvariant) {
+  auto r1 = RunStep1("sid_ssp_step_1.jsonl");
+  auto r10 = RunStep10("sid_ssp_step_10.jsonl");
+
+  ASSERT_EQ(r1.metrics.total_mass, r10.metrics.total_mass);
+}
+```
+
+Exact equality. No epsilon.
+
+---
+
+## Which placeholders this replaces
+
+You can now safely unskip:
+
+* `ConsistencyPlaceholder`
+* (optionally) `RewriteDeterminismPlaceholder` later
+
+Leave these **skipped**:
+
+* GW echo structure
+* attractors
+* long-range semantic effects
+
+---
+
+## Expected outcome (important)
+
+### What success looks like
+
+* Harness passes
+* No goldens change
+* Conservation failures immediately surface bugs
+
+### What failure means
+
+* Real semantic leakage
+* Rewrite path error
+* Mixer logic violation
+
+This is a *valuable* failure if it happens.
+
+---
+
+## What NOT to add yet
+
+❌ Energy conservation for DASE
+❌ “Almost conserved” checks
+❌ Drift tolerances
+❌ Long-horizon runs
+
+Those are Step 4b / Step 5 territory.
+
+---
+
+## One-line status label (after Step 4a)
+
+> **SID evolution is deterministic, bounded, and conserves semantic mass.**
+
+That’s a strong, defensible claim.
+
+---
+
+### Next action
+
+Implement **SID-only conservation** exactly as above.
+When you have the first passing result (or failure), send it — we’ll lock or adjust.
+
+You’re sequencing this correctly.

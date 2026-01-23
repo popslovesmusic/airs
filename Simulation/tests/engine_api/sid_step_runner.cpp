@@ -187,6 +187,7 @@ int main(int argc, char** argv) {
     std::string normalized = normalize_stdout(stdout_capture);
     std::string hash = fnv1a_64(normalized);
     double active_nodes = extract_metric(stdout_capture, "active_nodes");
+    double total_mass = extract_metric(stdout_capture, "total_mass");
 
     std::ofstream out(output_path, std::ios::trunc);
     if (!out.is_open()) {
@@ -196,7 +197,7 @@ int main(int argc, char** argv) {
     out << "{\n";
     out << "  \"status\": \"ok\",\n";
     out << "  \"hash\": \"" << hash << "\",\n";
-    out << "  \"metrics\": {\"active_nodes\": " << active_nodes << "}\n";
+    out << "  \"metrics\": {\"active_nodes\": " << active_nodes << ", \"total_mass\": " << total_mass << "}\n";
     out << "}\n";
     return 0;
 }

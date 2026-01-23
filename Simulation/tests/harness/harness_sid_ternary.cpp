@@ -26,9 +26,12 @@ TEST(SidTernary, StepHashMatchesGolden) {
     auto result = harness::run_step_runner(runner, input, output);
     ASSERT_FALSE(result.hash.empty());
     ASSERT_NE(result.metrics.count("active_nodes"), 0u);
+    ASSERT_NE(result.metrics.count("total_mass"), 0u);
     const double active = result.metrics.at("active_nodes");
-    EXPECT_EQ(result.hash, "956d1239323d716f");
+    const double mass = result.metrics.at("total_mass");
+    EXPECT_EQ(result.hash, "81ac4a0a658de25b");
     EXPECT_DOUBLE_EQ(active, 1024.0);
+    EXPECT_DOUBLE_EQ(mass, 1024.0);
 }
 
 TEST(SidTernary, Step10HashMatchesGolden) {
@@ -39,9 +42,12 @@ TEST(SidTernary, Step10HashMatchesGolden) {
     auto result = harness::run_step_runner(runner, input, output);
     ASSERT_FALSE(result.hash.empty());
     ASSERT_NE(result.metrics.count("active_nodes"), 0u);
+    ASSERT_NE(result.metrics.count("total_mass"), 0u);
     const double active = result.metrics.at("active_nodes");
-    EXPECT_EQ(result.hash, "225c0af20e263657");
+    const double mass = result.metrics.at("total_mass");
+    EXPECT_EQ(result.hash, "70e263d4e83cf1a3");
     EXPECT_DOUBLE_EQ(active, 1024.0);
+    EXPECT_DOUBLE_EQ(mass, 1024.0);
 }
 
 TEST(SidTernary, ActiveNodesWithinBounds) {
@@ -55,6 +61,20 @@ TEST(SidTernary, ActiveNodesWithinBounds) {
     const double active = result.metrics.at("active_nodes");
     ASSERT_GE(active, 0.0);
     ASSERT_LE(active, 1024.0);  // max_nodes for fixture
+}
+
+TEST(SidTernary, TotalMassConservedBetweenStep1AndStep10) {
+    auto root = harness::project_root();
+    auto runner = root / "build/Debug/sid_step_runner.exe";
+    auto input1 = root / "Simulation/tests/fixtures/inputs/sid_ternary_step.jsonl";
+    auto out1 = root / "artifacts/validation/sid_ternary/out.json";
+    auto input10 = root / "Simulation/tests/fixtures/inputs/sid_ternary_step_10.jsonl";
+    auto out10 = root / "artifacts/validation/sid_ternary/out_step_10.json";
+    auto r1 = harness::run_step_runner(runner, input1, out1);
+    auto r10 = harness::run_step_runner(runner, input10, out10);
+    ASSERT_NE(r1.metrics.count("total_mass"), 0u);
+    ASSERT_NE(r10.metrics.count("total_mass"), 0u);
+    EXPECT_DOUBLE_EQ(r1.metrics.at("total_mass"), r10.metrics.at("total_mass"));
 }
 
 }  // namespace

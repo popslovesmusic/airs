@@ -1,5 +1,5 @@
 {
   "status": "ok",
-  "hash": "956d1239323d716f",
-  "metrics": {"active_nodes": 1024}
+  "hash": "81ac4a0a658de25b",
+  "metrics": {"active_nodes": 1024, "total_mass": 1024}
 }
