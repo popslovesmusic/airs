@@ -59,6 +59,24 @@ TEST(BasicComputeSubstrate, StateNormFiniteAndPositive) {
     ASSERT_GT(norm, 0.0);
 }
 
+TEST(BasicComputeSubstrate, DriftEnvelopeStateNorm) {
+    auto root = harness::project_root();
+    auto runner = root / "build/Debug/dase_step_runner.exe";
+    auto input1 = root / "Simulation/tests/fixtures/inputs/basic_compute_step.jsonl";
+    auto out1 = root / "artifacts/validation/basic_compute_substrate/out.json";
+    auto input10 = root / "Simulation/tests/fixtures/inputs/basic_compute_step_10.jsonl";
+    auto out10 = root / "artifacts/validation/basic_compute_substrate/out_step_10.json";
+    auto r1 = harness::run_step_runner(runner, input1, out1);
+    auto r10 = harness::run_step_runner(runner, input10, out10);
+    ASSERT_NE(r1.metrics.count("state_norm"), 0u);
+    ASSERT_NE(r10.metrics.count("state_norm"), 0u);
+    const double n1 = r1.metrics.at("state_norm");
+    const double n10 = r10.metrics.at("state_norm");
+    ASSERT_GT(n1, 0.0);
+    // Loose envelope to catch catastrophic drift
+    ASSERT_LE(n10, 1e32 * n1);
+}
+
 TEST(BasicComputeSubstrate, DeterminismPlaceholder) {
     GTEST_SKIP() << "TODO: implement determinism and stability checks with real fixtures.";
 }

@@ -1,0 +1,188 @@
+Good. We’ll do **Step 4b — Drift Envelopes (DASE-safe)**, **minimal and non-speculative**, building directly on what you already have.
+
+---
+
+# Step 4b — Drift Envelopes
+
+## Purpose (one sentence)
+
+> **Assert that growth remains bounded within a declared envelope over bounded steps, without claiming conservation.**
+
+This is *not* physics truth yet — it’s **controlled behavior**.
+
+---
+
+## What Step 4b is (and is not)
+
+### ✔ Is
+
+* a **growth sanity check**
+* a **regression detector**
+* an early warning for runaway dynamics
+
+### ❌ Is not
+
+* conservation
+* stability proof
+* convergence claim
+* asymptotic behavior
+
+---
+
+## The invariant form (pin this)
+
+> **Metric after N steps must not exceed a declared envelope derived from the golden.**
+
+No epsilons. No slopes. No fitting.
+
+---
+
+## What to envelope (by family)
+
+### **DASE families**
+
+(`basic_compute_substrate`, `gw`, `igsoa_complex`, `satp_higgs`)
+
+Use the metric you already have:
+
+```
+state_norm
+```
+
+---
+
+## How to define the envelope (minimal & safe)
+
+For each engine, define:
+
+```text
+state_norm(step_10) ≤ K × state_norm(step_1)
+```
+
+Where:
+
+* `K` is a **small integer constant**
+* Chosen **per engine**, documented in the test
+* Not inferred dynamically
+* Not tuned during the test
+
+### Recommended starting values
+
+| Engine                  | K    |
+| ----------------------- | ---- |
+| basic_compute_substrate | 1e32 |
+| gw                      | 1e32 |
+| igsoa_complex           | 1e6  |
+| satp_higgs              | 1e6  |
+
+These are **intentionally loose**.
+They only catch *catastrophic* changes.
+
+---
+
+## Why this is correct
+
+* You already observed growth (e.g. ~1e30 at 10 steps)
+* You are **not** claiming that growth is wrong
+* You are only asserting:
+
+  > “Growth must stay within the previously observed regime.”
+
+That’s a valid engineering invariant.
+
+---
+
+## Where this logic belongs
+
+✅ Harness tests only
+❌ Not in engines
+❌ Not in runners
+❌ Not in goldens
+
+Goldens remain reference points; envelopes are **guards**.
+
+---
+
+## Minimal implementation pattern
+
+Example (GW):
+
+```cpp
+TEST(GW_DriftEnvelope, StateNormWithinEnvelope) {
+  auto r1  = RunStep1("gw_step.jsonl");
+  auto r10 = RunStep10("gw_step_10.jsonl");
+
+  ASSERT_LE(r10.metrics.state_norm,
+            1e32 * r1.metrics.state_norm);
+}
+```
+
+That’s it.
+
+---
+
+## Which placeholders this replaces
+
+You can now safely unskip:
+
+* any “VacuumStability” or “Runaway” placeholders for DASE
+
+Still leave skipped:
+
+* echo structure
+* attractors
+* long-range asymptotics
+
+---
+
+## Expected outcome
+
+### Success
+
+* Harness still passes
+* No goldens change
+* CI now catches runaway explosions immediately
+
+### Failure
+
+* Indicates:
+
+  * algorithmic instability
+  * unintended scaling change
+  * refactor regression
+
+These are *good* failures.
+
+---
+
+## What NOT to do
+
+❌ Do not shrink `K` aggressively
+❌ Do not compute `K` dynamically
+❌ Do not normalize metrics
+❌ Do not assert monotonicity
+
+All of that comes later.
+
+---
+
+## Completion criterion
+
+Step 4b is complete when:
+
+* Step 1–4a still pass
+* New envelope tests pass
+* No goldens were modified
+
+At that point you can say:
+
+> **DASE evolution is deterministic, bounded, and non-catastrophic under short-horizon execution.**
+
+That’s a strong, defensible claim.
+
+---
+
+### Next action
+
+Implement **one envelope test per DASE engine** using the pattern above.
+When you have the first one passing, send it — we’ll confirm and tune (or freeze).

@@ -58,4 +58,21 @@ TEST(SatpHiggs, StateNormFiniteAndPositive) {
     ASSERT_GE(norm, 0.0);
 }
 
+TEST(SatpHiggs, DriftEnvelopeStateNorm) {
+    auto root = harness::project_root();
+    auto runner = root / "build/Debug/dase_step_runner.exe";
+    auto input1 = root / "Simulation/tests/fixtures/inputs/satp_higgs_step.jsonl";
+    auto out1 = root / "artifacts/validation/satp_higgs/out.json";
+    auto input10 = root / "Simulation/tests/fixtures/inputs/satp_higgs_step_10.jsonl";
+    auto out10 = root / "artifacts/validation/satp_higgs/out_step_10.json";
+    auto r1 = harness::run_step_runner(runner, input1, out1);
+    auto r10 = harness::run_step_runner(runner, input10, out10);
+    ASSERT_NE(r1.metrics.count("state_norm"), 0u);
+    ASSERT_NE(r10.metrics.count("state_norm"), 0u);
+    const double n1 = r1.metrics.at("state_norm");
+    const double n10 = r10.metrics.at("state_norm");
+    ASSERT_GE(n1, 0.0);
+    ASSERT_LE(n10, 1e6 * std::max(1e-12, n1));
+}
+
 }  // namespace
