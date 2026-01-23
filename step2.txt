@@ -1,0 +1,139 @@
+Great. We’ll proceed to **Step 2: multi-step drift detection (N > 1)** — **minimal, strict, and safe**.
+
+---
+
+## Step 2 — What we are adding (only this)
+
+> **Verify that a small number of steps does not introduce drift.**
+
+Nothing else.
+
+---
+
+## The rule (pin this)
+
+> **Same input, same N steps → same hash AND same metric.**
+
+No tolerances. No trends. No interpretation.
+
+---
+
+## Exact scope
+
+* **Steps**: `N = 10`
+  (not 2, not large — 10 is enough to expose instability without complexity)
+* **Inputs**: reuse existing fixtures
+* **API**: unchanged (`run_steps`)
+* **Metrics**: reuse the single metric from Step 1
+
+  * DASE: `state_norm`
+  * SID: `active_nodes` (or equivalent single scalar)
+
+---
+
+## What changes (minimal)
+
+### 1. Add one new fixture per engine
+
+Example (DASE):
+
+```
+Simulation/tests/fixtures/inputs/gw_step_10.jsonl
+```
+
+Same as the step-1 fixture, except:
+
+```json
+{ "command": "run_steps", "engine_id": "eng_001", "num_steps": 10 }
+```
+
+No other changes.
+
+---
+
+### 2. Generate new goldens (once)
+
+Example:
+
+```bash
+build/Debug/dase_step_runner.exe \
+  Simulation/tests/fixtures/inputs/gw_step_10.jsonl \
+  artifacts/validation/gw/out_step_10.json
+```
+
+Then **re-run once** to confirm:
+
+* hash matches
+* metric matches
+
+Lock it.
+
+---
+
+### 3. Add harness assertions
+
+For each engine:
+
+* assert `hash == golden.hash`
+* assert `metrics.state_norm == golden.metrics.state_norm`
+
+That’s it.
+
+---
+
+## What NOT to add
+
+❌ No thresholds
+❌ No “monotonic” checks
+❌ No floats with epsilons
+❌ No per-step logging in harness
+❌ No interpretation of “good” or “bad”
+
+This step only answers:
+
+> “Does bounded evolution remain deterministic beyond one step?”
+
+---
+
+## Why this step matters
+
+* Step 1 proved **deterministic stepping**
+* Step 2 proves **deterministic evolution**
+
+If Step 2 ever fails, you’ve found:
+
+* hidden state
+* accumulation error
+* order dependence
+* unintended nondeterminism
+
+Exactly what the harness is for.
+
+---
+
+## Success condition (clear)
+
+When Step 2 is done:
+
+* `step_1` tests pass
+* `step_10` tests pass
+* same input + same N → same outputs
+* CI fails immediately on drift
+
+At that point, you have **temporal determinism**, not just instantaneous determinism.
+
+---
+
+## After Step 2 (do not start yet)
+
+The *next* step after this would be:
+
+* **Step 3: bounded-range invariants** (e.g., “state_norm must remain finite”)
+
+But don’t jump ahead.
+
+---
+
+### Go ahead and implement Step 2 exactly as above.
+
+When you have the first `step_10` golden confirmed, send it — we’ll sanity-check and lock it.

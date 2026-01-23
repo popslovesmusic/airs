@@ -1,0 +1,2 @@
+{"command":"create_engine","params":{"engine_type":"sid_ssp","engine_id":"eng_001","capacity":1024,"num_nodes":1024,"role":2}}
+{"command":"run_steps","params":{"engine_id":"eng_001","num_steps":10}}

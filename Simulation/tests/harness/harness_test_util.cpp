@@ -193,7 +193,7 @@ StepRunOutput run_step_runner(const std::filesystem::path& runner,
         auto mend = content.find('}', mpos);
         if (mpos != std::string::npos && mend != std::string::npos && mend > mpos) {
             std::string block = content.substr(mpos, mend - mpos);
-            std::regex kv_re("\"([^\"]+)\"\\s*:\\s*([-0-9eE\\.]+)");
+            std::regex kv_re("\"([^\"]+)\"\\s*:\\s*([-+0-9eE\\.]+)");
             std::smatch match;
             std::string::const_iterator search_start(block.cbegin());
             while (std::regex_search(search_start, block.cend(), match, kv_re)) {
