@@ -1,0 +1,116 @@
+Understood. Here is **nothing but what is strictly required** to create the API — no extras, no commentary, no alternatives.
+
+---
+
+## Minimal API — **REQUIRED ONLY**
+
+### 1. One executable per boundary
+
+You need **two executables total**:
+
+```
+dase_step_runner.exe
+sid_step_runner.exe
+```
+
+No scripts. No libraries. No headers exposed.
+
+---
+
+### 2. Fixed input contract (JSON)
+
+Each runner accepts:
+
+```
+argv[1] = input.json
+argv[2] = output.json
+```
+
+Input **must contain**:
+
+```json
+{
+  "engine": "<engine_name>",
+  "steps": 1,
+  "seed": 0,
+  "params": { }
+}
+```
+
+Nothing else.
+
+---
+
+### 3. Runner behavior (mandatory sequence)
+
+Each runner **must do exactly this**:
+
+1. Read `input.json`
+2. Spawn the correct CLI:
+
+   * `dase_cli.exe` for all non-SID engines
+   * `sid_cli.exe` for SID engines
+3. Feed input JSON to stdin
+4. Run **exactly N steps**
+5. Capture stdout
+6. Compute a **state hash**
+7. Emit `output.json`
+8. Exit
+
+No filesystem writes. No globals.
+
+---
+
+### 4. Output contract (JSON)
+
+Output **must contain**:
+
+```json
+{
+  "status": "ok",
+  "hash": "<hex>",
+  "metrics": { }
+}
+```
+
+Nothing else.
+
+---
+
+### 5. Determinism rule
+
+Same input **must always** produce:
+
+* identical `hash`
+* identical `metrics`
+
+If not, API is invalid.
+
+---
+
+### 6. Placement (fixed)
+
+```
+Simulation/tests/engine_api/
+  dase_step_runner.cpp
+  sid_step_runner.cpp
+```
+
+---
+
+### 7. Harness usage
+
+Harness calls **only**:
+
+```
+*_step_runner.exe
+```
+
+Never engine internals.
+
+---
+
+## That is the entire API.
+
+If all items above exist and nothing more is added,
+the API is complete and correct.

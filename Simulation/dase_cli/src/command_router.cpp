@@ -31,6 +31,7 @@ CommandRouter::CommandRouter()
     command_handlers["set_igsoa_state"] = [this](const json& p) { return handleSetIgsoaState(p); };
     command_handlers["set_satp_state"] = [this](const json& p) { return handleSetSatpState(p); };
     command_handlers["run_mission"] = [this](const json& p) { return handleRunMission(p); };
+    command_handlers["run_steps"] = [this](const json& p) { return handleRunSteps(p); };
     command_handlers["run_mission_with_snapshots"] = [this](const json& p) { return handleRunMissionWithSnapshots(p); };
     command_handlers["run_benchmark"] = [this](const json& p) { return handleRunBenchmark(p); };
     command_handlers["get_metrics"] = [this](const json& p) { return handleGetMetrics(p); };
@@ -624,6 +625,53 @@ json CommandRouter::handleRunMission(const json& params) {
     };
 
     return createSuccessResponse("run_mission", result, 0);
+}
+
+json CommandRouter::handleRunSteps(const json& params) {
+    // Required: engine_id, num_steps
+    std::string engine_id = params.value("engine_id", "");
+    int num_steps = params.value("num_steps", 1);
+    int iterations_per_node = params.value("iterations_per_node", 1);
+    double alpha = params.value("alpha", 0.1);
+
+    if (engine_id.empty()) {
+        return createErrorResponse("run_steps", "Missing engine_id", "MISSING_PARAMETER");
+    }
+    if (num_steps <= 0) {
+        return createErrorResponse("run_steps", "num_steps must be > 0", "INVALID_PARAMETER");
+    }
+    auto* inst = engine_manager->getEngine(engine_id);
+    if (!inst) {
+        return createErrorResponse("run_steps", "Engine not found: " + engine_id, "INVALID_ENGINE");
+    }
+
+    bool ok = false;
+    if (inst->engine_type == "sid_ternary") {
+        for (int i = 0; i < num_steps; ++i) {
+            ok = engine_manager->sidStep(engine_id, alpha);
+            if (!ok) break;
+        }
+    } else if (inst->engine_type == "sid_ssp") {
+        ok = engine_manager->runMission(engine_id, num_steps, 1);
+    } else {
+        ok = engine_manager->runMission(engine_id, num_steps, iterations_per_node);
+    }
+
+    if (!ok) {
+        return createErrorResponse("run_steps", "Engine failed to advance", "EXECUTION_FAILED");
+    }
+
+    auto metrics = engine_manager->getMetrics(engine_id);
+    json result = {
+        {"engine_id", engine_id},
+        {"num_steps", num_steps},
+        {"iterations_per_node", iterations_per_node},
+        {"ns_per_op", metrics.ns_per_op},
+        {"ops_per_sec", metrics.ops_per_sec},
+        {"total_operations", metrics.total_operations},
+        {"speedup_factor", metrics.speedup_factor}
+    };
+    return createSuccessResponse("run_steps", result, 0);
 }
 
 json CommandRouter::handleRunMissionWithSnapshots(const json& params) {

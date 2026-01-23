@@ -24,6 +24,7 @@ option(BUILD_ENGINE_DLLS "Build engine DLLs for external use" ON)
 option(BUILD_TESTS "Build C++ unit tests" OFF)
 option(USE_GTEST "Use Google Test framework for tests" ON)
 option(BUILD_HARNESS "Build policy-aware harness test suite (requires GTest)" OFF)
+option(BUILD_API_RUNNERS "Build CLI-backed step runners for harness" ON)
 option(ENABLE_AVX2 "Enable AVX2 SIMD instructions" ON)
 option(ENABLE_OPENMP "Enable OpenMP parallelization" ON)
 
@@ -459,6 +460,18 @@ if(BUILD_TESTS)
             message(WARNING "BUILD_HARNESS requested but GTest not found/enabled; skipping harness build.")
         endif()
     endif()
+endif()
+
+if(BUILD_API_RUNNERS)
+    add_executable(dase_step_runner
+        tests/engine_api/dase_step_runner.cpp
+    )
+    add_executable(sid_step_runner
+        tests/engine_api/sid_step_runner.cpp
+    )
+    target_compile_options(dase_step_runner PRIVATE "$<$<NOT:$<CONFIG:Debug>>:${DASE_COMPILE_FLAGS}>")
+    target_compile_options(sid_step_runner PRIVATE "$<$<NOT:$<CONFIG:Debug>>:${DASE_COMPILE_FLAGS}>")
+    message(STATUS "API runners: dase_step_runner, sid_step_runner")
 endif()
 
 # ============================================================================

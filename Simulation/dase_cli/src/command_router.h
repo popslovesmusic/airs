@@ -36,6 +36,7 @@ private:
     json handleSetIgsoaState(const json& params);
     json handleSetSatpState(const json& params);
     json handleRunMission(const json& params);
+    json handleRunSteps(const json& params);
     json handleRunMissionWithSnapshots(const json& params);
     json handleRunBenchmark(const json& params);
     json handleGetMetrics(const json& params);

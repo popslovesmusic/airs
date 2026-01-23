@@ -1,0 +1,234 @@
+Short answer first, then the **exact minimum you need to add**.
+
+---
+
+## Direct answer
+
+**Yes.**
+This **must be added to the CLIs** (`dase_cli` and `sid_cli`).
+It should **not** be simulated in the runners.
+
+Your runners are correct. The block is real and architectural.
+
+If the CLI cannot advance an engine by a bounded number of steps, then **no API exists yet**. Wrapping multi-step missions without control would violate determinism and admissibility.
+
+So: **the fix belongs in the CLI layer.**
+
+---
+
+## Why this cannot be faked in the runner
+
+You correctly observed:
+
+* There is **no `--mode step`**
+* There is **no single-step verb**
+* Only multi-command JSON flows exist (`create_engine`, `run_mission`, etc.)
+
+If the runner tried to:
+
+* run a mission and “assume 1 step”
+* interrupt execution
+* parse partial output
+
+then:
+
+* step count would be implicit, not enforced
+* determinism would be accidental
+* tests would lie about what they exercised
+
+That breaks the entire purpose of the API.
+
+So your instinct is correct: **do not simulate step behavior outside the CLI**.
+
+---
+
+## Minimal CLI change required (nothing extra)
+
+You do **not** need a new binary.
+You do **not** need a new execution model.
+
+You need **one new command** in each CLI.
+
+---
+
+## Required addition to `dase_cli`
+
+### Add a command: `run_steps`
+
+#### Command JSON (stdin)
+
+```json
+{
+  "command": "run_steps",
+  "engine_id": "eng_001",
+  "num_steps": 1
+}
+```
+
+### Semantics (must be exact)
+
+* Advances the engine **exactly `num_steps`**
+* Returns control immediately
+* Emits state/metrics to stdout
+* Does **not** loop internally
+* Does **not** depend on wall time
+
+This is a thin wrapper around whatever loop already exists for missions.
+
+---
+
+## Required addition to `sid_cli`
+
+Same pattern.
+
+```json
+{
+  "command": "run_steps",
+  "engine_id": "sid_001",
+  "num_steps": 1
+}
+```
+
+For SID:
+
+* one rewrite / adjudication cycle = one step
+* no batching
+* no auto-repeat
+
+---
+
+## Existing commands you already have (use these)
+
+From your earlier runs and repo layout, these already exist and are sufficient:
+
+### Engine creation (already present)
+
+**DASE**
+
+```json
+{
+  "command": "create_engine",
+  "engine_type": "gw",                // or satp_higgs, igsoa_complex, basic_compute_substrate
+  "engine_id": "eng_001",
+  "seed": 0,
+  "params": { "grid": { "nx": 8, "ny": 8 } }
+}
+```
+
+**SID**
+
+```json
+{
+  "command": "sid_create",
+  "engine_type": "sid_ssp",            // or sid_ternary
+  "engine_id": "sid_001",
+  "seed": 0,
+  "params": { }
+}
+```
+
+These do **not** need to change.
+
+---
+
+## The minimal full step sequence (what runners will wrap)
+
+### For DASE engines (gw, satp, igsoa, basic)
+
+```json
+[
+  {
+    "command": "create_engine",
+    "engine_type": "gw",
+    "engine_id": "eng_001",
+    "seed": 0,
+    "params": { "grid": { "nx": 8, "ny": 8 } }
+  },
+  {
+    "command": "run_steps",
+    "engine_id": "eng_001",
+    "num_steps": 1
+  }
+]
+```
+
+### For SID engines
+
+```json
+[
+  {
+    "command": "sid_create",
+    "engine_type": "sid_ssp",
+    "engine_id": "sid_001",
+    "seed": 0,
+    "params": { }
+  },
+  {
+    "command": "run_steps",
+    "engine_id": "sid_001",
+    "num_steps": 1
+  }
+]
+```
+
+That is **all** the runner needs.
+
+---
+
+## Engine type strings (canonical)
+
+Use these **exactly** (based on repo usage and prior runs):
+
+### DASE
+
+* `basic_compute_substrate`
+* `igsoa_complex`
+* `gw`
+* `satp_higgs`
+
+### SID
+
+* `sid_ssp`
+* `sid_ternary`
+
+Do **not** alias them in the runner.
+
+---
+
+## Goldens (important clarification)
+
+You **cannot** provide golden hashes yet.
+
+Goldens only become meaningful **after**:
+
+* `run_steps` exists
+* step count is enforced by the CLI
+
+Once added, you generate goldens **once**, then lock them.
+
+That ordering is correct and necessary.
+
+---
+
+## Final ruling (clear and unambiguous)
+
+* ✅ Your runners are correct
+* ✅ Your diagnosis is correct
+* ❌ This cannot be solved in the runner
+* ✅ **A bounded step command must be added to `dase_cli` and `sid_cli`**
+
+### Minimal change required:
+
+> Add `run_steps { num_steps: N }` to both CLIs.
+
+Nothing else.
+
+---
+
+If you want, next I can:
+
+* draft the **exact CLI handler pseudocode** for `run_steps`, or
+* help you define **what metrics must be emitted after a step**, or
+* review where to insert this cleanly in the existing command dispatch.
+
+But you are absolutely right to stop here and not fake it.

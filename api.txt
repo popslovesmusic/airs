@@ -1,0 +1,118 @@
+First principle (anchor this)
+You are not “designing an API”.
+You are exposing a test doorway.
+
+That doorway must be:
+
+deterministic
+
+bounded
+
+side-effect free
+
+boring
+
+1. Choose the API form (do this first)
+Phase 1 (now): CLI-backed API
+Use what already exists. Fastest path.
+
+Phase 2 (later): C-API
+Once physics stabilizes.
+
+You do not start with in-process C++ calls.
+
+2. Phase 1 — CLI-backed API (recommended)
+Step 1: Declare a step mode
+Pick a single verb, consistent across engines:
+
+arduino
+Copy code
+--mode step
+This must mean:
+
+“Advance the engine by exactly one bounded step and exit.”
+
+Step 2: Define the input contract (tiny JSON)
+Example (gw_step.json):
+
+json5
+Copy code
+{
+  "engine": "gw",
+  "grid": { "nx": 8, "ny": 8 },
+  "steps": 1,
+  "seed": 0,
+  "params": {
+    "c": 1.0,
+    "damping": 0.0
+  }
+}
+Rules:
+
+No defaults
+
+No randomness without seed
+
+No filesystem paths
+
+≤ 16×16 grids only
+
+This is now the API input.
+
+Step 3: Define the output contract (metrics only)
+Example (gw_out.json):
+
+json5
+Copy code
+{
+  "status": "ok",
+  "hash": "a91f…",
+  "metrics": {
+    "energy_total": 1.000000,
+    "energy_drift": 0.0,
+    "symmetry_breaks": 0
+  }
+}
+Rules:
+
+No raw fields yet
+
+No floats without meaning
+
+Hash covers entire internal state
+
+This is now the API output.
+
+Step 4: Implement the wrapper (thin)
+Do not touch kernels.
+You only orchestrate what already runs.
+
+Pseudo-flow:
+
+pgsql
+Copy code
+parse input
+→ initialize engine
+→ run exactly N steps
+→ collect metrics
+→ emit JSON
+→ exit
+This wrapper lives in:
+
+bash
+Copy code
+Simulation/tools/<engine>_api/
+Step 5: Teach the harness to call it
+In tests:
+
+cpp
+Copy code
+run_process(
+  "gw_cli.exe --mode step",
+  "fixtures/gw_step.json",
+  "artifacts/validation/gw/out.json"
+);
+That’s it.
+
+You now have a real API.
+
