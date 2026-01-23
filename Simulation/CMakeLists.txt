@@ -23,8 +23,13 @@ option(BUILD_CLI "Build CLI executable (dase_cli)" ON)
 option(BUILD_ENGINE_DLLS "Build engine DLLs for external use" ON)
 option(BUILD_TESTS "Build C++ unit tests" OFF)
 option(USE_GTEST "Use Google Test framework for tests" ON)
+option(BUILD_HARNESS "Build policy-aware harness test suite (requires GTest)" OFF)
 option(ENABLE_AVX2 "Enable AVX2 SIMD instructions" ON)
 option(ENABLE_OPENMP "Enable OpenMP parallelization" ON)
+
+if(BUILD_TESTS)
+    enable_testing()
+endif()
 
 # ============================================================================
 # C++ STANDARD AND COMPILER REQUIREMENTS
@@ -77,8 +82,18 @@ if(BUILD_TESTS AND USE_GTEST)
         message(STATUS "Found Google Test: ${GTest_VERSION}")
         include(GoogleTest)
     else()
-        message(STATUS "Google Test not found - will use basic test builds")
-        set(USE_GTEST OFF)
+        message(STATUS "Google Test not found via package; falling back to FetchContent")
+        include(FetchContent)
+        FetchContent_Declare(
+            googletest
+            URL https://github.com/google/googletest/archive/refs/tags/v1.14.0.zip
+            DOWNLOAD_EXTRACT_TIMESTAMP TRUE
+        )
+        set(gtest_force_shared_crt ON CACHE BOOL "" FORCE)
+        FetchContent_MakeAvailable(googletest)
+        set(GTest_FOUND ON)
+        set(GTest_VERSION "1.14.0 (FetchContent)")
+        include(GoogleTest)
     endif()
 endif()
 
@@ -387,6 +402,57 @@ if(BUILD_TESTS)
     message(STATUS "Configured test: test_sid_ports (SID ports)")
     message(STATUS "Configured test: sid_dump_expr (SID Phase 5)")
     message(STATUS "Configured test: benchmark_sid (SID Phase 5)")
+
+    # Policy-aware harness (optional, GTest-based)
+    if(BUILD_HARNESS)
+        if(USE_GTEST AND GTest_FOUND)
+            add_library(harness_support STATIC
+                tests/harness/harness_policy.cpp
+                tests/harness/harness_test_util.cpp
+            )
+            target_include_directories(harness_support PUBLIC
+                ${CMAKE_CURRENT_SOURCE_DIR}/tests/harness
+                ${CMAKE_CURRENT_SOURCE_DIR}/src/cpp
+                ${CMAKE_CURRENT_SOURCE_DIR}
+            )
+            target_compile_options(harness_support PRIVATE
+                "$<$<NOT:$<CONFIG:Debug>>:${DASE_COMPILE_FLAGS}>"
+            )
+            target_compile_definitions(harness_support PRIVATE
+                AIRS_ROOT_PATH="${CMAKE_CURRENT_SOURCE_DIR}/.."
+                ARTIFACTS_ROOT_PATH="${CMAKE_CURRENT_SOURCE_DIR}/../artifacts"
+                METRICS_ROOT_PATH="${CMAKE_CURRENT_SOURCE_DIR}/../metrics"
+                VALIDATION_TABLE_PATH="${CMAKE_CURRENT_SOURCE_DIR}/../validation table.txt"
+            )
+
+            add_executable(harness_tests
+                tests/harness/harness_main.cpp
+                tests/harness/harness_example.cpp
+            )
+            target_link_libraries(harness_tests PRIVATE
+                harness_support
+                GTest::gtest
+                GTest::gtest_main
+            )
+            target_compile_options(harness_tests PRIVATE
+                "$<$<NOT:$<CONFIG:Debug>>:${DASE_COMPILE_FLAGS}>"
+            )
+
+            if(TARGET gtest_discover_tests)
+                gtest_discover_tests(harness_tests
+                    WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
+                    PROPERTIES LABELS "harness"
+                )
+            else()
+                add_test(NAME harness_tests COMMAND harness_tests)
+            endif()
+            set_tests_properties(harness_tests PROPERTIES LABELS "harness")
+
+            message(STATUS "Configured harness: harness_tests (policy-aware, GTest)")
+        else()
+            message(WARNING "BUILD_HARNESS requested but GTest not found/enabled; skipping harness build.")
+        endif()
+    endif()
 endif()
 
 # ============================================================================

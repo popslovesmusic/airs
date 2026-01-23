@@ -1,0 +1,45 @@
+Harness Build Report (2026-01-22)
+=================================
+
+What changed
+------------
+- Added CMake option BUILD_HARNESS and integrated GoogleTest-based harness target harness_tests with policy/metrics support.
+- Implemented policy loader and helpers:
+  * Simulation/tests/harness/harness_policy.{hpp,cpp}
+  * Simulation/tests/harness/harness_test_util.{hpp,cpp}
+  * harness_main.cpp and harness_example.cpp as entry and smoke tests.
+- Metrics archive directories created at repo root: metrics/<engine_family>/.
+- CMake now auto-fetches GoogleTest if missing; also supports using a pre-extracted source dir.
+- Enabled CTest when BUILD_TESTS=ON; labels applied to harness tests.
+
+What’s needed next
+------------------
+- Expand harness_example.cpp into real engine suites per validation table.
+- Add fixtures under Simulation/tests/fixtures/ and golden outputs in artifacts/validation/.
+- Wire reporting JSON + metrics for each engine suite.
+- Update Simulation/tests/README.md and scripts/run_harness.ps1 to document commands and metrics layout.
+
+Usage (current build)
+---------------------
+Configure (reusing downloaded GTest):
+  cmake -S Simulation -B build -DBUILD_TESTS=ON -DBUILD_HARNESS=ON -DUSE_GTEST=ON \ 
+        -DFETCHCONTENT_SOURCE_DIR_GOOGLETEST=D:/airs/build/_deps/googletest-src/googletest-1.14.0 \ 
+        -DFETCHCONTENT_UPDATES_DISCONNECTED=ON
+
+Build:
+  cmake --build build --target harness_tests
+
+Run tests (VS generator):
+  cd build && ctest -C Debug -L harness
+
+Artifacts/paths
+---------------
+- Binary: build/Debug/harness_tests.exe
+- Metrics: metrics/<engine_family>/ (pre-created)
+- Validation policy source: validation table.txt
+- Harness sources: Simulation/tests/harness/
+
+Notes
+-----
+- If using a different generator (e.g., Ninja), drop the -C Debug when running ctest.
+- FetchContent download already completed; no further network needed unless _deps is cleaned.

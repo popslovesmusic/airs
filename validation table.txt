@@ -1,0 +1,7 @@
+Engine Family,Type of Engine,Allowed Validations (What to Test),Forbidden Validations (What NOT to Test)
+basic_compute_substrate,Foundational Numerical Kernel,"Determinism, Numerical Stability, Performance Scaling, Memory Safety","Diffusion, Conservation, Transport, Semantics"
+satp_higgs,Domain Physics (Field Stability),"Vacuum Stability, Symmetry Breaking, Phase Transition Detection, Boundedness","Mass Conservation, Diffusion Accuracy, Random Walk"
+igsoa_gw,Wave Propagation Engine,"Signal Arrival, Echo Structure, Resonance Spectrum, Symmetry Response","Diffusion Convergence, Steady State, Semantic Tests"
+igsoa_complex,Ontological (Collapse Engine),"Attractor Convergence, Constraint Satisfaction, Variance Suppression","Mass Conservation, Diffusion Accuracy, Transport Fidelity"
+sid_ssp,Semantic Signal Processor,"Rewrite Determinism, Invariant Preservation, Constraint Satisfaction","Numerical Accuracy, Diffusion, Transport"
+sid_ternary,Adjudication (Final Decision),"I/N/U Consistency, Determinism, Boundary Handling","Time Evolution, Numerical Dynamics, Variance Analysis"
