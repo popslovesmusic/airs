@@ -44,6 +44,19 @@ TEST(IgsoaComplex, Step10HashMatchesGolden) {
     EXPECT_DOUBLE_EQ(norm, 32.0);
 }
 
+TEST(IgsoaComplex, StateNormFiniteAndPositive) {
+    auto root = harness::project_root();
+    auto runner = root / "build/Debug/dase_step_runner.exe";
+    auto input = root / "Simulation/tests/fixtures/inputs/igsoa_complex_step_10.jsonl";
+    auto output = root / "artifacts/validation/igsoa_complex/out_step_10.json";
+    auto result = harness::run_step_runner(runner, input, output);
+    ASSERT_FALSE(result.hash.empty());
+    ASSERT_NE(result.metrics.count("state_norm"), 0u);
+    const double norm = result.metrics.at("state_norm");
+    ASSERT_TRUE(std::isfinite(norm));
+    ASSERT_GT(norm, 0.0);
+}
+
 TEST(IgsoaComplex, AttractorPlaceholder) {
     GTEST_SKIP() << "TODO: implement attractor convergence and variance suppression tests.";
 }

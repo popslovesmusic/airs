@@ -45,6 +45,19 @@ TEST(SidSsp, Step10HashMatchesGolden) {
     EXPECT_DOUBLE_EQ(active, 1024.0);
 }
 
+TEST(SidSsp, ActiveNodesWithinBounds) {
+    auto root = harness::project_root();
+    auto runner = root / "build/Debug/sid_step_runner.exe";
+    auto input = root / "Simulation/tests/fixtures/inputs/sid_ssp_step_10.jsonl";
+    auto output = root / "artifacts/validation/sid_ssp/out_step_10.json";
+    auto result = harness::run_step_runner(runner, input, output);
+    ASSERT_FALSE(result.hash.empty());
+    ASSERT_NE(result.metrics.count("active_nodes"), 0u);
+    const double active = result.metrics.at("active_nodes");
+    ASSERT_GE(active, 0.0);
+    ASSERT_LE(active, 1024.0);  // fixture max_nodes
+}
+
 TEST(SidSsp, RewriteDeterminismPlaceholder) {
     GTEST_SKIP() << "TODO: implement rewrite determinism and invariant preservation tests.";
 }
