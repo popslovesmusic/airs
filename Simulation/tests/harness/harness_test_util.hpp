@@ -25,4 +25,9 @@ void write_metrics_json(const std::string& engine_family,
                         const std::map<std::string, double>& numeric_metrics,
                         const std::map<std::string, std::string>& string_metrics = {});
 
+// Run a step runner and return the hash from its output JSON.
+std::string run_step_runner_and_hash(const std::filesystem::path& runner,
+                                     const std::filesystem::path& input_jsonl,
+                                     const std::filesystem::path& output_json);
+
 }  // namespace harness

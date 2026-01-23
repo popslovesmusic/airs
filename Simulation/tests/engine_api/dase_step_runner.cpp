@@ -23,22 +23,22 @@ std::string fnv1a_64(const std::string& data) {
 }
 
 int run_cli(const std::filesystem::path& input, std::string& stdout_out) {
-    // NOTE: use dase_cli.exe from Simulation/dase_cli/
-    std::filesystem::path cli = std::filesystem::path("Simulation") / "dase_cli" / "dase_cli.exe";
+    std::filesystem::path repo_root = std::filesystem::current_path().parent_path();
+    std::filesystem::path cli = repo_root / "Simulation" / "dase_cli" / "dase_cli.exe";
     if (!std::filesystem::exists(cli)) {
         std::cerr << "missing cli: " << cli << "\n";
         return 1;
     }
-    // On Windows PowerShell, use type + pipe to preserve stdin JSON.
-    std::string cmd = "type \"" + input.string() + "\" | \"" + cli.string() + "\"";
-    FILE* pipe = _popen(cmd.c_str(), "r");
-    if (!pipe) return 2;
-    char buffer[4096];
-    while (fgets(buffer, sizeof(buffer), pipe)) {
-        stdout_out.append(buffer);
+    auto tmp_out = std::filesystem::temp_directory_path() / "dase_step_runner_out.txt";
+    std::string cmd = "powershell -NoLogo -NoProfile -Command \"Get-Content -Raw '" + input.string() + "' | & '" + cli.string() + "' | Set-Content -Encoding ASCII '" + tmp_out.string() + "'\"";
+    int rc = std::system(cmd.c_str());
+    if (rc != 0) {
+        return rc;
     }
-    int rc = _pclose(pipe);
-    return rc;
+    std::ifstream out(tmp_out, std::ios::binary);
+    if (!out.is_open()) return 3;
+    stdout_out.assign(std::istreambuf_iterator<char>(out), {});
+    return 0;
 }
 
 }  // namespace

@@ -19,30 +19,14 @@ TEST(IgsoaGw, PolicyCoversExpectedValidations) {
     EXPECT_TRUE(table.is_forbidden("igsoa_gw", "Semantic Tests"));
 }
 
-TEST(IgsoaGw, MetricsSmoke) {
-    const auto fixture = harness::project_root() / "Simulation/tests/fixtures/igsoa_gw_echo.csv";
-    std::ifstream in(fixture);
-    ASSERT_TRUE(in.is_open());
-    std::string header;
-    std::getline(in, header);
-    double peak = 0.0;
-    double peak_time = 0.0;
-    std::string line;
-    while (std::getline(in, line)) {
-        if (line.empty()) continue;
-        auto comma = line.find(',');
-        ASSERT_NE(comma, std::string::npos);
-        double t = std::stod(line.substr(0, comma));
-        double amp = std::stod(line.substr(comma + 1));
-        if (amp > peak) {
-            peak = amp;
-            peak_time = t;
-        }
-    }
-    harness::write_metrics_json("igsoa_gw", "echo_peak",
-                                {{"peak_amplitude", peak}, {"peak_time", peak_time}});
-    EXPECT_NEAR(peak, 0.60, 1e-6);
-    EXPECT_NEAR(peak_time, 0.50, 1e-6);
+TEST(IgsoaGw, StepHashMatchesGolden) {
+    auto root = harness::project_root();
+    auto runner = root / "build/Debug/dase_step_runner.exe";
+    auto input = root / "Simulation/tests/fixtures/inputs/gw_step.jsonl";
+    auto output = root / "artifacts/validation/gw/out.json";
+    auto hash = harness::run_step_runner_and_hash(runner, input, output);
+    ASSERT_FALSE(hash.empty());
+    EXPECT_EQ(hash, "5b7705bbd9760e31");
 }
 
 TEST(IgsoaGw, EchoStructurePlaceholder) {

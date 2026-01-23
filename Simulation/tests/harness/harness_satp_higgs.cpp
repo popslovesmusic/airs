@@ -19,25 +19,14 @@ TEST(SatpHiggs, PolicyCoversExpectedValidations) {
     EXPECT_TRUE(table.is_forbidden("satp_higgs", "Random Walk"));
 }
 
-TEST(SatpHiggs, MetricsSmoke) {
-    const auto fixture = harness::project_root() / "Simulation/tests/fixtures/satp_state.txt";
-    std::ifstream in(fixture);
-    ASSERT_TRUE(in.is_open());
-    std::string line;
-    double last_phi = 0.0;
-    int count = 0;
-    while (std::getline(in, line)) {
-        auto pos = line.find("phi=");
-        ASSERT_NE(pos, std::string::npos);
-        double phi = std::stod(line.substr(pos + 4));
-        if (count == 0) last_phi = phi;
-        EXPECT_GE(phi, last_phi);
-        last_phi = phi;
-        ++count;
-    }
-    harness::write_metrics_json("satp_higgs", "vacuum_stability_trend",
-                                {{"samples", static_cast<double>(count)}},
-                                {{"status", "monotonic_non_decreasing"}});
+TEST(SatpHiggs, StepHashMatchesGolden) {
+    auto root = harness::project_root();
+    auto runner = root / "build/Debug/dase_step_runner.exe";
+    auto input = root / "Simulation/tests/fixtures/inputs/satp_higgs_step.jsonl";
+    auto output = root / "artifacts/validation/satp_higgs/out.json";
+    auto hash = harness::run_step_runner_and_hash(runner, input, output);
+    ASSERT_FALSE(hash.empty());
+    EXPECT_EQ(hash, "d7fb496c39c0020c");
 }
 
 TEST(SatpHiggs, VacuumStabilityPlaceholder) {

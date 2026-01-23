@@ -18,29 +18,14 @@ TEST(IgsoaComplex, PolicyCoversExpectedValidations) {
     EXPECT_TRUE(table.is_forbidden("igsoa_complex", "Transport Fidelity"));
 }
 
-TEST(IgsoaComplex, MetricsSmoke) {
-    const auto fixture = harness::project_root() / "Simulation/tests/fixtures/igsoa_complex_state.txt";
-    std::ifstream in(fixture);
-    ASSERT_TRUE(in.is_open());
-    std::string line;
-    double first_residual = -1.0;
-    double last_residual = 0.0;
-    int count = 0;
-    while (std::getline(in, line)) {
-        if (line.empty()) continue;
-        auto pos = line.find("residual=");
-        ASSERT_NE(pos, std::string::npos);
-        double res = std::stod(line.substr(pos + 9));
-        if (count == 0) first_residual = res;
-        last_residual = res;
-        ++count;
-    }
-    harness::write_metrics_json("igsoa_complex", "residual_drop",
-                                {{"initial_residual", first_residual},
-                                 {"final_residual", last_residual},
-                                 {"iterations", static_cast<double>(count)}});
-    EXPECT_GT(first_residual, 0.0);
-    EXPECT_LT(last_residual, first_residual);
+TEST(IgsoaComplex, StepHashMatchesGolden) {
+    auto root = harness::project_root();
+    auto runner = root / "build/Debug/dase_step_runner.exe";
+    auto input = root / "Simulation/tests/fixtures/inputs/igsoa_complex_step.jsonl";
+    auto output = root / "artifacts/validation/igsoa_complex/out.json";
+    auto hash = harness::run_step_runner_and_hash(runner, input, output);
+    ASSERT_FALSE(hash.empty());
+    EXPECT_EQ(hash, "c5e5daed3fd3e269");
 }
 
 TEST(IgsoaComplex, AttractorPlaceholder) {

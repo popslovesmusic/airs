@@ -84,7 +84,8 @@ public:
                              int N_x = 0,
                              int N_y = 0,
                              int N_z = 0,
-                             int sid_role = 2);
+                             int sid_role = 2,
+                             const std::string& engine_id_hint = "");
     bool destroyEngine(const std::string& engine_id);
     EngineInstance* getEngine(const std::string& engine_id);
     const EngineInstance* getEngineConst(const std::string& engine_id) const;

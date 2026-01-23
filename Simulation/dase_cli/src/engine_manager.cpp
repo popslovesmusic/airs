@@ -415,7 +415,8 @@ std::string EngineManager::createEngine(const std::string& engine_type,
                                         int N_x,
                                         int N_y,
                                         int N_z,
-                                        int sid_role) {
+                                        int sid_role,
+                                        const std::string& engine_id_hint) {
     // Validate parameters
     if (num_nodes <= 0 || num_nodes > 1048576) {
         return "";
@@ -441,7 +442,10 @@ std::string EngineManager::createEngine(const std::string& engine_type,
 
     // Create engine instance
     auto instance = std::make_unique<EngineInstance>();
-    instance->engine_id = generateEngineId();
+    instance->engine_id = engine_id_hint.empty() ? generateEngineId() : engine_id_hint;
+    if (engines.find(instance->engine_id) != engines.end()) {
+        return "";
+    }
     instance->engine_type = engine_type;
     instance->num_nodes = num_nodes;
     instance->created_timestamp = getCurrentTimestamp();

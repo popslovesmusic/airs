@@ -19,17 +19,14 @@ TEST(SidSsp, PolicyCoversExpectedValidations) {
     EXPECT_TRUE(table.is_forbidden("sid_ssp", "Transport"));
 }
 
-TEST(SidSsp, MetricsSmoke) {
-    const auto fixture = harness::project_root() / "Simulation/tests/fixtures/sid_ssp_ast.txt";
-    std::ifstream in(fixture);
-    ASSERT_TRUE(in.is_open());
-    std::string content((std::istreambuf_iterator<char>(in)), {});
-    auto h1 = harness::hash_bytes(std::vector<uint8_t>(content.begin(), content.end()));
-    auto h2 = harness::hash_bytes(std::vector<uint8_t>(content.begin(), content.end()));
-    EXPECT_EQ(h1, h2);
-    harness::write_metrics_json("sid_ssp", "ast_hash",
-                                {{"hash_match", h1 == h2 ? 1.0 : 0.0}},
-                                {{"hash", h1}});
+TEST(SidSsp, StepHashMatchesGolden) {
+    auto root = harness::project_root();
+    auto runner = root / "build/Debug/sid_step_runner.exe";
+    auto input = root / "Simulation/tests/fixtures/inputs/sid_ssp_step.jsonl";
+    auto output = root / "artifacts/validation/sid_ssp/out.json";
+    auto hash = harness::run_step_runner_and_hash(runner, input, output);
+    ASSERT_FALSE(hash.empty());
+    EXPECT_EQ(hash, "441585dd8f25f8df");
 }
 
 TEST(SidSsp, RewriteDeterminismPlaceholder) {

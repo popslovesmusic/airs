@@ -1,0 +1,2 @@
+{"command":"create_engine","params":{"engine_type":"sid_ternary","engine_id":"sid_002","seed":0,"params":{"capacity":1.0,"role":2,"alpha":0.1}}}
+{"command":"run_steps","params":{"engine_id":"sid_002","num_steps":1,"alpha":0.1}}

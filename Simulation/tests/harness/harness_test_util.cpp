@@ -125,4 +125,30 @@ void write_metrics_json(const std::string& engine_family,
     out << "}\n";
 }
 
+std::string run_step_runner_and_hash(const std::filesystem::path& runner,
+                                     const std::filesystem::path& input_jsonl,
+                                     const std::filesystem::path& output_json) {
+    ensure_directory(output_json.parent_path());
+    std::string cmd = "\"" + runner.string() + "\" \"" + input_jsonl.string() + "\" \"" + output_json.string() + "\"";
+    int rc = std::system(cmd.c_str());
+    if (rc != 0 && !std::filesystem::exists(output_json)) {
+        return "";
+    }
+    std::ifstream in(output_json);
+    if (!in.is_open()) {
+        return "";
+    }
+    std::string content((std::istreambuf_iterator<char>(in)), {});
+    // naive parse: look for "hash": "....."
+    auto pos = content.find("\"hash\"");
+    if (pos == std::string::npos) return "";
+    pos = content.find(':', pos);
+    if (pos == std::string::npos) return "";
+    pos = content.find('"', pos);
+    if (pos == std::string::npos) return "";
+    auto end = content.find('"', pos + 1);
+    if (end == std::string::npos) return "";
+    return content.substr(pos + 1, end - pos - 1);
+}
+
 }  // namespace harness

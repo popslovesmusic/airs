@@ -18,31 +18,14 @@ TEST(SidTernary, PolicyCoversExpectedValidations) {
     EXPECT_TRUE(table.is_forbidden("sid_ternary", "Variance Analysis"));
 }
 
-TEST(SidTernary, MetricsSmoke) {
-    const auto fixture = harness::project_root() / "Simulation/tests/fixtures/sid_ternary_cases.txt";
-    std::ifstream in(fixture);
-    ASSERT_TRUE(in.is_open());
-    std::string line;
-    int rows = 0;
-    int i_count = 0, n_count = 0, u_count = 0;
-    std::getline(in, line);  // header
-    while (std::getline(in, line)) {
-        if (line.empty()) continue;
-        auto comma = line.find(',');
-        ASSERT_NE(comma, std::string::npos);
-        char label = line[comma + 1];
-        if (label == 'I') ++i_count;
-        if (label == 'N') ++n_count;
-        if (label == 'U') ++u_count;
-        ++rows;
-    }
-    harness::write_metrics_json("sid_ternary", "case_distribution",
-                                {{"rows", static_cast<double>(rows)},
-                                 {"I", static_cast<double>(i_count)},
-                                 {"N", static_cast<double>(n_count)},
-                                 {"U", static_cast<double>(u_count)}});
-    EXPECT_EQ(rows, 8);
-    EXPECT_EQ(i_count + n_count + u_count, rows);
+TEST(SidTernary, StepHashMatchesGolden) {
+    auto root = harness::project_root();
+    auto runner = root / "build/Debug/sid_step_runner.exe";
+    auto input = root / "Simulation/tests/fixtures/inputs/sid_ternary_step.jsonl";
+    auto output = root / "artifacts/validation/sid_ternary/out.json";
+    auto hash = harness::run_step_runner_and_hash(runner, input, output);
+    ASSERT_FALSE(hash.empty());
+    EXPECT_EQ(hash, "441585dd8f25f8df");
 }
 
 TEST(SidTernary, ConsistencyPlaceholder) {

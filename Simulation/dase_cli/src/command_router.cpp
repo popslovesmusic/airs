@@ -394,6 +394,7 @@ json CommandRouter::handleCreateEngine(const json& params) {
     // Extract parameters with defaults
     std::string engine_type = params.value("engine_type", "phase4b");
     int num_nodes = params.value("num_nodes", 1024);
+    std::string engine_id_hint = params.value("engine_id", "");
 
     // Extract R_c with explicit fallback logic (avoid nested .value() which can throw on null)
     double R_c = 1.0;
@@ -494,7 +495,8 @@ json CommandRouter::handleCreateEngine(const json& params) {
         N_x,
         N_y,
         N_z,
-        sid_role
+        sid_role,
+        engine_id_hint
     );
 
     if (engine_id.empty()) {
