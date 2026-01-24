@@ -66,7 +66,8 @@ endif()
 if(FFTW3_LIBRARY)
     message(STATUS "Found FFTW3: ${FFTW3_LIBRARY}")
 else()
-    message(FATAL_ERROR "FFTW3 library not found. Please place libfftw3-3.lib in project root.")
+    message(WARNING "FFTW3 library not found. FFT analysis features will be disabled.")
+    set(FFTW3_LIBRARY "")
 endif()
 
 # Find FFTW3 header

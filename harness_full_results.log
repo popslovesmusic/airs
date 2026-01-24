@@ -1,0 +1,128 @@
+[==========] Running 38 tests from 10 test suites.
+[----------] Global test environment set-up.
+[----------] 2 tests from PolicyTable
+[ RUN      ] PolicyTable.LoadsValidationTable
+[       OK ] PolicyTable.LoadsValidationTable (0 ms)
+[ RUN      ] PolicyTable.UnknownEngineIsSafe
+[       OK ] PolicyTable.UnknownEngineIsSafe (0 ms)
+[----------] 2 tests from PolicyTable (0 ms total)
+
+[----------] 1 test from MetricsWriter
+[ RUN      ] MetricsWriter.WritesJsonToMetricsRoot
+[       OK ] MetricsWriter.WritesJsonToMetricsRoot (12 ms)
+[----------] 1 test from MetricsWriter (12 ms total)
+
+[----------] 1 test from DeterminismHelpers
+[ RUN      ] DeterminismHelpers.HashIsStable
+[       OK ] DeterminismHelpers.HashIsStable (0 ms)
+[----------] 1 test from DeterminismHelpers (0 ms total)
+
+[----------] 6 tests from BasicComputeSubstrate
+[ RUN      ] BasicComputeSubstrate.PolicyCoversExpectedValidations
+[       OK ] BasicComputeSubstrate.PolicyCoversExpectedValidations (0 ms)
+[ RUN      ] BasicComputeSubstrate.StepHashMatchesGolden
+[       OK ] BasicComputeSubstrate.StepHashMatchesGolden (21 ms)
+[ RUN      ] BasicComputeSubstrate.Step10HashMatchesGolden
+[       OK ] BasicComputeSubstrate.Step10HashMatchesGolden (21 ms)
+[ RUN      ] BasicComputeSubstrate.StateNormFiniteAndPositive
+[       OK ] BasicComputeSubstrate.StateNormFiniteAndPositive (20 ms)
+[ RUN      ] BasicComputeSubstrate.DriftEnvelopeStateNorm
+[       OK ] BasicComputeSubstrate.DriftEnvelopeStateNorm (40 ms)
+[ RUN      ] BasicComputeSubstrate.DeterminismPlaceholder
+E:\airs\Simulation\tests\harness\harness_basic_compute.cpp(81): Skipped
+TODO: implement determinism and stability checks with real fixtures.
+
+[  SKIPPED ] BasicComputeSubstrate.DeterminismPlaceholder (0 ms)
+[----------] 6 tests from BasicComputeSubstrate (104 ms total)
+
+[----------] 5 tests from SatpHiggs
+[ RUN      ] SatpHiggs.PolicyCoversExpectedValidations
+[       OK ] SatpHiggs.PolicyCoversExpectedValidations (0 ms)
+[ RUN      ] SatpHiggs.StepHashMatchesGolden
+[       OK ] SatpHiggs.StepHashMatchesGolden (19 ms)
+[ RUN      ] SatpHiggs.Step10HashMatchesGolden
+[       OK ] SatpHiggs.Step10HashMatchesGolden (19 ms)
+[ RUN      ] SatpHiggs.StateNormFiniteAndPositive
+[       OK ] SatpHiggs.StateNormFiniteAndPositive (18 ms)
+[ RUN      ] SatpHiggs.DriftEnvelopeStateNorm
+[       OK ] SatpHiggs.DriftEnvelopeStateNorm (39 ms)
+[----------] 5 tests from SatpHiggs (98 ms total)
+
+[----------] 6 tests from IgsoaGw
+[ RUN      ] IgsoaGw.PolicyCoversExpectedValidations
+[       OK ] IgsoaGw.PolicyCoversExpectedValidations (0 ms)
+[ RUN      ] IgsoaGw.StepHashMatchesGolden
+[       OK ] IgsoaGw.StepHashMatchesGolden (21 ms)
+[ RUN      ] IgsoaGw.Step10HashMatchesGolden
+[       OK ] IgsoaGw.Step10HashMatchesGolden (21 ms)
+[ RUN      ] IgsoaGw.StateNormFiniteAndPositive
+[       OK ] IgsoaGw.StateNormFiniteAndPositive (19 ms)
+[ RUN      ] IgsoaGw.DriftEnvelopeStateNorm
+[       OK ] IgsoaGw.DriftEnvelopeStateNorm (41 ms)
+[ RUN      ] IgsoaGw.EchoStructurePlaceholder
+E:\airs\Simulation\tests\harness\harness_igsoa_gw.cpp(79): Skipped
+TODO: implement echo structure/resonance spectrum tests with fixtures.
+
+[  SKIPPED ] IgsoaGw.EchoStructurePlaceholder (0 ms)
+[----------] 6 tests from IgsoaGw (104 ms total)
+
+[----------] 6 tests from IgsoaComplex
+[ RUN      ] IgsoaComplex.PolicyCoversExpectedValidations
+[       OK ] IgsoaComplex.PolicyCoversExpectedValidations (0 ms)
+[ RUN      ] IgsoaComplex.StepHashMatchesGolden
+[       OK ] IgsoaComplex.StepHashMatchesGolden (20 ms)
+[ RUN      ] IgsoaComplex.Step10HashMatchesGolden
+[       OK ] IgsoaComplex.Step10HashMatchesGolden (20 ms)
+[ RUN      ] IgsoaComplex.StateNormFiniteAndPositive
+[       OK ] IgsoaComplex.StateNormFiniteAndPositive (19 ms)
+[ RUN      ] IgsoaComplex.DriftEnvelopeStateNorm
+[       OK ] IgsoaComplex.DriftEnvelopeStateNorm (41 ms)
+[ RUN      ] IgsoaComplex.AttractorPlaceholder
+E:\airs\Simulation\tests\harness\harness_igsoa_complex.cpp(78): Skipped
+TODO: implement attractor convergence and variance suppression tests.
+
+[  SKIPPED ] IgsoaComplex.AttractorPlaceholder (0 ms)
+[----------] 6 tests from IgsoaComplex (101 ms total)
+
+[----------] 5 tests from SidSsp
+[ RUN      ] SidSsp.PolicyCoversExpectedValidations
+[       OK ] SidSsp.PolicyCoversExpectedValidations (0 ms)
+[ RUN      ] SidSsp.StepHashMatchesGolden
+[       OK ] SidSsp.StepHashMatchesGolden (20 ms)
+[ RUN      ] SidSsp.Step10HashMatchesGolden
+[       OK ] SidSsp.Step10HashMatchesGolden (19 ms)
+[ RUN      ] SidSsp.ActiveNodesWithinBounds
+[       OK ] SidSsp.ActiveNodesWithinBounds (18 ms)
+[ RUN      ] SidSsp.TotalMassConservedBetweenStep1AndStep10
+[       OK ] SidSsp.TotalMassConservedBetweenStep1AndStep10 (37 ms)
+[----------] 5 tests from SidSsp (96 ms total)
+
+[----------] 5 tests from SidTernary
+[ RUN      ] SidTernary.PolicyCoversExpectedValidations
+[       OK ] SidTernary.PolicyCoversExpectedValidations (0 ms)
+[ RUN      ] SidTernary.StepHashMatchesGolden
+[       OK ] SidTernary.StepHashMatchesGolden (19 ms)
+[ RUN      ] SidTernary.Step10HashMatchesGolden
+[       OK ] SidTernary.Step10HashMatchesGolden (19 ms)
+[ RUN      ] SidTernary.ActiveNodesWithinBounds
+[       OK ] SidTernary.ActiveNodesWithinBounds (19 ms)
+[ RUN      ] SidTernary.TotalMassConservedBetweenStep1AndStep10
+[       OK ] SidTernary.TotalMassConservedBetweenStep1AndStep10 (37 ms)
+[----------] 5 tests from SidTernary (96 ms total)
+
+[----------] 1 test from SidRewriteDeterminism
+[ RUN      ] SidRewriteDeterminism.PlaceholderUntilFixturesExist
+E:\airs\Simulation\tests\harness\harness_sid_rewrite.cpp(11): Skipped
+Awaiting SID rewrite fixtures and policy scheduler (Step 5a).
+
+[  SKIPPED ] SidRewriteDeterminism.PlaceholderUntilFixturesExist (0 ms)
+[----------] 1 test from SidRewriteDeterminism (0 ms total)
+
+[----------] Global test environment tear-down
+[==========] 38 tests from 10 test suites ran. (615 ms total)
+[  PASSED  ] 34 tests.
+[  SKIPPED ] 4 tests, listed below:
+[  SKIPPED ] BasicComputeSubstrate.DeterminismPlaceholder
+[  SKIPPED ] IgsoaGw.EchoStructurePlaceholder
+[  SKIPPED ] IgsoaComplex.AttractorPlaceholder
+[  SKIPPED ] SidRewriteDeterminism.PlaceholderUntilFixturesExist

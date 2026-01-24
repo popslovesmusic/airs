@@ -1,17 +1,28 @@
 # Build artifacts (compiled binaries - rebuild from source)
+# EXCEPT: Critical libraries needed for building (FFTW)
 build/
 *.obj
 *.o
+*.exp
+
+# Executables - EXCLUDE from git (rebuilable)
 *.exe
+!Simulation/bin/dase_cli.exe.backup_*
+!Simulation/bin/sid_cli.exe.backup_*
+
+# DLLs - EXCLUDE engine DLLs (rebuilable) but KEEP third-party libraries
 *.dll
+!Simulation/libfftw3-3.dll
+!Simulation/bin/libfftw3-3.dll
+
+# Other platforms
 *.so
 *.dylib
 *.pyd
+
+# Library files - KEEP import libraries for third-party deps
 *.lib
-*.exp
-sim/bin/*.exe
-sim/bin/*.dll
-ssot/bin/*.exe
+!Simulation/libfftw3-3.lib
 
 # Cache
 cache/
@@ -20,9 +31,11 @@ __pycache__/
 *.pyc
 *.pyo
 
-# Logs
+# Logs - KEEP harness test results, exclude general logs
 logs/
 *.log
+!harness_full_results.log
+!harness_test_results*.log
 
 # Workspace temp and output
 workspace/temp/
@@ -36,13 +49,14 @@ workspace/output/
 .DS_Store
 Thumbs.db
 
-# Large data files (backed up on Google Drive - do not commit)
+# Large data files (backed up separately - do not commit)
 ssot/data/ssot_parallel.db
 ssot/data/rmap_graph.gpickle
 ssot/data/ssot_index/
 ssot/data/*.db
 ssot/data/*.gpickle
 *.db
+!validation*.db
 *.gpickle
 
 # User-specific configuration
@@ -59,7 +73,7 @@ dist/
 .coverage
 htmlcov/
 
-# Simulation outputs
+# Simulation outputs - KEEP validation artifacts
 sim/cache/
 sim/build/
 *.csv
@@ -67,12 +81,14 @@ sim/build/
 *.png
 analysis_*/
 output_*.json
+!artifacts/validation/**/*.json
 
 # Temporary files
 *.tmp
 *.temp
 temp/
 tmp/
+!test_*.json
 
 # Old directories (to be removed after validation)
 New folder/
@@ -86,3 +102,14 @@ Simulation/**/*.o
 migrate.py
 migrate_fixed.py
 migration_log.txt
+
+# FFTW downloaded package (can be re-downloaded)
+fftw-3.3.5-dll64.zip
+bench*.exe
+fftw*-wisdom.exe
+
+# Keep FFTW definition files (needed for building)
+!*.def
+
+# Keep critical test results
+!metrics/**/*.json

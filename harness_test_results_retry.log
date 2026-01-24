@@ -1,0 +1,314 @@
+Test project E:/airs/build
+    Start 1: harness_tests
+1/1 Test #1: harness_tests ....................***Failed    0.56 sec
+[==========] Running 38 tests from 10 test suites.
+[----------] Global test environment set-up.
+[----------] 2 tests from PolicyTable
+[ RUN      ] PolicyTable.LoadsValidationTable
+[       OK ] PolicyTable.LoadsValidationTable (0 ms)
+[ RUN      ] PolicyTable.UnknownEngineIsSafe
+[       OK ] PolicyTable.UnknownEngineIsSafe (0 ms)
+[----------] 2 tests from PolicyTable (0 ms total)
+
+[----------] 1 test from MetricsWriter
+[ RUN      ] MetricsWriter.WritesJsonToMetricsRoot
+[       OK ] MetricsWriter.WritesJsonToMetricsRoot (11 ms)
+[----------] 1 test from MetricsWriter (11 ms total)
+
+[----------] 1 test from DeterminismHelpers
+[ RUN      ] DeterminismHelpers.HashIsStable
+[       OK ] DeterminismHelpers.HashIsStable (0 ms)
+[----------] 1 test from DeterminismHelpers (0 ms total)
+
+[----------] 6 tests from BasicComputeSubstrate
+[ RUN      ] BasicComputeSubstrate.PolicyCoversExpectedValidations
+[       OK ] BasicComputeSubstrate.PolicyCoversExpectedValidations (0 ms)
+[ RUN      ] BasicComputeSubstrate.StepHashMatchesGolden
+cli failed: -1073741515
+runner failed rc=-1073741515 last_error=0 cmd=E:\airs\build\Debug\dase_step_runner.exe E:\airs\Simulation\tests\fixtures\inputs\basic_compute_step.jsonl E:\airs\artifacts\validation\basic_compute_substrate\out.json
+E:\airs\Simulation\tests\harness\harness_basic_compute.cpp(29): error: Value of: result.hash.empty()
+  Actual: true
+Expected: false
+
+[  FAILED  ] BasicComputeSubstrate.StepHashMatchesGolden (40 ms)
+[ RUN      ] BasicComputeSubstrate.Step10HashMatchesGolden
+cli failed: -1073741515
+runner failed rc=-1073741515 last_error=0 cmd=E:\airs\build\Debug\dase_step_runner.exe E:\airs\Simulation\tests\fixtures\inputs\basic_compute_step_10.jsonl E:\airs\artifacts\validation\basic_compute_substrate\out_step_10.json
+E:\airs\Simulation\tests\harness\harness_basic_compute.cpp(42): error: Value of: result.hash.empty()
+  Actual: true
+Expected: false
+
+[  FAILED  ] BasicComputeSubstrate.Step10HashMatchesGolden (17 ms)
+[ RUN      ] BasicComputeSubstrate.StateNormFiniteAndPositive
+cli failed: -1073741515
+runner failed rc=-1073741515 last_error=0 cmd=E:\airs\build\Debug\dase_step_runner.exe E:\airs\Simulation\tests\fixtures\inputs\basic_compute_step_10.jsonl E:\airs\artifacts\validation\basic_compute_substrate\out_step_10.json
+E:\airs\Simulation\tests\harness\harness_basic_compute.cpp(55): error: Value of: result.hash.empty()
+  Actual: true
+Expected: false
+
+[  FAILED  ] BasicComputeSubstrate.StateNormFiniteAndPositive (15 ms)
+[ RUN      ] BasicComputeSubstrate.DriftEnvelopeStateNorm
+cli failed: -1073741515
+runner failed rc=-1073741515 last_error=0 cmd=E:\airs\build\Debug\dase_step_runner.exe E:\airs\Simulation\tests\fixtures\inputs\basic_compute_step.jsonl E:\airs\artifacts\validation\basic_compute_substrate\out.json
+cli failed: -1073741515
+runner failed rc=-1073741515 last_error=0 cmd=E:\airs\build\Debug\dase_step_runner.exe E:\airs\Simulation\tests\fixtures\inputs\basic_compute_step_10.jsonl E:\airs\artifacts\validation\basic_compute_substrate\out_step_10.json
+E:\airs\Simulation\tests\harness\harness_basic_compute.cpp(71): error: Expected: (r1.metrics.count("state_norm")) != (0u), actual: 0 vs 0
+
+[  FAILED  ] BasicComputeSubstrate.DriftEnvelopeStateNorm (32 ms)
+[ RUN      ] BasicComputeSubstrate.DeterminismPlaceholder
+E:\airs\Simulation\tests\harness\harness_basic_compute.cpp(81): Skipped
+TODO: implement determinism and stability checks with real fixtures.
+
+[  SKIPPED ] BasicComputeSubstrate.DeterminismPlaceholder (0 ms)
+[----------] 6 tests from BasicComputeSubstrate (106 ms total)
+
+[----------] 5 tests from SatpHiggs
+[ RUN      ] SatpHiggs.PolicyCoversExpectedValidations
+[       OK ] SatpHiggs.PolicyCoversExpectedValidations (0 ms)
+[ RUN      ] SatpHiggs.StepHashMatchesGolden
+cli failed: -1073741515
+runner failed rc=-1073741515 last_error=0 cmd=E:\airs\build\Debug\dase_step_runner.exe E:\airs\Simulation\tests\fixtures\inputs\satp_higgs_step.jsonl E:\airs\artifacts\validation\satp_higgs\out.json
+E:\airs\Simulation\tests\harness\harness_satp_higgs.cpp(28): error: Value of: result.hash.empty()
+  Actual: true
+Expected: false
+
+[  FAILED  ] SatpHiggs.StepHashMatchesGolden (16 ms)
+[ RUN      ] SatpHiggs.Step10HashMatchesGolden
+cli failed: -1073741515
+runner failed rc=-1073741515 last_error=0 cmd=E:\airs\build\Debug\dase_step_runner.exe E:\airs\Simulation\tests\fixtures\inputs\satp_higgs_step_10.jsonl E:\airs\artifacts\validation\satp_higgs\out_step_10.json
+E:\airs\Simulation\tests\harness\harness_satp_higgs.cpp(41): error: Value of: result.hash.empty()
+  Actual: true
+Expected: false
+
+[  FAILED  ] SatpHiggs.Step10HashMatchesGolden (16 ms)
+[ RUN      ] SatpHiggs.StateNormFiniteAndPositive
+cli failed: -1073741515
+runner failed rc=-1073741515 last_error=0 cmd=E:\airs\build\Debug\dase_step_runner.exe E:\airs\Simulation\tests\fixtures\inputs\satp_higgs_step_10.jsonl E:\airs\artifacts\validation\satp_higgs\out_step_10.json
+E:\airs\Simulation\tests\harness\harness_satp_higgs.cpp(54): error: Value of: result.hash.empty()
+  Actual: true
+Expected: false
+
+[  FAILED  ] SatpHiggs.StateNormFiniteAndPositive (17 ms)
+[ RUN      ] SatpHiggs.DriftEnvelopeStateNorm
+cli failed: -1073741515
+runner failed rc=-1073741515 last_error=0 cmd=E:\airs\build\Debug\dase_step_runner.exe E:\airs\Simulation\tests\fixtures\inputs\satp_higgs_step.jsonl E:\airs\artifacts\validation\satp_higgs\out.json
+cli failed: -1073741515
+runner failed rc=-1073741515 last_error=0 cmd=E:\airs\build\Debug\dase_step_runner.exe E:\airs\Simulation\tests\fixtures\inputs\satp_higgs_step_10.jsonl E:\airs\artifacts\validation\satp_higgs\out_step_10.json
+E:\airs\Simulation\tests\harness\harness_satp_higgs.cpp(70): error: Expected: (r1.metrics.count("state_norm")) != (0u), actual: 0 vs 0
+
+[  FAILED  ] SatpHiggs.DriftEnvelopeStateNorm (32 ms)
+[----------] 5 tests from SatpHiggs (84 ms total)
+
+[----------] 6 tests from IgsoaGw
+[ RUN      ] IgsoaGw.PolicyCoversExpectedValidations
+[       OK ] IgsoaGw.PolicyCoversExpectedValidations (0 ms)
+[ RUN      ] IgsoaGw.StepHashMatchesGolden
+cli failed: -1073741515
+runner failed rc=-1073741515 last_error=0 cmd=E:\airs\build\Debug\dase_step_runner.exe E:\airs\Simulation\tests\fixtures\inputs\gw_step.jsonl E:\airs\artifacts\validation\gw\out.json
+E:\airs\Simulation\tests\harness\harness_igsoa_gw.cpp(28): error: Value of: result.hash.empty()
+  Actual: true
+Expected: false
+
+[  FAILED  ] IgsoaGw.StepHashMatchesGolden (16 ms)
+[ RUN      ] IgsoaGw.Step10HashMatchesGolden
+cli failed: -1073741515
+runner failed rc=-1073741515 last_error=0 cmd=E:\airs\build\Debug\dase_step_runner.exe E:\airs\Simulation\tests\fixtures\inputs\gw_step_10.jsonl E:\airs\artifacts\validation\gw\out_step_10.json
+E:\airs\Simulation\tests\harness\harness_igsoa_gw.cpp(41): error: Value of: result.hash.empty()
+  Actual: true
+Expected: false
+
+[  FAILED  ] IgsoaGw.Step10HashMatchesGolden (16 ms)
+[ RUN      ] IgsoaGw.StateNormFiniteAndPositive
+cli failed: -1073741515
+runner failed rc=-1073741515 last_error=0 cmd=E:\airs\build\Debug\dase_step_runner.exe E:\airs\Simulation\tests\fixtures\inputs\gw_step_10.jsonl E:\airs\artifacts\validation\gw\out_step_10.json
+E:\airs\Simulation\tests\harness\harness_igsoa_gw.cpp(54): error: Value of: result.hash.empty()
+  Actual: true
+Expected: false
+
+[  FAILED  ] IgsoaGw.StateNormFiniteAndPositive (16 ms)
+[ RUN      ] IgsoaGw.DriftEnvelopeStateNorm
+cli failed: -1073741515
+runner failed rc=-1073741515 last_error=0 cmd=E:\airs\build\Debug\dase_step_runner.exe E:\airs\Simulation\tests\fixtures\inputs\gw_step.jsonl E:\airs\artifacts\validation\gw\out.json
+cli failed: -1073741515
+runner failed rc=-1073741515 last_error=0 cmd=E:\airs\build\Debug\dase_step_runner.exe E:\airs\Simulation\tests\fixtures\inputs\gw_step_10.jsonl E:\airs\artifacts\validation\gw\out_step_10.json
+E:\airs\Simulation\tests\harness\harness_igsoa_gw.cpp(70): error: Expected: (r1.metrics.count("state_norm")) != (0u), actual: 0 vs 0
+
+[  FAILED  ] IgsoaGw.DriftEnvelopeStateNorm (32 ms)
+[ RUN      ] IgsoaGw.EchoStructurePlaceholder
+E:\airs\Simulation\tests\harness\harness_igsoa_gw.cpp(79): Skipped
+TODO: implement echo structure/resonance spectrum tests with fixtures.
+
+[  SKIPPED ] IgsoaGw.EchoStructurePlaceholder (0 ms)
+[----------] 6 tests from IgsoaGw (81 ms total)
+
+[----------] 6 tests from IgsoaComplex
+[ RUN      ] IgsoaComplex.PolicyCoversExpectedValidations
+[       OK ] IgsoaComplex.PolicyCoversExpectedValidations (0 ms)
+[ RUN      ] IgsoaComplex.StepHashMatchesGolden
+cli failed: -1073741515
+runner failed rc=-1073741515 last_error=0 cmd=E:\airs\build\Debug\dase_step_runner.exe E:\airs\Simulation\tests\fixtures\inputs\igsoa_complex_step.jsonl E:\airs\artifacts\validation\igsoa_complex\out.json
+E:\airs\Simulation\tests\harness\harness_igsoa_complex.cpp(27): error: Value of: result.hash.empty()
+  Actual: true
+Expected: false
+
+[  FAILED  ] IgsoaComplex.StepHashMatchesGolden (16 ms)
+[ RUN      ] IgsoaComplex.Step10HashMatchesGolden
+cli failed: -1073741515
+runner failed rc=-1073741515 last_error=0 cmd=E:\airs\build\Debug\dase_step_runner.exe E:\airs\Simulation\tests\fixtures\inputs\igsoa_complex_step_10.jsonl E:\airs\artifacts\validation\igsoa_complex\out_step_10.json
+E:\airs\Simulation\tests\harness\harness_igsoa_complex.cpp(40): error: Value of: result.hash.empty()
+  Actual: true
+Expected: false
+
+[  FAILED  ] IgsoaComplex.Step10HashMatchesGolden (17 ms)
+[ RUN      ] IgsoaComplex.StateNormFiniteAndPositive
+cli failed: -1073741515
+runner failed rc=-1073741515 last_error=0 cmd=E:\airs\build\Debug\dase_step_runner.exe E:\airs\Simulation\tests\fixtures\inputs\igsoa_complex_step_10.jsonl E:\airs\artifacts\validation\igsoa_complex\out_step_10.json
+E:\airs\Simulation\tests\harness\harness_igsoa_complex.cpp(53): error: Value of: result.hash.empty()
+  Actual: true
+Expected: false
+
+[  FAILED  ] IgsoaComplex.StateNormFiniteAndPositive (16 ms)
+[ RUN      ] IgsoaComplex.DriftEnvelopeStateNorm
+cli failed: -1073741515
+runner failed rc=-1073741515 last_error=0 cmd=E:\airs\build\Debug\dase_step_runner.exe E:\airs\Simulation\tests\fixtures\inputs\igsoa_complex_step.jsonl E:\airs\artifacts\validation\igsoa_complex\out.json
+cli failed: -1073741515
+runner failed rc=-1073741515 last_error=0 cmd=E:\airs\build\Debug\dase_step_runner.exe E:\airs\Simulation\tests\fixtures\inputs\igsoa_complex_step_10.jsonl E:\airs\artifacts\validation\igsoa_complex\out_step_10.json
+E:\airs\Simulation\tests\harness\harness_igsoa_complex.cpp(69): error: Expected: (r1.metrics.count("state_norm")) != (0u), actual: 0 vs 0
+
+[  FAILED  ] IgsoaComplex.DriftEnvelopeStateNorm (32 ms)
+[ RUN      ] IgsoaComplex.AttractorPlaceholder
+E:\airs\Simulation\tests\harness\harness_igsoa_complex.cpp(78): Skipped
+TODO: implement attractor convergence and variance suppression tests.
+
+[  SKIPPED ] IgsoaComplex.AttractorPlaceholder (0 ms)
+[----------] 6 tests from IgsoaComplex (82 ms total)
+
+[----------] 5 tests from SidSsp
+[ RUN      ] SidSsp.PolicyCoversExpectedValidations
+[       OK ] SidSsp.PolicyCoversExpectedValidations (0 ms)
+[ RUN      ] SidSsp.StepHashMatchesGolden
+cli failed: -1073741515
+runner failed rc=-1073741515 last_error=0 cmd=E:\airs\build\Debug\sid_step_runner.exe E:\airs\Simulation\tests\fixtures\inputs\sid_ssp_step.jsonl E:\airs\artifacts\validation\sid_ssp\out.json
+E:\airs\Simulation\tests\harness\harness_sid_ssp.cpp(28): error: Value of: result.hash.empty()
+  Actual: true
+Expected: false
+
+[  FAILED  ] SidSsp.StepHashMatchesGolden (36 ms)
+[ RUN      ] SidSsp.Step10HashMatchesGolden
+cli failed: -1073741515
+runner failed rc=-1073741515 last_error=0 cmd=E:\airs\build\Debug\sid_step_runner.exe E:\airs\Simulation\tests\fixtures\inputs\sid_ssp_step_10.jsonl E:\airs\artifacts\validation\sid_ssp\out_step_10.json
+E:\airs\Simulation\tests\harness\harness_sid_ssp.cpp(44): error: Value of: result.hash.empty()
+  Actual: true
+Expected: false
+
+[  FAILED  ] SidSsp.Step10HashMatchesGolden (18 ms)
+[ RUN      ] SidSsp.ActiveNodesWithinBounds
+cli failed: -1073741515
+runner failed rc=-1073741515 last_error=0 cmd=E:\airs\build\Debug\sid_step_runner.exe E:\airs\Simulation\tests\fixtures\inputs\sid_ssp_step_10.jsonl E:\airs\artifacts\validation\sid_ssp\out_step_10.json
+E:\airs\Simulation\tests\harness\harness_sid_ssp.cpp(60): error: Value of: result.hash.empty()
+  Actual: true
+Expected: false
+
+[  FAILED  ] SidSsp.ActiveNodesWithinBounds (18 ms)
+[ RUN      ] SidSsp.TotalMassConservedBetweenStep1AndStep10
+cli failed: -1073741515
+runner failed rc=-1073741515 last_error=0 cmd=E:\airs\build\Debug\sid_step_runner.exe E:\airs\Simulation\tests\fixtures\inputs\sid_ssp_step.jsonl E:\airs\artifacts\validation\sid_ssp\out.json
+cli failed: -1073741515
+runner failed rc=-1073741515 last_error=0 cmd=E:\airs\build\Debug\sid_step_runner.exe E:\airs\Simulation\tests\fixtures\inputs\sid_ssp_step_10.jsonl E:\airs\artifacts\validation\sid_ssp\out_step_10.json
+E:\airs\Simulation\tests\harness\harness_sid_ssp.cpp(76): error: Expected: (r1.metrics.count("total_mass")) != (0u), actual: 0 vs 0
+
+[  FAILED  ] SidSsp.TotalMassConservedBetweenStep1AndStep10 (32 ms)
+[----------] 5 tests from SidSsp (106 ms total)
+
+[----------] 5 tests from SidTernary
+[ RUN      ] SidTernary.PolicyCoversExpectedValidations
+[       OK ] SidTernary.PolicyCoversExpectedValidations (0 ms)
+[ RUN      ] SidTernary.StepHashMatchesGolden
+cli failed: -1073741515
+runner failed rc=-1073741515 last_error=0 cmd=E:\airs\build\Debug\sid_step_runner.exe E:\airs\Simulation\tests\fixtures\inputs\sid_ternary_step.jsonl E:\airs\artifacts\validation\sid_ternary\out.json
+E:\airs\Simulation\tests\harness\harness_sid_ternary.cpp(27): error: Value of: result.hash.empty()
+  Actual: true
+Expected: false
+
+[  FAILED  ] SidTernary.StepHashMatchesGolden (16 ms)
+[ RUN      ] SidTernary.Step10HashMatchesGolden
+cli failed: -1073741515
+runner failed rc=-1073741515 last_error=0 cmd=E:\airs\build\Debug\sid_step_runner.exe E:\airs\Simulation\tests\fixtures\inputs\sid_ternary_step_10.jsonl E:\airs\artifacts\validation\sid_ternary\out_step_10.json
+E:\airs\Simulation\tests\harness\harness_sid_ternary.cpp(43): error: Value of: result.hash.empty()
+  Actual: true
+Expected: false
+
+[  FAILED  ] SidTernary.Step10HashMatchesGolden (16 ms)
+[ RUN      ] SidTernary.ActiveNodesWithinBounds
+cli failed: -1073741515
+runner failed rc=-1073741515 last_error=0 cmd=E:\airs\build\Debug\sid_step_runner.exe E:\airs\Simulation\tests\fixtures\inputs\sid_ternary_step_10.jsonl E:\airs\artifacts\validation\sid_ternary\out_step_10.json
+E:\airs\Simulation\tests\harness\harness_sid_ternary.cpp(59): error: Value of: result.hash.empty()
+  Actual: true
+Expected: false
+
+[  FAILED  ] SidTernary.ActiveNodesWithinBounds (15 ms)
+[ RUN      ] SidTernary.TotalMassConservedBetweenStep1AndStep10
+cli failed: -1073741515
+runner failed rc=-1073741515 last_error=0 cmd=E:\airs\build\Debug\sid_step_runner.exe E:\airs\Simulation\tests\fixtures\inputs\sid_ternary_step.jsonl E:\airs\artifacts\validation\sid_ternary\out.json
+cli failed: -1073741515
+runner failed rc=-1073741515 last_error=0 cmd=E:\airs\build\Debug\sid_step_runner.exe E:\airs\Simulation\tests\fixtures\inputs\sid_ternary_step_10.jsonl E:\airs\artifacts\validation\sid_ternary\out_step_10.json
+E:\airs\Simulation\tests\harness\harness_sid_ternary.cpp(75): error: Expected: (r1.metrics.count("total_mass")) != (0u), actual: 0 vs 0
+
+[  FAILED  ] SidTernary.TotalMassConservedBetweenStep1AndStep10 (32 ms)
+[----------] 5 tests from SidTernary (82 ms total)
+
+[----------] 1 test from SidRewriteDeterminism
+[ RUN      ] SidRewriteDeterminism.PlaceholderUntilFixturesExist
+E:\airs\Simulation\tests\harness\harness_sid_rewrite.cpp(11): Skipped
+Awaiting SID rewrite fixtures and policy scheduler (Step 5a).
+
+[  SKIPPED ] SidRewriteDeterminism.PlaceholderUntilFixturesExist (0 ms)
+[----------] 1 test from SidRewriteDeterminism (0 ms total)
+
+[----------] Global test environment tear-down
+[==========] 38 tests from 10 test suites ran. (556 ms total)
+[  PASSED  ] 10 tests.
+[  SKIPPED ] 4 tests, listed below:
+[  SKIPPED ] BasicComputeSubstrate.DeterminismPlaceholder
+[  SKIPPED ] IgsoaGw.EchoStructurePlaceholder
+[  SKIPPED ] IgsoaComplex.AttractorPlaceholder
+[  SKIPPED ] SidRewriteDeterminism.PlaceholderUntilFixturesExist
+[  FAILED  ] 24 tests, listed below:
+[  FAILED  ] BasicComputeSubstrate.StepHashMatchesGolden
+[  FAILED  ] BasicComputeSubstrate.Step10HashMatchesGolden
+[  FAILED  ] BasicComputeSubstrate.StateNormFiniteAndPositive
+[  FAILED  ] BasicComputeSubstrate.DriftEnvelopeStateNorm
+[  FAILED  ] SatpHiggs.StepHashMatchesGolden
+[  FAILED  ] SatpHiggs.Step10HashMatchesGolden
+[  FAILED  ] SatpHiggs.StateNormFiniteAndPositive
+[  FAILED  ] SatpHiggs.DriftEnvelopeStateNorm
+[  FAILED  ] IgsoaGw.StepHashMatchesGolden
+[  FAILED  ] IgsoaGw.Step10HashMatchesGolden
+[  FAILED  ] IgsoaGw.StateNormFiniteAndPositive
+[  FAILED  ] IgsoaGw.DriftEnvelopeStateNorm
+[  FAILED  ] IgsoaComplex.StepHashMatchesGolden
+[  FAILED  ] IgsoaComplex.Step10HashMatchesGolden
+[  FAILED  ] IgsoaComplex.StateNormFiniteAndPositive
+[  FAILED  ] IgsoaComplex.DriftEnvelopeStateNorm
+[  FAILED  ] SidSsp.StepHashMatchesGolden
+[  FAILED  ] SidSsp.Step10HashMatchesGolden
+[  FAILED  ] SidSsp.ActiveNodesWithinBounds
+[  FAILED  ] SidSsp.TotalMassConservedBetweenStep1AndStep10
+[  FAILED  ] SidTernary.StepHashMatchesGolden
+[  FAILED  ] SidTernary.Step10HashMatchesGolden
+[  FAILED  ] SidTernary.ActiveNodesWithinBounds
+[  FAILED  ] SidTernary.TotalMassConservedBetweenStep1AndStep10
+
+24 FAILED TESTS
+
+
+0% tests passed, 1 tests failed out of 1
+
+Label Time Summary:
+harness    =   0.56 sec*proc (1 test)
+
+Total Test time (real) =   0.57 sec
+
+The following tests FAILED:
+	  1 - harness_tests (Failed)                            harness
+Errors while running CTest
