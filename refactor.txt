@@ -1,0 +1,223 @@
+
+---
+
+# ✅ One-Day Refactor Plan
+
+**Goal:** Eliminate duplication ambiguity, lock governance boundaries, and make diagram handling unambiguous forever.
+
+---
+
+## Phase 0 — Declare intent (30 minutes)
+
+Before touching code, **freeze the decision**:
+
+> **Decision:**
+> `Simulation/dase_cli/` is the **only authoritative runtime bundle**
+> `sid_cli` is a **lab tool**, not an ingress path
+> Diagram semantics are **canonicalized internally**
+
+Write this into:
+
+* `Simulation/dase_cli/README.md`
+* (optional) root `contract.txt` as a governance invariant
+
+This prevents backsliding.
+
+---
+
+## Phase 1 — Collapse runtime authority (1–1.5 hours)
+
+### 1.1 Canonical runtime directory
+
+You already observed the correct fact:
+
+> `Simulation/dase_cli/` contains
+>
+> * `dase_cli.exe`
+> * `sid_cli.exe`
+> * all required DLLs
+
+That means this directory is **already the correct runtime envelope**.
+
+**Action:**
+
+* Treat `Simulation/dase_cli/` as **the only runnable location**
+* All scripts, tests, harnesses must reference binaries **only from here**
+
+### 1.2 Quarantine duplicates (don’t delete yet)
+
+Move (or mark clearly):
+
+* `Simulation/bin/*` → `Simulation/bin_DEPRECATED/`
+* `Simulation/build/**/Release/*.exe` → ignored for runtime
+* Add `.gitignore` entries if needed
+
+This removes “which binary am I running?” forever.
+
+---
+
+## Phase 2 — Hard-separate CLI roles (2 hours)
+
+### 2.1 Lock CLI responsibilities
+
+| CLI        | Role                   | Allowed                        |
+| ---------- | ---------------------- | ------------------------------ |
+| `dase_cli` | **Governed execution** | expressions, policies, metrics |
+| `sid_cli`  | **Engine lab**         | JSON diagrams, raw rewrites    |
+
+Write this explicitly into:
+
+* `Simulation/dase_cli/CLI_USAGE_GUIDE.md`
+* `Simulation/dase_cli/README.md`
+
+### 2.2 Make the separation *mechanical*
+
+In `dase_cli`:
+
+* ❌ Remove or disable `sid_set_diagram_json`
+* ✅ Keep `sid_set_diagram_expr`
+* ❌ No diagram JSON parsing in gated path
+
+In `sid_cli`:
+
+* ✅ Keep `sid_set_diagram_json`
+* ✅ Keep lab-only commands
+* ❌ No governance assumptions
+
+This eliminates the *false affordance* that caused the whole issue.
+
+---
+
+## Phase 3 — Canonicalize diagram construction (2 hours)
+
+This is the **most important fix**.
+
+### 3.1 Single internal construction path
+
+**Rule:**
+
+> All diagrams — regardless of origin — must go through the same builder.
+
+Concretely:
+
+* Expression ingress → AST → DiagramBuilder
+* JSON ingress (sid_cli only) → **JSON → AST → DiagramBuilder**
+
+Do **not**:
+
+* Build diagrams directly from JSON nodes
+* Allow silent skips of nodes or edges
+
+This removes:
+
+* silent empty diagrams
+* mismatched invariants
+* expression/JSON divergence
+
+### 3.2 Enforce invariants loudly
+
+Add **hard failures**:
+
+* zero nodes → error
+* missing IDs → error
+* invalid operators → error
+* disconnected core → error
+
+This converts “mysterious failure” into **actionable diagnostics**.
+
+---
+
+## Phase 4 — Fix build system cleanly (1 hour)
+
+You already diagnosed this correctly.
+
+### 4.1 Separate Debug vs Release flags
+
+* Debug:
+
+  * `/Od`
+  * `/MDd`
+  * `/RTC1`
+* Release:
+
+  * `/O2`
+  * `/GL`
+  * `/MD`
+
+No conditionals inside targets — do it at the config layer.
+
+### 4.2 Clean rebuild
+
+* Delete all `build/`
+* Rebuild **once**
+* Copy resulting binaries into `Simulation/dase_cli/`
+
+From this point forward:
+
+> **Only that directory matters**
+
+---
+
+## Phase 5 — Validate with intention (1 hour)
+
+### 5.1 Engine validation (lab)
+
+Using **sid_cli**:
+
+* Load JSON diagrams
+* Confirm Step 5a fixtures behave as expected
+
+This answers: *“Is the engine correct?”*
+
+### 5.2 Governance validation
+
+Using **dase_cli**:
+
+* Re-run Step 5a via expression ingress
+* Confirm invariant equivalence
+
+This answers: *“Is the system correct?”*
+
+Both answers together = confidence.
+
+---
+
+## Phase 6 — Document the membrane (30 minutes)
+
+Write a short file (1 page max):
+
+**`AUTHORITATIVE_EXECUTION.md`**
+
+Include:
+
+* Which CLI does what
+* Where binaries live
+* What is allowed to ingest diagrams
+* What is lab-only vs SSOT-valid
+
+This prevents future drift — especially with agents.
+
+---
+
+## What this refactor permanently fixes
+
+✔ No more binary ambiguity
+✔ No more diagram ingress confusion
+✔ No more silent JSON failures
+✔ No more “should this work?” loops
+✔ Clear lab vs governed boundary
+✔ Step 5a unblocked *and* trustworthy
+
+---
+
+## Final assessment (straight talk)
+
+You’re not refactoring because things are messy.
+You’re refactoring because the system has **outgrown its exploratory phase**.
+
+This is the exact moment where:
+
+* a day of planning saves weeks later
+* architecture stops fighting you
+* validation becomes boring (in a good way)
+

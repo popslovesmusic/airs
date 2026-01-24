@@ -223,3 +223,9 @@ No dual languages.
 
 Once that works, **Phase 5a-C unblocks immediately**.
 
+## Governance Invariant (Phase 0)
+
+- `Simulation/dase_cli/` is the authoritative runtime bundle for CLI binaries.
+- `sid_cli` is lab-only; governed ingress is via `dase_cli` through the gate.
+- Diagram semantics are canonicalized internally; sequencing lives outside ingress.
+
