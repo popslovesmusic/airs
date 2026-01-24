@@ -48,8 +48,8 @@ private:
     json handleSidRewrite(const json& params);
     json handleSidMetrics(const json& params);
     json handleSidSetDiagramExpr(const json& params);
-    json handleSidSetDiagramJson(const json& params);
-    json handleSidGetDiagramJson(const json& params);
+    json handleSidSetDiagramJson(const json& params) = delete;
+    json handleSidGetDiagramJson(const json& params) = delete;
     json handleSidRunRewrites(const json& params);
     json handleSidRewriteEvents(const json& params);
     json handleSidWrapperApplyMotion(const json& params);

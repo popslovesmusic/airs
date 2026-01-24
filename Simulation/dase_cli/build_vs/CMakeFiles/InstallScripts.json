@@ -1,0 +1,7 @@
+{
+	"InstallScripts" : 
+	[
+		"D:/airs/Simulation/dase_cli/build_vs/cmake_install.cmake"
+	],
+	"Parallel" : false
+}

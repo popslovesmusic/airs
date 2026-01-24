@@ -45,8 +45,9 @@ CommandRouter::CommandRouter()
     command_handlers["sid_rewrite"] = [this](const json& p) { return handleSidRewrite(p); };
     command_handlers["sid_metrics"] = [this](const json& p) { return handleSidMetrics(p); };
     command_handlers["sid_set_diagram_expr"] = [this](const json& p) { return handleSidSetDiagramExpr(p); };
-    command_handlers["sid_set_diagram_json"] = [this](const json& p) { return handleSidSetDiagramJson(p); };
-    command_handlers["sid_get_diagram_json"] = [this](const json& p) { return handleSidGetDiagramJson(p); };
+    // Governed ingress: expressions only. JSON diagram ingress is disabled here; use sid_cli for lab.
+    // command_handlers["sid_set_diagram_json"] = [this](const json& p) { return handleSidSetDiagramJson(p); };
+    // command_handlers["sid_get_diagram_json"] = [this](const json& p) { return handleSidGetDiagramJson(p); };
     command_handlers["sid_rewrite_events"] = [this](const json& p) { return handleSidRewriteEvents(p); };
     command_handlers["sid_run_rewrites"] = [this](const json& p) { return handleSidRunRewrites(p); };
     command_handlers["sid_wrapper_apply_motion"] = [this](const json& p) { return handleSidWrapperApplyMotion(p); };
@@ -330,7 +331,7 @@ json CommandRouter::handleDescribeEngine(const json& params) {
                     {"description", "Total mass / conservation constant"}
                 }}
             }},
-            {"commands", json::array({"sid_step", "sid_collapse", "sid_rewrite", "sid_metrics", "sid_set_diagram_expr", "sid_set_diagram_json", "sid_get_diagram_json"})}
+            {"commands", json::array({"sid_step", "sid_collapse", "sid_rewrite", "sid_metrics", "sid_set_diagram_expr"})}
         };
 
         return createSuccessResponse("describe_engine", description, 0);
@@ -1370,6 +1371,7 @@ json CommandRouter::handleSidSetDiagramExpr(const json& params) {
     return createSuccessResponse("sid_set_diagram_expr", result, 0);
 }
 
+#if 0  // Disabled: JSON diagram ingress is handled only by sid_cli in lab builds
 json CommandRouter::handleSidSetDiagramJson(const json& params) {
     std::string engine_id = params.value("engine_id", "");
 
@@ -1510,6 +1512,7 @@ json CommandRouter::handleSidGetDiagramJson(const json& params) {
 
     return createSuccessResponse("sid_get_diagram_json", result, 0);
 }
+#endif  // Disabled JSON diagram ingress
 
 json CommandRouter::handleSidRewriteEvents(const json& params) {
     std::string engine_id = params.value("engine_id", "");

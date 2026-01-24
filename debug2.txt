@@ -8,3 +8,4 @@ Next steps (need decision):
 1) Fix build flags to produce a fresh working CLI (resolve `/O2` vs `/RTC1`), then rerun fixtures.
 2) Use a known-good Release CLI if provided.
 3) If `sid_set_diagram_json` requires a different schema/command set in these binaries, supply the expected format so fixtures can be adapted.
+Phase 2: Disabled JSON diagram ingress in dase_cli (handlers unregistered, commands list trimmed, handleSid* set to delete in header); documented separation in Simulation/dase_cli/README.md. sid_cli remains lab-only path for JSON.

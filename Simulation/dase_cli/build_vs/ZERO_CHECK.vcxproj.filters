@@ -1,0 +1,13 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="17.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <CustomBuild Include="D:\airs\Simulation\dase_cli\build_vs\CMakeFiles\f6c2e69d93a9ddc58b98d46752aa78dc\generate.stamp.rule">
+      <Filter>CMake Rules</Filter>
+    </CustomBuild>
+  </ItemGroup>
+  <ItemGroup>
+    <Filter Include="CMake Rules">
+      <UniqueIdentifier>{B03D8599-B17B-3702-9627-295F2478BDE1}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+</Project>

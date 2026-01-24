@@ -102,18 +102,42 @@ endif()
 # UNIFIED COMPILER FLAGS
 # ============================================================================
 
-set(DASE_COMPILE_FLAGS_MSVC
-    /EHsc /bigobj /std:c++17 /O2 /Ob3 /Oi /Ot
-    /fp:fast /GL /DNOMINMAX /openmp /MD
+set(DASE_COMPILE_FLAGS_MSVC_COMMON
+    /EHsc /bigobj /std:c++17 /fp:fast /DNOMINMAX /openmp
+)
+
+set(DASE_COMPILE_FLAGS_MSVC_RELEASE
+    /O2 /Ob3 /Oi /Ot /GL /MD
+)
+
+set(DASE_COMPILE_FLAGS_MSVC_DEBUG
+    /Od /MDd
+)
+
+set(DASE_COMPILE_FLAGS_MSVC_RELWITHDEBINFO
+    /O2 /MD /Zi
+)
+
+set(DASE_COMPILE_FLAGS_MSVC_MINSIZEREL
+    /O1 /MD
 )
 
 set(DASE_COMPILE_FLAGS_GCC
     -O3 -march=native -fopenmp -ffast-math -funroll-loops
 )
 
-# Select flags based on compiler
 if(MSVC)
-    set(DASE_COMPILE_FLAGS ${DASE_COMPILE_FLAGS_MSVC})
+    set(CMAKE_CXX_FLAGS_DEBUG "/Od /MDd")
+    set(CMAKE_CXX_FLAGS_RELEASE "/O2 /MD /GL")
+    set(CMAKE_CXX_FLAGS_RELWITHDEBINFO "/O2 /MD /Zi")
+    set(CMAKE_CXX_FLAGS_MINSIZEREL "/O1 /MD")
+    set(DASE_COMPILE_FLAGS
+        ${DASE_COMPILE_FLAGS_MSVC_COMMON}
+        $<$<CONFIG:Release>:${DASE_COMPILE_FLAGS_MSVC_RELEASE}>
+        $<$<CONFIG:RelWithDebInfo>:${DASE_COMPILE_FLAGS_MSVC_RELWITHDEBINFO}>
+        $<$<CONFIG:MinSizeRel>:${DASE_COMPILE_FLAGS_MSVC_MINSIZEREL}>
+        $<$<CONFIG:Debug>:${DASE_COMPILE_FLAGS_MSVC_DEBUG}>
+    )
 else()
     set(DASE_COMPILE_FLAGS ${DASE_COMPILE_FLAGS_GCC})
 endif()

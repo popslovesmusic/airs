@@ -1,0 +1,10 @@
+^D:\AIRS\SIMULATION\DASE_CLI\BUILD_VS\CMAKEFILES\F6C2E69D93A9DDC58B98D46752AA78DC\GENERATE.STAMP.RULE
+setlocal
+"C:\Program Files\CMake\bin\cmake.exe" -SD:/airs/Simulation/dase_cli -BD:/airs/Simulation/dase_cli/build_vs --check-stamp-list CMakeFiles/generate.stamp.list --vs-solution-file D:/airs/Simulation/dase_cli/build_vs/dase_cli.sln
+if %errorlevel% neq 0 goto :cmEnd
+:cmEnd
+endlocal & call :cmErrorLevel %errorlevel% & goto :cmDone
+:cmErrorLevel
+exit /b %1
+:cmDone
+if %errorlevel% neq 0 goto :VCEnd
