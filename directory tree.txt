@@ -1,3 +1,4 @@
+
 j@DESKTOP-GGRF5TG MINGW64 /d/airs (main)
 $ python dir.py
 Project structure for: airs/
@@ -9,6 +10,36 @@ Project structure for: airs/
     ├─ test_harness.md
     ├─ api.txt
     ├─ dir.py
+    ├─ directory tree.txt
+    ├─ goldens.txt
+    ├─ stepmode.txt
+    ├─ metric.txt
+    ├─ step2.txt
+    ├─ step 3.txt
+    ├─ step4a.txt
+    ├─ step4b.txt
+    ├─ step5a.txt
+    ├─ missing_rewrite_fixtures_report.txt
+    ├─ rewrite.txt
+    ├─ fixtures.txt
+    ├─ nextstep.txt
+    ├─ minify_json.py
+    ├─ rules.txt
+    ├─ contract.txt
+    ├─ json_commands_guide.md
+    ├─ jsonfix.txt
+    ├─ json_gate_change_report.txt
+    ├─ AGENTS.md
+    ├─ resume.txt
+    ├─ block.txt
+    ├─ 5aresumetrace.txt
+    ├─ fix.txt
+    ├─ fix2.txt
+    ├─ json_gate.py
+    ├─ step5ab.txt
+    ├─ problem.txt
+    ├─ diagnostic.txt
+    ├─ debug2.txt
     ├─ New folder/
         ├─ SSOT_CONTENT_V1/
             ├─ CHECKSUMS.sha256
@@ -246,6 +277,8 @@ Project structure for: airs/
             ├─ libfftw3-3.dll
             ├─ main.obj
             ├─ run_mission.ps1
+            ├─ sid_cli.exe
+            ├─ dase_cli.exe.bak
             ├─ src/
                 ├─ analysis_router.h
                 ├─ engine_fft_analysis.cpp
@@ -824,6 +857,7 @@ Project structure for: airs/
                 ├─ harness_igsoa_complex.cpp
                 ├─ harness_sid_ssp.cpp
                 ├─ harness_sid_ternary.cpp
+                ├─ harness_sid_rewrite.cpp
             ├─ fixtures/
                 ├─ basic_kernel.txt
                 ├─ satp_state.txt
@@ -831,6 +865,22 @@ Project structure for: airs/
                 ├─ igsoa_complex_state.txt
                 ├─ sid_ssp_ast.txt
                 ├─ sid_ternary_cases.txt
+                ├─ inputs/
+                    ├─ gw_step.jsonl
+                    ├─ satp_higgs_step.jsonl
+                    ├─ igsoa_complex_step.jsonl
+                    ├─ basic_compute_step.jsonl
+                    ├─ sid_ssp_step.jsonl
+                    ├─ sid_ternary_step.jsonl
+                    ├─ basic_compute_step_10.jsonl
+                    ├─ satp_higgs_step_10.jsonl
+                    ├─ gw_step_10.jsonl
+                    ├─ igsoa_complex_step_10.jsonl
+                    ├─ sid_ssp_step_10.jsonl
+                    ├─ sid_ternary_step_10.jsonl
+            ├─ engine_api/
+                ├─ dase_step_runner.cpp
+                ├─ sid_step_runner.cpp
         ├─ tools/
             ├─ MISSION_GENERATOR_GUIDE.md
             ├─ analyze_igsoa_2d.py
@@ -1396,7 +1446,6 @@ Project structure for: airs/
                         ├─ unsuccessfulbuild
                 ├─ MinSizeRel/
                 ├─ RelWithDebInfo/
-            ├─ Debug/
             ├─ CMakeFiles/
                 ├─ CMakeConfigureLog.yaml
                 ├─ cmake.check_cache
@@ -2129,6 +2178,7 @@ Project structure for: airs/
                 ├─ validation.txt
     ├─ artifacts/
         ├─ harness_build_report.txt
+        ├─ harness_changes_report.txt
         ├─ harness/
             ├─ test_results.json
             ├─ wrapper_results.txt
@@ -2172,6 +2222,50 @@ Project structure for: airs/
             ├─ random_walk_to_diffusion_20260122T051905.048901+0000.json
             ├─ graph_flow_conservation_20260122T051905.048901+0000.json
             ├─ lorenz_invariant_measure_20260122T051905.064527+0000.json
+            ├─ gw/
+                ├─ out.json
+                ├─ output_confirmed.json
+                ├─ out_step_10.json
+                ├─ out_10step.json
+                ├─ out_confirmed.json
+                ├─ out_10step_confirmed.json
+            ├─ satp_higgs/
+                ├─ out.json
+                ├─ output_confirmed.json
+                ├─ out_step_10.json
+                ├─ out_10step.json
+                ├─ out_confirmed.json
+                ├─ out_10step_confirmed.json
+            ├─ igsoa_complex/
+                ├─ out.json
+                ├─ output_confirmed.json
+                ├─ out_step_10.json
+                ├─ out_10step.json
+                ├─ out_confirmed.json
+                ├─ out_10step_confirmed.json
+            ├─ basic_compute_substrate/
+                ├─ out.json
+                ├─ output_confirmed.json
+                ├─ out_step_10.json
+                ├─ out_10step.json
+                ├─ out_confirmed.json
+                ├─ out_10step_confirmed.json
+            ├─ sid_ssp/
+                ├─ out.json
+                ├─ output_confirmed.json
+                ├─ out_step_10.json
+                ├─ out_10step.json
+                ├─ out_confirmed.json
+                ├─ out_10step_confirmed.json
+                ├─ out_step_10_confirmed.json
+            ├─ sid_ternary/
+                ├─ out.json
+                ├─ output_confirmed.json
+                ├─ out_step_10.json
+                ├─ out_10step.json
+                ├─ out_confirmed.json
+                ├─ out_10step_confirmed.json
+                ├─ out_step_10_confirmed.json
     ├─ crf/
         ├─ chapter_1.md
         ├─ chapter_6.md
@@ -2233,6 +2327,39 @@ Project structure for: airs/
             ├─ kernel_hash_2026-01-23T01-48-54Z.json
             ├─ determinism_smoke_2026-01-23T01-49-58Z.json
             ├─ kernel_hash_2026-01-23T01-49-58Z.json
+            ├─ determinism_smoke_2026-01-23T03-11-54Z.json
+            ├─ determinism_smoke_2026-01-23T03-14-27Z.json
+            ├─ determinism_smoke_2026-01-23T03-15-14Z.json
+            ├─ determinism_smoke_2026-01-23T03-15-50Z.json
+            ├─ determinism_smoke_2026-01-23T03-16-16Z.json
+            ├─ determinism_smoke_2026-01-23T03-32-57Z.json
+            ├─ determinism_smoke_2026-01-23T03-33-09Z.json
+            ├─ determinism_smoke_2026-01-23T03-33-45Z.json
+            ├─ determinism_smoke_2026-01-23T03-34-39Z.json
+            ├─ determinism_smoke_2026-01-23T03-35-10Z.json
+            ├─ determinism_smoke_2026-01-23T03-36-12Z.json
+            ├─ determinism_smoke_2026-01-23T03-36-41Z.json
+            ├─ determinism_smoke_2026-01-23T03-37-31Z.json
+            ├─ determinism_smoke_2026-01-23T03-38-10Z.json
+            ├─ determinism_smoke_2026-01-23T03-39-08Z.json
+            ├─ determinism_smoke_2026-01-23T03-40-00Z.json
+            ├─ determinism_smoke_2026-01-23T03-42-04Z.json
+            ├─ determinism_smoke_2026-01-23T03-43-44Z.json
+            ├─ determinism_smoke_2026-01-23T03-45-49Z.json
+            ├─ determinism_smoke_2026-01-23T03-46-25Z.json
+            ├─ determinism_smoke_2026-01-23T03-54-02Z.json
+            ├─ determinism_smoke_2026-01-23T03-54-32Z.json
+            ├─ determinism_smoke_2026-01-23T04-56-57Z.json
+            ├─ determinism_smoke_2026-01-23T04-57-26Z.json
+            ├─ determinism_smoke_2026-01-23T05-42-36Z.json
+            ├─ determinism_smoke_2026-01-23T12-49-14Z.json
+            ├─ determinism_smoke_2026-01-23T12-50-00Z.json
+            ├─ determinism_smoke_2026-01-23T14-32-52Z.json
+            ├─ determinism_smoke_2026-01-23T14-42-17Z.json
+            ├─ determinism_smoke_2026-01-23T15-24-19Z.json
+            ├─ determinism_smoke_2026-01-23T15-34-40Z.json
+            ├─ determinism_smoke_2026-01-23T15-46-27Z.json
+            ├─ determinism_smoke_2026-01-23T16-06-25Z.json
         ├─ satp_higgs/
             ├─ policy_smoke_2026-01-23T01-44-52Z.json
             ├─ vacuum_stability_trend_2026-01-23T01-48-55Z.json
@@ -2254,7 +2381,6 @@ Project structure for: airs/
             ├─ case_distribution_2026-01-23T01-48-55Z.json
             ├─ case_distribution_2026-01-23T01-49-58Z.json
     ├─ build/
-        ├─ CMakeCache.txt
         ├─ ZERO_CHECK.vcxproj.filters
         ├─ dase_core.vcxproj
         ├─ dase_core.vcxproj.filters
@@ -2295,7 +2421,6 @@ Project structure for: airs/
         ├─ benchmark_sid.vcxproj
         ├─ benchmark_sid.vcxproj.filters
         ├─ harness_support.vcxproj.filters
-        ├─ ALL_BUILD.vcxproj
         ├─ ALL_BUILD.vcxproj.filters
         ├─ INSTALL.vcxproj
         ├─ INSTALL.vcxproj.filters
@@ -2303,6 +2428,12 @@ Project structure for: airs/
         ├─ harness_support.vcxproj
         ├─ RUN_TESTS.vcxproj
         ├─ RUN_TESTS.vcxproj.filters
+        ├─ CMakeCache.txt
+        ├─ dase_step_runner.vcxproj
+        ├─ dase_step_runner.vcxproj.filters
+        ├─ sid_step_runner.vcxproj
+        ├─ sid_step_runner.vcxproj.filters
+        ├─ ALL_BUILD.vcxproj
         ├─ IGSOA_SIM.sln
         ├─ harness_tests.vcxproj
         ├─ harness_tests.vcxproj.filters
@@ -2699,11 +2830,32 @@ Project structure for: airs/
                         ├─ generate.stamp
                     ├─ gmock_main.dir/
                         ├─ Debug/
+                            ├─ gmock_main.tlog/
+                                ├─ gmock_main.lastbuildstate
+                                ├─ unsuccessfulbuild
+                                ├─ CustomBuild.command.1.tlog
+                                ├─ CustomBuild.read.1.tlog
+                                ├─ CustomBuild.write.1.tlog
                         ├─ Release/
                         ├─ MinSizeRel/
                         ├─ RelWithDebInfo/
                     ├─ gmock.dir/
                         ├─ Debug/
+                            ├─ gmock-all.obj
+                            ├─ gtest-all.obj
+                            ├─ gmock.lib.recipe
+                            ├─ gmock.tlog/
+                                ├─ gmock.lastbuildstate
+                                ├─ CustomBuild.command.1.tlog
+                                ├─ CustomBuild.read.1.tlog
+                                ├─ CustomBuild.write.1.tlog
+                                ├─ CL.read.1.tlog
+                                ├─ CL.write.1.tlog
+                                ├─ CL.command.1.tlog
+                                ├─ Lib-link.read.1.tlog
+                                ├─ Lib-link.write.1.tlog
+                                ├─ Lib.command.1.tlog
+                                ├─ Cl.items.tlog
                         ├─ Release/
                         ├─ MinSizeRel/
                         ├─ RelWithDebInfo/
@@ -2755,8 +2907,10 @@ Project structure for: airs/
                         ├─ gmock_main.pc
                     ├─ gtest.dir/
                         ├─ Debug/
-                            ├─ gtest-all.obj
                             ├─ gtest.lib.recipe
+                            ├─ gtest.vcxproj.FileListAbsolute.txt
+                            ├─ gtest.Build.CppClean.log
+                            ├─ gtest-all.obj
                             ├─ gtest.tlog/
                                 ├─ gtest.lastbuildstate
                                 ├─ CustomBuild.command.1.tlog
@@ -2774,8 +2928,10 @@ Project structure for: airs/
                         ├─ RelWithDebInfo/
                     ├─ gtest_main.dir/
                         ├─ Debug/
-                            ├─ gtest_main.obj
                             ├─ gtest_main.lib.recipe
+                            ├─ gtest_main.vcxproj.FileListAbsolute.txt
+                            ├─ gtest_main.Build.CppClean.log
+                            ├─ gtest_main.obj
                             ├─ gtest_main.tlog/
                                 ├─ gtest_main.lastbuildstate
                                 ├─ CustomBuild.command.1.tlog
@@ -2840,12 +2996,52 @@ Project structure for: airs/
                 ├─ generate.stamp
             ├─ analysis_integration.dir/
                 ├─ Debug/
+                    ├─ analysis.6AC96539.tlog/
+                        ├─ analysis_integration.lastbuildstate
+                        ├─ unsuccessfulbuild
+                        ├─ CustomBuild.command.1.tlog
+                        ├─ CustomBuild.read.1.tlog
+                        ├─ CustomBuild.write.1.tlog
+                        ├─ CL.command.1.tlog
                 ├─ Release/
+                    ├─ engine_fft_analysis.obj
+                    ├─ python_bridge.obj
+                    ├─ analysis_integration.lib.recipe
+                    ├─ analysis_router.obj
+                    ├─ analysis.6AC96539.tlog/
+                        ├─ analysis_integration.lastbuildstate
+                        ├─ CustomBuild.command.1.tlog
+                        ├─ CustomBuild.read.1.tlog
+                        ├─ CustomBuild.write.1.tlog
+                        ├─ CL.read.1.tlog
+                        ├─ CL.write.1.tlog
+                        ├─ CL.command.1.tlog
+                        ├─ Lib-link.read.1.tlog
+                        ├─ Lib-link.write.1.tlog
+                        ├─ Lib.command.1.tlog
+                        ├─ Cl.items.tlog
                 ├─ MinSizeRel/
                 ├─ RelWithDebInfo/
             ├─ dase_cli.dir/
                 ├─ Debug/
                 ├─ Release/
+                    ├─ engine_manager.obj
+                    ├─ main.obj
+                    ├─ dase_cli.exe.recipe
+                    ├─ command_router.obj
+                    ├─ dase_cli.tlog/
+                        ├─ dase_cli.lastbuildstate
+                        ├─ CustomBuild.command.1.tlog
+                        ├─ CustomBuild.read.1.tlog
+                        ├─ CustomBuild.write.1.tlog
+                        ├─ CL.read.1.tlog
+                        ├─ CL.write.1.tlog
+                        ├─ CL.command.1.tlog
+                        ├─ link.read.1.tlog
+                        ├─ link.write.1.tlog
+                        ├─ link.command.1.tlog
+                        ├─ link.secondary.1.tlog
+                        ├─ Cl.items.tlog
                 ├─ MinSizeRel/
                 ├─ RelWithDebInfo/
             ├─ ALL_BUILD.dir/
@@ -2863,6 +3059,10 @@ Project structure for: airs/
                 ├─ Release/
                 ├─ MinSizeRel/
                 ├─ RelWithDebInfo/
+            ├─ Debug/
+            ├─ Release/
+                ├─ analysis_integration.lib
+                ├─ dase_cli.exe
         ├─ ZERO_CHECK.dir/
             ├─ Debug/
             ├─ Release/
@@ -2870,22 +3070,89 @@ Project structure for: airs/
             ├─ RelWithDebInfo/
         ├─ dase_core.dir/
             ├─ Debug/
+                ├─ dase_core.tlog/
+                    ├─ dase_core.lastbuildstate
+                    ├─ unsuccessfulbuild
+                    ├─ CustomBuild.command.1.tlog
+                    ├─ CustomBuild.read.1.tlog
+                    ├─ CustomBuild.write.1.tlog
+                    ├─ CL.command.1.tlog
             ├─ Release/
             ├─ MinSizeRel/
             ├─ RelWithDebInfo/
         ├─ igsoa_utils.dir/
             ├─ Debug/
+                ├─ igsoa_utils.tlog/
+                    ├─ igsoa_utils.lastbuildstate
+                    ├─ unsuccessfulbuild
+                    ├─ CustomBuild.command.1.tlog
+                    ├─ CustomBuild.read.1.tlog
+                    ├─ CustomBuild.write.1.tlog
+                    ├─ CL.command.1.tlog
             ├─ Release/
+                ├─ logger.obj
+                ├─ igsoa_utils.lib.recipe
+                ├─ igsoa_utils.tlog/
+                    ├─ igsoa_utils.lastbuildstate
+                    ├─ CustomBuild.command.1.tlog
+                    ├─ CustomBuild.read.1.tlog
+                    ├─ CustomBuild.write.1.tlog
+                    ├─ CL.read.1.tlog
+                    ├─ CL.write.1.tlog
+                    ├─ CL.command.1.tlog
+                    ├─ Lib-link.read.1.tlog
+                    ├─ Lib-link.write.1.tlog
+                    ├─ Lib.command.1.tlog
+                    ├─ Cl.items.tlog
             ├─ MinSizeRel/
             ├─ RelWithDebInfo/
         ├─ sid_ssp_capi.dir/
             ├─ Debug/
+                ├─ sid_ssp_capi.tlog/
+                    ├─ sid_ssp_capi.lastbuildstate
+                    ├─ unsuccessfulbuild
+                    ├─ CustomBuild.command.1.tlog
+                    ├─ CustomBuild.read.1.tlog
+                    ├─ CustomBuild.write.1.tlog
+                    ├─ CL.command.1.tlog
             ├─ Release/
+                ├─ sid_capi.obj
+                ├─ sid_ssp_capi.lib.recipe
+                ├─ sid_ssp_capi.tlog/
+                    ├─ sid_ssp_capi.lastbuildstate
+                    ├─ CustomBuild.command.1.tlog
+                    ├─ CustomBuild.read.1.tlog
+                    ├─ CustomBuild.write.1.tlog
+                    ├─ CL.read.1.tlog
+                    ├─ CL.write.1.tlog
+                    ├─ CL.command.1.tlog
+                    ├─ Lib-link.read.1.tlog
+                    ├─ Lib-link.write.1.tlog
+                    ├─ Lib.command.1.tlog
+                    ├─ Cl.items.tlog
             ├─ MinSizeRel/
             ├─ RelWithDebInfo/
         ├─ igsoa_gw_core.dir/
             ├─ Debug/
             ├─ Release/
+                ├─ echo_generator.obj
+                ├─ source_manager.obj
+                ├─ projection_operators.obj
+                ├─ fractional_solver.obj
+                ├─ symmetry_field.obj
+                ├─ igsoa_gw_core.lib.recipe
+                ├─ igsoa_gw_core.tlog/
+                    ├─ igsoa_gw_core.lastbuildstate
+                    ├─ CustomBuild.command.1.tlog
+                    ├─ CustomBuild.read.1.tlog
+                    ├─ CustomBuild.write.1.tlog
+                    ├─ CL.read.1.tlog
+                    ├─ CL.write.1.tlog
+                    ├─ CL.command.1.tlog
+                    ├─ Lib-link.read.1.tlog
+                    ├─ Lib-link.write.1.tlog
+                    ├─ Lib.command.1.tlog
+                    ├─ Cl.items.tlog
             ├─ MinSizeRel/
             ├─ RelWithDebInfo/
         ├─ dase_engine.dir/
@@ -2901,6 +3168,21 @@ Project structure for: airs/
         ├─ sid_cli.dir/
             ├─ Debug/
             ├─ Release/
+                ├─ sid_cli.obj
+                ├─ sid_cli.exe.recipe
+                ├─ sid_cli.tlog/
+                    ├─ sid_cli.lastbuildstate
+                    ├─ CustomBuild.command.1.tlog
+                    ├─ CustomBuild.read.1.tlog
+                    ├─ CustomBuild.write.1.tlog
+                    ├─ CL.read.1.tlog
+                    ├─ CL.write.1.tlog
+                    ├─ CL.command.1.tlog
+                    ├─ link.read.1.tlog
+                    ├─ link.write.1.tlog
+                    ├─ link.secondary.1.tlog
+                    ├─ link.command.1.tlog
+                    ├─ Cl.items.tlog
             ├─ MinSizeRel/
             ├─ RelWithDebInfo/
         ├─ test_gw_engine_basic.dir/
@@ -2960,22 +3242,31 @@ Project structure for: airs/
             ├─ RelWithDebInfo/
         ├─ benchmark_sid.dir/
             ├─ Debug/
+                ├─ benchmark_sid.tlog/
+                    ├─ benchmark_sid.lastbuildstate
+                    ├─ unsuccessfulbuild
+                    ├─ CustomBuild.command.1.tlog
+                    ├─ CustomBuild.read.1.tlog
+                    ├─ CustomBuild.write.1.tlog
+                    ├─ CL.command.1.tlog
             ├─ Release/
             ├─ MinSizeRel/
             ├─ RelWithDebInfo/
         ├─ harness_support.dir/
             ├─ Debug/
-                ├─ harness_test_util.obj
-                ├─ harness_policy.obj
                 ├─ harness_support.lib.recipe
+                ├─ harness_support.vcxproj.FileListAbsolute.txt
+                ├─ harness_support.Build.CppClean.log
+                ├─ harness_policy.obj
+                ├─ harness_test_util.obj
                 ├─ harness_support.tlog/
                     ├─ harness_support.lastbuildstate
                     ├─ CustomBuild.command.1.tlog
                     ├─ CustomBuild.read.1.tlog
                     ├─ CustomBuild.write.1.tlog
-                    ├─ CL.command.1.tlog
                     ├─ CL.read.1.tlog
                     ├─ CL.write.1.tlog
+                    ├─ CL.command.1.tlog
                     ├─ Lib-link.read.1.tlog
                     ├─ Lib-link.write.1.tlog
                     ├─ Lib.command.1.tlog
@@ -2985,16 +3276,19 @@ Project structure for: airs/
             ├─ RelWithDebInfo/
         ├─ harness_tests.dir/
             ├─ Debug/
-                ├─ vc143.pdb
-                ├─ harness_example.obj
-                ├─ harness_main.obj
                 ├─ harness_tests.exe.recipe
+                ├─ harness_tests.vcxproj.FileListAbsolute.txt
+                ├─ harness_tests.Build.CppClean.log
+                ├─ vc143.pdb
                 ├─ harness_sid_ternary.obj
                 ├─ harness_sid_ssp.obj
                 ├─ harness_igsoa_complex.obj
                 ├─ harness_igsoa_gw.obj
                 ├─ harness_satp_higgs.obj
                 ├─ harness_basic_compute.obj
+                ├─ harness_example.obj
+                ├─ harness_main.obj
+                ├─ harness_sid_rewrite.obj
                 ├─ harness_tests.ilk
                 ├─ harness_tests.tlog/
                     ├─ harness_tests.lastbuildstate
@@ -3004,7 +3298,7 @@ Project structure for: airs/
                     ├─ CL.read.1.tlog
                     ├─ CL.write.1.tlog
                     ├─ CL.command.1.tlog
-                    ├─ link.read.2.tlog
+                    ├─ link.read.3.tlog
                     ├─ link.write.1.tlog
                     ├─ link.secondary.1.tlog
                     ├─ link.command.1.tlog
@@ -3026,6 +3320,16 @@ Project structure for: airs/
             ├─ Debug/
                 ├─ ZERO_CHECK/
                     ├─ ZERO_CHECK.recipe
+                    ├─ ZERO_CHECK.vcxproj.FileListAbsolute.txt
+                    ├─ ZERO_CHECK.Build.CppClean.log
+                    ├─ ZERO_CHECK.tlog/
+                        ├─ ZERO_CHECK.lastbuildstate
+                        ├─ CustomBuild.command.1.tlog
+                        ├─ CustomBuild.read.1.tlog
+                        ├─ CustomBuild.write.1.tlog
+            ├─ Release/
+                ├─ ZERO_CHECK/
+                    ├─ ZERO_CHECK.recipe
                     ├─ ZERO_CHECK.tlog/
                         ├─ ZERO_CHECK.lastbuildstate
                         ├─ CustomBuild.command.1.tlog
@@ -3039,11 +3343,10 @@ Project structure for: airs/
                 ├─ gtest_main.lib
                 ├─ gtest.pdb
                 ├─ gtest_main.pdb
-        ├─ Debug/
-            ├─ harness_support.pdb
-            ├─ harness_support.lib
-            ├─ harness_tests.exe
-            ├─ harness_tests.pdb
+                ├─ gmockpdb_debug_postfix-NOTFOUND.pdb
+                ├─ gmock.lib
+                ├─ gmock.pdb
+                ├─ gmock_mainpdb_debug_postfix-NOTFOUND.pdb
         ├─ Testing/
             ├─ Temporary/
                 ├─ LastTestsFailed.log
@@ -3054,6 +3357,130 @@ Project structure for: airs/
             ├─ Release/
             ├─ MinSizeRel/
             ├─ RelWithDebInfo/
+        ├─ dase_step_runner.dir/
+            ├─ Debug/
+                ├─ vc143.pdb
+                ├─ dase_step_runner.exe.recipe
+                ├─ dase_step_runner.ilk
+                ├─ dase_step_runner.obj
+                ├─ dase_step_runner.tlog/
+                    ├─ dase_step_runner.lastbuildstate
+                    ├─ CustomBuild.command.1.tlog
+                    ├─ CustomBuild.read.1.tlog
+                    ├─ CustomBuild.write.1.tlog
+                    ├─ CL.read.1.tlog
+                    ├─ CL.write.1.tlog
+                    ├─ CL.command.1.tlog
+                    ├─ link.read.2.tlog
+                    ├─ link.write.1.tlog
+                    ├─ link.secondary.1.tlog
+                    ├─ link.command.1.tlog
+                    ├─ Cl.items.tlog
+            ├─ Release/
+            ├─ MinSizeRel/
+            ├─ RelWithDebInfo/
+        ├─ sid_step_runner.dir/
+            ├─ Debug/
+                ├─ vc143.pdb
+                ├─ sid_step_runner.exe.recipe
+                ├─ sid_step_runner.ilk
+                ├─ sid_step_runner.obj
+                ├─ sid_step_runner.tlog/
+                    ├─ sid_step_runner.lastbuildstate
+                    ├─ CustomBuild.command.1.tlog
+                    ├─ CustomBuild.read.1.tlog
+                    ├─ CustomBuild.write.1.tlog
+                    ├─ CL.read.1.tlog
+                    ├─ CL.write.1.tlog
+                    ├─ CL.command.1.tlog
+                    ├─ link.read.3.tlog
+                    ├─ link.write.1.tlog
+                    ├─ link.secondary.1.tlog
+                    ├─ link.command.1.tlog
+                    ├─ Cl.items.tlog
+            ├─ Release/
+            ├─ MinSizeRel/
+            ├─ RelWithDebInfo/
+        ├─ Release/
+            ├─ igsoa_utils.lib
+            ├─ igsoa_gw_core.lib
+            ├─ sid_ssp_capi.lib
+            ├─ sid_cli.exe
+        ├─ Debug/
+            ├─ ANALYSIS_INTEGRATION.md
+            ├─ CMakeLists.txt
+            ├─ command_router.obj
+            ├─ config.json
+            ├─ dase_cli.exe
+            ├─ dase_cli.exe.bak
+            ├─ dase_engine_igsoa_complex.dll
+            ├─ dase_engine_phase4b.dll
+            ├─ engine_manager.obj
+            ├─ libfftw3-3.dll
+            ├─ main.obj
+            ├─ run_mission.ps1
+            ├─ sid_cli.exe
+            ├─ TEST_ANALYSIS_COMMANDS.md
+            ├─ dase_step_runner.exe
+            ├─ dase_step_runner.pdb
+            ├─ build/
+                ├─ CMakeCache.txt
+                ├─ CMakeFiles/
+                    ├─ CMakeConfigureLog.yaml
+                    ├─ cmake.check_cache
+                    ├─ pkgRedirects/
+                    ├─ 4.2.0-rc2/
+                        ├─ CMakeSystem.cmake
+            ├─ src/
+                ├─ analysis_router.h
+                ├─ engine_fft_analysis.cpp
+                ├─ engine_fft_analysis.h
+                ├─ json.hpp
+                ├─ json_helper.h
+                ├─ main.cpp
+                ├─ metric_emitter.h
+                ├─ python_bridge.cpp
+                ├─ python_bridge.h
+                ├─ command_router.h
+                ├─ engine_manager.h
+                ├─ analysis_router.cpp
+                ├─ command_router.cpp
+                ├─ engine_manager.cpp
+            ├─ src.before_restore/
+                ├─ metric_emitter.h
+                ├─ command_router.h
+                ├─ json.hpp
+                ├─ analysis_router.h
+                ├─ engine_manager.h
+                ├─ engine_manager.cpp
+                ├─ python_bridge.h
+                ├─ engine_fft_analysis.cpp
+                ├─ engine_fft_analysis.h
+                ├─ main.cpp
+                ├─ python_bridge.cpp
+                ├─ command_router.cpp
+                ├─ analysis_router.cpp
+                ├─ json_helper.h
+    ├─ Testing/
+        ├─ Temporary/
+            ├─ CTestCostData.txt
+            ├─ LastTest.log
+    ├─ docs/
+        ├─ test_harness_narrative.md
+        ├─ json_ingress_gate.md
+        ├─ debug_report.md
+    ├─ fixtures/
+        ├─ step5a/
+            ├─ scenario_01/
+                ├─ diagram.json
+                ├─ rules.json
+                ├─ params.json
+            ├─ scenario_overlap/
+                ├─ diagram.json
+                ├─ rules.json
+            ├─ scenario_multiredeux/
+                ├─ diagram.json
+                ├─ rules.json
 
 j@DESKTOP-GGRF5TG MINGW64 /d/airs (main)
 $

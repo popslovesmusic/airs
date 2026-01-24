@@ -1,0 +1,12 @@
+{
+  "id": "sid_step_5ab_overlap_001",
+  "nodes": [
+    { "id": "n1", "op": "P", "inputs": [], "dof_refs": ["a"] },
+    { "id": "n2", "op": "P", "inputs": [], "dof_refs": ["b"] },
+    { "id": "n3", "op": "S+", "inputs": ["n1", "n2"], "dof_refs": [] }
+  ],
+  "edges": [
+    { "id": "e1", "from": "n1", "to": "n3", "label": "arg" },
+    { "id": "e2", "from": "n2", "to": "n3", "label": "arg" }
+  ]
+}

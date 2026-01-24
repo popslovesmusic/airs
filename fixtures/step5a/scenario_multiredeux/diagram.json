@@ -1,0 +1,16 @@
+{
+  "id": "sid_step_5ab_multiredeux_001",
+  "nodes": [
+    { "id": "n1", "op": "P", "inputs": [], "dof_refs": ["a"] },
+    { "id": "n2", "op": "P", "inputs": [], "dof_refs": ["b"] },
+    { "id": "n3", "op": "P", "inputs": [], "dof_refs": ["c"] },
+    { "id": "n4", "op": "S+", "inputs": ["n2", "n3"], "dof_refs": [] },
+    { "id": "n5", "op": "S+", "inputs": ["n1", "n4"], "dof_refs": [] }
+  ],
+  "edges": [
+    { "id": "e1", "from": "n2", "to": "n4", "label": "arg" },
+    { "id": "e2", "from": "n3", "to": "n4", "label": "arg" },
+    { "id": "e3", "from": "n1", "to": "n5", "label": "arg" },
+    { "id": "e4", "from": "n4", "to": "n5", "label": "arg" }
+  ]
+}

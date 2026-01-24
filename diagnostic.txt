@@ -1,0 +1,177 @@
+
+
+---
+
+## Why `sid_cli` is the correct confirmation tool
+
+Right now you have **three layers** that could be responsible for the failure:
+
+1. **Gate / ingress governance**
+2. **CLI orchestration (`dase_cli`)**
+3. **SID engine itself**
+
+You already know:
+
+* The **gate** rejects diagrams by design
+* `sid_set_diagram_expr` works
+* `sid_set_diagram_json` *exists* but is blocked upstream
+
+What you **don’t yet know with certainty** is:
+
+> *Does the SID engine correctly load and execute the Step 5a JSON diagrams when governance is removed?*
+
+`sid_cli` answers that question *without ambiguity*.
+
+If it works there:
+
+* The engine is sound
+* The fixtures are sound
+* The bug is **purely ingress / orchestration / governance**
+
+If it fails there:
+
+* The problem is **engine-side** (JSON parsing, diagram construction, or rewrite logic)
+
+That’s why this test is valuable.
+
+---
+
+## What result to expect (both branches)
+
+### ✅ Case A: `sid_cli` succeeds
+
+This is the **most likely** outcome.
+
+You’ll see:
+
+* Diagram loads
+* Metrics non-zero
+* Rewrites execute
+* Different traces under P1/P2/P3
+* Same final invariant state
+
+**Conclusion**:
+
+> JSON diagrams are valid, engine is correct.
+> Gate + `dase_cli` intentionally block this path.
+
+This confirms:
+
+* Your architecture is working
+* You are not dealing with a hidden engine bug
+* Expression ingress is the correct canonical path
+
+---
+
+### ❌ Case B: `sid_cli` also fails
+
+This is less likely, but still informative.
+
+You’ll see:
+
+* Diagram load failure
+* Zero metrics
+* No rewrite eligibility
+
+**Conclusion**:
+
+> There is a real engine-level defect in `setDiagramJson()`.
+
+At that point:
+
+* Instrumentation is required
+* Silent node dropping / ID issues become the prime suspect
+* You fix the engine *once*, not the gate
+
+Either way, **you win clarity**.
+
+---
+
+## How to run the confirmation cleanly
+
+### 1. Use the *known working* binary
+
+From your report:
+
+* `Simulation/bin/sid_cli.exe` (Jan 20) is stable 
+
+Use that exact binary.
+
+---
+
+### 2. Load a minimal diagram first
+
+This avoids confounding factors.
+
+```json
+{
+  "command": "sid_set_diagram_json",
+  "params": {
+    "diagram": {
+      "id": "sanity",
+      "nodes": [
+        { "id": "n1", "op": "P", "dof_refs": ["a"] }
+      ],
+      "edges": []
+    }
+  }
+}
+```
+
+If this fails in `sid_cli`, you have a **pure engine bug**.
+
+---
+
+### 3. Then load `scenario_overlap`
+
+If minimal works, move to:
+
+* `scenario_overlap`
+* then `scenario_multiredeux`
+
+No policies yet — just confirm load + metrics.
+
+---
+
+### 4. Then run rewrite policies
+
+Only after load succeeds.
+
+At this point you’re testing **rewrite semantics**, not ingestion.
+
+---
+
+## How to interpret the result (decision table)
+
+| Result in `sid_cli`       | Meaning              | Action                                   |
+| ------------------------- | -------------------- | ---------------------------------------- |
+| Minimal + Step 5a load OK | Engine correct       | Lock expression ingress / artifact model |
+| Minimal fails             | Engine bug           | Fix `setDiagramJson()`                   |
+| Minimal OK, Step 5a fails | Fixture schema issue | Fix JSON fixtures                        |
+| Rewrites fail             | Rewrite engine issue | Separate problem                         |
+
+---
+
+## Why this does NOT violate governance
+
+You are not:
+
+* letting agents bypass the gate
+* changing production ingress
+* weakening invariants
+
+You are performing:
+
+> **engine-level validation in a lab context**
+
+That is explicitly allowed.
+
+---
+
+## Bottom line
+
+✔ Yes, running through `sid_cli` will **confirm the issue decisively**
+✔ It isolates governance vs engine vs fixtures
+✔ It is the fastest way to stop guessing
+✔ It does not undermine your architecture
+

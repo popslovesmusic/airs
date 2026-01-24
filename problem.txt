@@ -1,0 +1,17 @@
+Problem: Unable to run new Step 5a overlap/multi-redex fixtures because SID CLI cannot load diagrams; rebuild also failing.
+
+Current observations:
+- Added fixtures:
+  - fixtures/step5a/scenario_overlap/{diagram.json,rules.json}
+  - fixtures/step5a/scenario_multiredeux/{diagram.json,rules.json}
+- Creating SID engine succeeds, but sid_set_diagram_json fails with EXECUTION_FAILED (last_rewrite_message empty). Minimal {id, nodes(op=P,dof_refs), edges=[]} also fails.
+- Metrics after set attempt stay at zero; suggests diagram never loads.
+- Copied Simulation/dase_cli contents into build/Debug; binaries run but same diagram-load failure.
+- Rebuild with “cmake --build build --config Debug” times out; MSVC errors: /O2 and /RTC1 incompatible in multiple projects (dase_cli, sid_ssp_capi, dase_core, etc.), so Debug artifacts may be inconsistent after prior build/Debug deletion.
+
+Needed decisions:
+1) Fix build flags to complete a clean Debug (or Release) build with working dase_cli/sid support, then rerun fixtures.
+2) Provide a known-good binary to use instead of rebuilding.
+3) If sid_set_diagram_json expects a different schema, share the required schema so fixtures can be adapted.
+
+Next action awaiting guidance.

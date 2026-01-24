@@ -1,0 +1,208 @@
+
+
+## Minimal overlapping rewrite set (single redex, two competing rules)
+
+### Diagram
+
+`S+(P(a),P(b))`
+
+### Rules (intentional overlap at the root)
+
+1. `S+($x,$y) → C($x,$y)`
+2. `S+($x,$y) → D($x,$y)`  ← overlaps with rule 1 (both match the same state)
+
+### Converge-to-same-normal-form rules
+
+3. `C($x,$y) → T($x)`
+4. `D($x,$y) → T($x)`
+
+### What you should see
+
+* **P1/P2/P3** may pick **rule 1 vs rule 2 first** (trace differs immediately).
+* Second step always collapses to the same normal form: **`T(P(a))`**
+* **steps = 2**, **rules_applied = 2**, **termination = fixed_point**
+* Final semantic state equivalent across policies (identical term), conservation identical.
+
+---
+
+## Agent-ready fixture artifact (JSON5 “notes”)
+
+```json5
+{
+  id: "sid_step_5aB_overlap_min_001",
+  objective: "Ordering sensitivity: different traces, identical final state + identical conservation",
+  diagram: "S+(P(a),P(b))",
+  rules: [
+    { id: "R1", lhs: "S+($x,$y)", rhs: "C($x,$y)", purpose: "branch A" },
+    { id: "R2", lhs: "S+($x,$y)", rhs: "D($x,$y)", purpose: "branch B (overlaps R1)" },
+    { id: "R3", lhs: "C($x,$y)", rhs: "T($x)", purpose: "converge to same normal form" },
+    { id: "R4", lhs: "D($x,$y)", rhs: "T($x)", purpose: "converge to same normal form" }
+  ],
+  policies: ["P1_lexical", "P2_reverse", "P3_seeded_shuffle"],
+  expected: {
+    per_policy: {
+      steps: 2,
+      rules_applied: 2,
+      termination: "fixed_point",
+      final_term: "T(P(a))",
+      conservation: "identical_across_policies"
+    },
+    cross_policy: {
+      traces_may_differ: true,
+      final_state_must_match: true
+    }
+  },
+  failure_conditions: [
+    "final_term differs across policies",
+    "termination not fixed_point",
+    "conservation metrics differ across policies",
+    "steps != 2 (unless engine counts differently, then require identical across policies)"
+  ]
+}
+```
+
+---
+
+
+Perfect. Below is a **Step 5a-B+ fixture** that is *strictly stronger* than the minimal case, yet still **governance-safe**:
+
+* multiple redex locations (outer **and** inner),
+* genuine ordering choice (not just rule choice),
+* guaranteed convergence to the **same final semantic state**,
+* no ingress / engine / metric changes.
+
+---
+
+# **Step 5a-B+ — Multi-Redex Ordering Fixture**
+
+## 1. Diagram (two redex locations)
+
+```
+S+( P(a), S+(P(b), P(c)) )
+```
+
+Redexes:
+
+* **R₀ (outer)**: `S+( … , … )`
+* **R₁ (inner)**: `S+(P(b), P(c))`
+
+Depending on policy, the engine may rewrite **outer first** or **inner first**.
+
+---
+
+## 2. Rules (ordering-sensitive but convergent)
+
+### Branching rules
+
+1. `S+($x,$y) → C($x,$y)`
+2. `S+($x,$y) → D($x,$y)`
+   *(intentional overlap; both match outer and inner redexes)*
+
+### Convergence rules
+
+3. `C($x,$y) → T($x)`
+4. `D($x,$y) → T($x)`
+
+### Terminal propagation
+
+5. `T($x) → T($x)` *(idempotent / fixed-point marker)*
+
+---
+
+## 3. Expected rewrite behaviors
+
+### Example trace A (outer-first)
+
+```
+S+(P(a), S+(P(b),P(c)))
+→ C(P(a), S+(P(b),P(c)))
+→ T(P(a))
+```
+
+Inner redex is **skipped entirely**.
+
+---
+
+### Example trace B (inner-first)
+
+```
+S+(P(a), S+(P(b),P(c)))
+→ S+(P(a), C(P(b),P(c)))
+→ S+(P(a), T(P(b)))
+→ C(P(a), T(P(b)))
+→ T(P(a))
+```
+
+More steps, different trace, **same final term**.
+
+---
+
+## 4. Acceptance criteria (governance-level)
+
+Across **P1 / P2 / P3**:
+
+* `steps > 1`
+* `rules_applied > 1`
+* `termination = fixed_point`
+* **final semantic state equivalent** (`T(P(a))`)
+* **conservation metrics identical**
+* trace divergence allowed and expected
+
+### Explicit failure
+
+* Any policy produces `T(P(b))` or `T(P(c))`
+* Final term differs structurally
+* Conservation differs
+* Non-termination
+
+---
+
+## 5. Agent-ready fixture (JSON5 notes)
+
+```json5
+{
+  id: "sid_step_5aB_plus_multiredeux_001",
+  objective: "Test ordering sensitivity across multiple redex locations with invariant final state",
+  diagram: "S+(P(a), S+(P(b), P(c)))",
+  rules: [
+    { id: "R1", lhs: "S+($x,$y)", rhs: "C($x,$y)" },
+    { id: "R2", lhs: "S+($x,$y)", rhs: "D($x,$y)" },
+    { id: "R3", lhs: "C($x,$y)", rhs: "T($x)" },
+    { id: "R4", lhs: "D($x,$y)", rhs: "T($x)" },
+    { id: "R5", lhs: "T($x)", rhs: "T($x)", role: "fixed_point_marker" }
+  ],
+  policies: ["P1_lexical", "P2_reverse", "P3_seeded_shuffle"],
+  expected: {
+    final_term: "T(P(a))",
+    termination: "fixed_point",
+    conservation: "identical",
+    traces_diverge: true
+  },
+  failure_conditions: [
+    "final_term differs",
+    "non_termination",
+    "conservation_mismatch"
+  ]
+}
+```
+
+---
+
+## 6. Why this fixture matters (architecturally)
+
+This test cleanly separates:
+
+* **Execution correctness** → already proven in Step 5a-A
+* **Ordering sensitivity** → proven here
+* **Invariant semantics** → preserved
+
+If this passes, you’ve demonstrated:
+
+> **SID rewrite semantics are confluent up to invariant equivalence, even when non-confluent operationally.**
+
+That’s a *very strong* result.
+
+---
+
+
+

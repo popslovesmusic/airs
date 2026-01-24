@@ -5,6 +5,7 @@
 - Tests and harness: `Simulation/tests` (fixtures under `Simulation/tests/fixtures`, goldens under `artifacts/validation`).
 - Build outputs: `build/<Config>/` (e.g., `build/Debug`, `build/Release`); top-level executables include `dase_cli.exe`, `harness_tests.exe`, `dase_step_runner.exe`, `sid_step_runner.exe`.
 - JSON ingress tools and docs: `json_gate.py`, `docs/json_ingress_gate.md`, quick reference `agent.md`. Ingress accepts **one JSON command per invocation** (no JSONL streams); sequencing multiple commands is the agent’s responsibility.
+- Repository map: see `directory tree.txt` for a curated tree; binaries of interest include `Simulation/dase_cli` (source) and `Simulation/bin/sid_cli.exe`/`Simulation/bin/dase_cli.exe` (Jan 20 builds).
 - Metrics and validation tables: `metrics/`, `validation/`, `validation table.txt`.
 
 ## Build, Test, and Development Commands

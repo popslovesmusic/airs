@@ -1,0 +1,10 @@
+Ran diagnostics per user request:
+- Read `directory tree.txt` for repository layout.
+- Updated `AGENTS.md` to reference `directory tree.txt` and the Jan 20 binaries under `Simulation/bin/`.
+- Current blocker (from problem.txt): `sid_set_diagram_json` fails for any diagram; rebuild also failing due to `/O2` + `/RTC1` conflicts, leaving us without a working CLI to run the new Step 5a overlap/multi-redex fixtures.
+- Binaries noted by user: `D:\airs\Simulation\dase_cli` (source) and `Simulation/bin/sid_cli.exe` / `Simulation/bin/dase_cli.exe` (Jan 20 builds). When tried, `sid_cli.exe` reports “Unknown command” for `create_engine`, and diagram load fails, suggesting schema/command mismatch or stale binary.
+
+Next steps (need decision):
+1) Fix build flags to produce a fresh working CLI (resolve `/O2` vs `/RTC1`), then rerun fixtures.
+2) Use a known-good Release CLI if provided.
+3) If `sid_set_diagram_json` requires a different schema/command set in these binaries, supply the expected format so fixtures can be adapted.

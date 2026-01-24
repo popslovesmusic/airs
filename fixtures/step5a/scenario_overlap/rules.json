@@ -1,0 +1,6 @@
+[
+  { "rule_id": "R1", "pattern": "S+($x,$y)", "replacement": "C($x,$y)" },
+  { "rule_id": "R2", "pattern": "S+($x,$y)", "replacement": "D($x,$y)" },
+  { "rule_id": "R3", "pattern": "C($x,$y)", "replacement": "T($x)" },
+  { "rule_id": "R4", "pattern": "D($x,$y)", "replacement": "T($x)" }
+]
