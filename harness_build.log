@@ -1,0 +1,29 @@
+MSBuild version 17.14.23+b0019275e for .NET Framework
+
+  1>Checking Build System
+  Building Custom Rule E:/airs/build/_deps/googletest-src/googletest/CMakeLists.txt
+  gtest-all.cc
+  gtest.vcxproj -> E:\airs\build\lib\Release\gtest.lib
+  Building Custom Rule E:/airs/build/_deps/googletest-src/googletest/CMakeLists.txt
+  gtest_main.cc
+  gtest_main.vcxproj -> E:\airs\build\lib\Release\gtest_main.lib
+  Building Custom Rule E:/airs/Simulation/CMakeLists.txt
+cl : command line  warning D9025: overriding '/Ob2' with '/Ob3' [E:\airs\build\harness_support.vcxproj]
+  harness_policy.cpp
+  harness_test_util.cpp
+  harness_support.vcxproj -> E:\airs\build\Release\harness_support.lib
+  Building Custom Rule E:/airs/Simulation/CMakeLists.txt
+cl : command line  warning D9025: overriding '/Ob2' with '/Ob3' [E:\airs\build\harness_tests.vcxproj]
+  harness_main.cpp
+  harness_example.cpp
+  harness_basic_compute.cpp
+  harness_satp_higgs.cpp
+  harness_igsoa_gw.cpp
+  harness_igsoa_complex.cpp
+  harness_sid_ssp.cpp
+  harness_sid_ternary.cpp
+  harness_sid_rewrite.cpp
+  harness_main.obj : MSIL .netmodule or module compiled with /GL found; restarting link with /LTCG; add /LTCG to the link command line to improve linker performance
+  Generating code
+  Finished generating code
+  harness_tests.vcxproj -> E:\airs\build\Release\harness_tests.exe

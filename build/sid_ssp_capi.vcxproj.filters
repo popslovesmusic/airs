@@ -1,0 +1,57 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="17.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <ClCompile Include="E:\airs\Simulation\src\cpp\sid_ssp\sid_capi.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="E:\airs\Simulation\src\cpp\sid_ssp\sid_semantic_processor.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="E:\airs\Simulation\src\cpp\sid_ssp\sid_mixer.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="E:\airs\Simulation\src\cpp\sid_ssp\sid_diagram.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="E:\airs\Simulation\src\cpp\sid_ssp\sid_ast.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="E:\airs\Simulation\src\cpp\sid_ssp\sid_ast_utils.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="E:\airs\Simulation\src\cpp\sid_ssp\sid_ast_to_diagram.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="E:\airs\Simulation\src\cpp\sid_ssp\sid_parser.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="E:\airs\Simulation\src\cpp\sid_ssp\sid_validator.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="E:\airs\Simulation\src\cpp\sid_ssp\sid_rewrite.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="E:\airs\Simulation\src\cpp\sid_ssp\sid_crf.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="E:\airs\Simulation\src\cpp\sid_ssp\sid_package_validator.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="E:\airs\Simulation\src\cpp\sid_ssp\sid_stability.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <CustomBuild Include="E:\airs\Simulation\CMakeLists.txt" />
+  </ItemGroup>
+  <ItemGroup>
+    <Filter Include="Header Files">
+      <UniqueIdentifier>{0FE32659-F503-37C6-92D0-D371B8F21491}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files">
+      <UniqueIdentifier>{64D4DF71-9AC0-3189-BDB7-4B0D9632A74C}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+</Project>
